@@ -425,6 +425,113 @@
             animation: hologramFlicker 3s ease-in-out infinite;
         }
 
+        /* Flying Flip Animation */
+        .hologram-image.flying-entry {
+            animation: flyingFlipEntry 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes flyingFlipEntry {
+            0% {
+                transform: translateX(-200px) translateY(-100px) rotateY(-180deg) rotateX(-90deg) scale(0.3);
+                opacity: 0;
+                filter: 
+                    drop-shadow(0 0 50px rgba(120, 219, 255, 1))
+                    hue-rotate(270deg)
+                    saturate(3)
+                    blur(5px);
+            }
+            25% {
+                transform: translateX(-100px) translateY(-50px) rotateY(-90deg) rotateX(-45deg) scale(0.6);
+                opacity: 0.5;
+                filter: 
+                    drop-shadow(0 0 40px rgba(120, 219, 255, 0.8))
+                    hue-rotate(225deg)
+                    saturate(2.5)
+                    blur(3px);
+            }
+            50% {
+                transform: translateX(-30px) translateY(-10px) rotateY(-30deg) rotateX(-10deg) scale(0.9);
+                opacity: 0.8;
+                filter: 
+                    drop-shadow(0 0 35px rgba(120, 219, 255, 0.7))
+                    hue-rotate(200deg)
+                    saturate(2)
+                    blur(1px);
+            }
+            75% {
+                transform: translateX(10px) translateY(5px) rotateY(10deg) rotateX(5deg) scale(1.1);
+                opacity: 0.95;
+                filter: 
+                    drop-shadow(0 0 30px rgba(120, 219, 255, 0.6))
+                    hue-rotate(185deg)
+                    saturate(1.5)
+                    blur(0px);
+            }
+            100% {
+                transform: translateX(0) translateY(0) rotateY(0deg) rotateX(0deg) scale(1);
+                opacity: 1;
+                filter: 
+                    drop-shadow(0 0 20px rgba(120, 219, 255, 0.4))
+                    hue-rotate(180deg)
+                    saturate(1.2);
+            }
+        }
+
+        /* Landing bounce effect with screen shake */
+        .hologram-image.landing-bounce {
+            animation: landingBounce 0.8s ease-out forwards;
+        }
+
+        @keyframes landingBounce {
+            0% { transform: scale(1); }
+            20% { transform: scale(1.15) rotateZ(-2deg); }
+            40% { transform: scale(0.95) rotateZ(1deg); }
+            60% { transform: scale(1.05) rotateZ(-0.5deg); }
+            80% { transform: scale(0.98) rotateZ(0.2deg); }
+            100% { transform: scale(1) rotateZ(0deg); }
+        }
+
+        /* Screen shake effect on landing */
+        .creature-hologram.screen-shake {
+            animation: screenShake 0.3s ease-in-out;
+        }
+
+        @keyframes screenShake {
+            0%, 100% { transform: translateX(0); }
+            10% { transform: translateX(-2px) rotateZ(-0.5deg); }
+            20% { transform: translateX(2px) rotateZ(0.5deg); }
+            30% { transform: translateX(-1px) rotateZ(-0.2deg); }
+            40% { transform: translateX(1px) rotateZ(0.2deg); }
+            50% { transform: translateX(-2px) rotateZ(-0.3deg); }
+            60% { transform: translateX(2px) rotateZ(0.3deg); }
+            70% { transform: translateX(-1px) rotateZ(-0.1deg); }
+            80% { transform: translateX(1px) rotateZ(0.1deg); }
+            90% { transform: translateX(-0.5px) rotateZ(0deg); }
+        }
+
+        /* Impact flash effect */
+        .hologram-panel.impact-flash {
+            animation: impactFlash 0.3s ease-out;
+        }
+
+        @keyframes impactFlash {
+            0% { 
+                background: rgba(255, 255, 255, 0.03);
+                border-color: rgba(120, 119, 198, 0.2);
+            }
+            25% { 
+                background: rgba(120, 219, 255, 0.2);
+                border-color: rgba(120, 219, 255, 0.8);
+                box-shadow: 
+                    0 0 30px rgba(120, 219, 255, 0.5),
+                    inset 0 0 20px rgba(120, 219, 255, 0.2);
+            }
+            100% { 
+                background: rgba(255, 255, 255, 0.03);
+                border-color: rgba(120, 119, 198, 0.2);
+            }
+        }
+
         @keyframes hologramFlicker {
             0%, 100% { 
                 opacity: 0.9; 
@@ -448,6 +555,27 @@
                 drop-shadow(0 0 40px rgba(120, 219, 255, 0.8))
                 hue-rotate(200deg)
                 saturate(2);
+        }
+
+        /* Departure Animation */
+        .hologram-image.flying-exit {
+            animation: flyingFlipExit 1s ease-in forwards;
+        }
+
+        @keyframes flyingFlipExit {
+            0% {
+                transform: translateX(0) translateY(0) rotateY(0deg) rotateX(0deg) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(300px) translateY(-150px) rotateY(180deg) rotateX(90deg) scale(0.2);
+                opacity: 0;
+                filter: 
+                    drop-shadow(0 0 50px rgba(120, 219, 255, 1))
+                    hue-rotate(360deg)
+                    saturate(3)
+                    blur(8px);
+            }
         }
 
         /* Data Matrix */
@@ -688,12 +816,35 @@
             }
         }
 
-        // Cosmic creature selection
+        // Cosmic creature selection with flying animations
         function toggleCreatureSelection(animal) {
             const checkboxes = document.querySelectorAll('input[name="animal"]');
             const targetCheckbox = document.getElementById(animal);
+            const animalResult = document.getElementById('animalResult');
             
-            // Uncheck all others (radio button behavior)
+            // If we're selecting a different animal, animate the current one out first
+            if (targetCheckbox.checked === false) {
+                const currentImage = document.querySelector('.hologram-image');
+                if (currentImage) {
+                    // Trigger exit animation
+                    currentImage.classList.add('flying-exit');
+                    
+                    setTimeout(() => {
+                        // Uncheck all others after exit animation
+                        checkboxes.forEach(cb => {
+                            cb.checked = false;
+                        });
+                        
+                        // Check the new selection
+                        targetCheckbox.checked = true;
+                        showCreatureHologram(animal);
+                    }, 500); // Half the exit animation duration
+                    
+                    return;
+                }
+            }
+            
+            // Standard radio button behavior for first selection or deselection
             checkboxes.forEach(cb => {
                 if (cb !== targetCheckbox) {
                     cb.checked = false;
@@ -703,17 +854,32 @@
             // Toggle the selected one
             targetCheckbox.checked = !targetCheckbox.checked;
             
-            const animalResult = document.getElementById('animalResult');
-            
             if (targetCheckbox.checked) {
                 showCreatureHologram(animal);
             } else {
-                animalResult.innerHTML = '<div class="no-signal">Awaiting creature selection...</div>';
+                // Animate out when deselecting
+                const currentImage = document.querySelector('.hologram-image');
+                if (currentImage) {
+                    currentImage.classList.add('flying-exit');
+                    
+                    setTimeout(() => {
+                        animalResult.innerHTML = '<div class="no-signal">Awaiting creature selection...</div>';
+                    }, 800); // Exit animation duration
+                } else {
+                    animalResult.innerHTML = '<div class="no-signal">Awaiting creature selection...</div>';
+                }
             }
         }
 
         async function showCreatureHologram(animal) {
             const animalResult = document.getElementById('animalResult');
+            
+            // Show materialization process
+            animalResult.innerHTML = `
+                <div style="text-align: center; color: #78dbff; animation: signalSearch 0.5s ease-in-out infinite;">
+                    🌀 Materializing hologram...
+                </div>
+            `;
             
             try {
                 const response = await fetch(`/animal/${animal}`);
@@ -726,32 +892,162 @@
                         elephant: 'Megafauna Giant'
                     };
                     
-                    animalResult.innerHTML = `
-                        <img src="${imageUrl}" alt="${animal}" class="hologram-image">
-                        <div style="margin-top: 20px;">
-                            <div style="color: #78dbff; font-size: 1.4rem; font-weight: 700; text-shadow: 0 0 10px rgba(120, 219, 255, 0.5);">
-                                ${creatureNames[animal]}
+                    const creatureDescriptions = {
+                        cat: 'Agile predator with enhanced reflexes',
+                        dog: 'Loyal companion with pack intelligence',
+                        elephant: 'Gentle giant with ancient wisdom'
+                    };
+                    
+                    // Brief delay before showing flying animation
+                    setTimeout(() => {
+                        animalResult.innerHTML = `
+                            <img src="${imageUrl}" alt="${animal}" class="hologram-image flying-entry" id="creatureImage">
+                            <div class="creature-info-display" style="margin-top: 20px; opacity: 0;">
+                                <div style="color: #78dbff; font-size: 1.4rem; font-weight: 700; text-shadow: 0 0 10px rgba(120, 219, 255, 0.5);">
+                                    ${creatureNames[animal]}
+                                </div>
+                                <div style="color: rgba(255, 255, 255, 0.7); margin-top: 8px; font-style: italic;">
+                                    ${creatureDescriptions[animal]}
+                                </div>
+                                <div style="color: rgba(120, 219, 255, 0.8); margin-top: 12px; font-size: 0.9rem;">
+                                    ✨ Hologram projection stable
+                                </div>
                             </div>
-                            <div style="color: rgba(255, 255, 255, 0.7); margin-top: 8px; font-style: italic;">
-                                Hologram projection active
-                            </div>
-                        </div>
-                    `;
+                        `;
+                        
+                        const creatureImage = document.getElementById('creatureImage');
+                        const infoDisplay = document.querySelector('.creature-info-display');
+                        
+                        // Add landing bounce after flying animation
+                        setTimeout(() => {
+                            creatureImage.classList.remove('flying-entry');
+                            creatureImage.classList.add('landing-bounce');
+                            
+                            // Add impact effects
+                            const hologramContainer = document.querySelector('.creature-hologram');
+                            const hologramPanel = hologramContainer.closest('.hologram-panel');
+                            
+                            // Screen shake effect
+                            hologramContainer.classList.add('screen-shake');
+                            
+                            // Panel flash effect
+                            hologramPanel.classList.add('impact-flash');
+                            
+                            // Fade in the info display
+                            infoDisplay.style.transition = 'opacity 0.8s ease-in-out';
+                            infoDisplay.style.opacity = '1';
+                            
+                            // Create particle burst effect
+                            createParticleBurst();
+                            
+                            // Visual sound effect simulation
+                            createSoundWaves();
+                            
+                            // Remove effect classes after animation
+                            setTimeout(() => {
+                                hologramContainer.classList.remove('screen-shake');
+                                hologramPanel.classList.remove('impact-flash');
+                            }, 300);
+                            
+                        }, 1500); // Match flying animation duration
+                        
+                        // Remove bounce class after animation
+                        setTimeout(() => {
+                            creatureImage.classList.remove('landing-bounce');
+                        }, 2300); // 1500ms + 800ms bounce duration
+                        
+                    }, 800); // Delay before starting flying animation
+                    
                 } else {
-                    animalResult.innerHTML = `
-                        <div class="error-matrix">
-                            ⚠️ Hologram data corrupted<br>
-                            Cannot project ${animal} specimen
-                        </div>
-                    `;
+                    setTimeout(() => {
+                        animalResult.innerHTML = `
+                            <div class="error-matrix">
+                                ⚠️ Hologram data corrupted<br>
+                                Cannot project ${animal} specimen
+                            </div>
+                        `;
+                    }, 800);
                 }
             } catch (error) {
-                animalResult.innerHTML = `
-                    <div class="error-matrix">
-                        🚨 System Error<br>
-                        ${error.message}
-                    </div>
-                `;
+                setTimeout(() => {
+                    animalResult.innerHTML = `
+                        <div class="error-matrix">
+                            🚨 System Error<br>
+                            ${error.message}
+                        </div>
+                    `;
+                }, 800);
+            }
+        }
+
+        // Create particle burst effect on creature materialization
+        function createParticleBurst() {
+            const burstContainer = document.querySelector('.creature-hologram');
+            const numBurstParticles = 20;
+            
+            for (let i = 0; i < numBurstParticles; i++) {
+                const particle = document.createElement('div');
+                particle.style.position = 'absolute';
+                particle.style.width = '6px';
+                particle.style.height = '6px';
+                particle.style.background = `rgba(120, 219, 255, ${Math.random() * 0.8 + 0.2})`;
+                particle.style.borderRadius = '50%';
+                particle.style.left = '50%';
+                particle.style.top = '50%';
+                particle.style.pointerEvents = 'none';
+                particle.style.zIndex = '1000';
+                
+                const angle = (i / numBurstParticles) * Math.PI * 2;
+                const velocity = 50 + Math.random() * 100;
+                const duration = 1000 + Math.random() * 500;
+                
+                const endX = Math.cos(angle) * velocity;
+                const endY = Math.sin(angle) * velocity;
+                
+                particle.style.animation = `particleBurst ${duration}ms ease-out forwards`;
+                particle.style.setProperty('--endX', endX + 'px');
+                particle.style.setProperty('--endY', endY + 'px');
+                
+                burstContainer.appendChild(particle);
+                
+                setTimeout(() => {
+                    if (particle.parentNode) {
+                        particle.parentNode.removeChild(particle);
+                    }
+                }, duration);
+            }
+        }
+
+        // Create visual sound waves effect
+        function createSoundWaves() {
+            const waveContainer = document.querySelector('.creature-hologram');
+            const numWaves = 3;
+            
+            for (let i = 0; i < numWaves; i++) {
+                const wave = document.createElement('div');
+                wave.style.position = 'absolute';
+                wave.style.left = '50%';
+                wave.style.top = '50%';
+                wave.style.width = '20px';
+                wave.style.height = '20px';
+                wave.style.border = '2px solid rgba(120, 219, 255, 0.6)';
+                wave.style.borderRadius = '50%';
+                wave.style.transform = 'translate(-50%, -50%)';
+                wave.style.pointerEvents = 'none';
+                wave.style.zIndex = '999';
+                
+                const delay = i * 100;
+                const duration = 800;
+                
+                wave.style.animation = `soundWave ${duration}ms ease-out ${delay}ms forwards`;
+                
+                waveContainer.appendChild(wave);
+                
+                setTimeout(() => {
+                    if (wave.parentNode) {
+                        wave.parentNode.removeChild(wave);
+                    }
+                }, duration + delay);
             }
         }
 
@@ -879,10 +1175,40 @@
         // Add fade out animation for mouse trail
         const style = document.createElement('style');
         style.textContent = `
-            @keyframes fadeOut {
-                from { opacity: 1; transform: scale(1); }
-                to { opacity: 0; transform: scale(0); }
+                    @keyframes fadeOut {
+            from { opacity: 1; transform: scale(1); }
+            to { opacity: 0; transform: scale(0); }
+        }
+
+        /* Particle Burst Animation */
+        @keyframes particleBurst {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
             }
+            100% {
+                transform: translate(calc(-50% + var(--endX)), calc(-50% + var(--endY))) scale(0);
+                opacity: 0;
+            }
+        }
+
+        /* Sound Wave Animation */
+        @keyframes soundWave {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0.8;
+                border-width: 2px;
+            }
+            50% {
+                opacity: 0.4;
+                border-width: 1px;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(8);
+                opacity: 0;
+                border-width: 0px;
+            }
+        }
         `;
         document.head.appendChild(style);
 
