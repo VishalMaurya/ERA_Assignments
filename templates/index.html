@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Animal & File Upload App</title>
+    <title>🚀 Space Odyssey - Animal & File Explorer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -12,308 +13,706 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Exo 2', sans-serif;
+            background: #0a0a0a;
             min-height: 100vh;
-            padding: 20px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated Space Background */
+        .space-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+            z-index: -3;
+        }
+
+        .space-background::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, #eee, transparent),
+                radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.8), transparent),
+                radial-gradient(1px 1px at 90px 40px, #fff, transparent),
+                radial-gradient(1px 1px at 130px 80px, rgba(255,255,255,0.6), transparent),
+                radial-gradient(2px 2px at 160px 30px, #ddd, transparent);
+            background-repeat: repeat;
+            background-size: 200px 100px;
+            animation: sparkle 20s linear infinite;
+        }
+
+        @keyframes sparkle {
+            from { transform: translateX(0); }
+            to { transform: translateX(-200px); }
+        }
+
+        /* Floating Particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.8; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 1; }
+        }
+
+        /* Nebula Effect */
+        .nebula {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
+            z-index: -1;
+            animation: nebulaDrift 30s ease-in-out infinite;
+        }
+
+        @keyframes nebulaDrift {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(1deg); }
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            margin-bottom: 80px;
+            animation: heroGlow 3s ease-in-out;
+        }
+
+        @keyframes heroGlow {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         h1 {
-            text-align: center;
-            color: white;
-            margin-bottom: 40px;
-            font-size: 2.5rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-family: 'Orbitron', monospace;
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 900;
+            color: #fff;
+            text-shadow: 
+                0 0 10px rgba(120, 219, 255, 0.8),
+                0 0 20px rgba(120, 219, 255, 0.6),
+                0 0 40px rgba(120, 219, 255, 0.4);
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+            animation: titlePulse 4s ease-in-out infinite;
         }
 
-        .boxes-container {
+        @keyframes titlePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 40px;
+            animation: subtitleFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes subtitleFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        /* Modern Glassmorphism Containers */
+        .mission-control {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 40px;
+            gap: 40px;
+            margin-bottom: 60px;
+            perspective: 1000px;
         }
 
-        .box {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            transition: transform 0.3s ease;
+        .space-module {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow: hidden;
         }
 
-        .box:hover {
-            transform: translateY(-5px);
+        .space-module::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, 
+                rgba(120, 219, 255, 0.5), 
+                rgba(255, 119, 198, 0.5), 
+                rgba(120, 119, 198, 0.5));
+            border-radius: 22px;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
-        .box h2 {
-            color: #333;
-            margin-bottom: 20px;
-            font-size: 1.5rem;
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 10px;
+        .space-module:hover {
+            transform: translateY(-15px) rotateX(5deg) rotateY(5deg);
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.3),
+                0 0 30px rgba(120, 219, 255, 0.3);
         }
 
-        /* Animal Selection Box */
-        .animal-options {
+        .space-module:hover::before {
+            opacity: 1;
+        }
+
+        .module-title {
+            font-family: 'Orbitron', monospace;
+            color: #78dbff;
+            margin-bottom: 30px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(120, 219, 255, 0.5);
+            letter-spacing: 1px;
+        }
+
+        /* Cosmic Animal Selection */
+        .cosmic-creature-selector {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 20px;
         }
 
-        .checkbox-group {
+        .creature-option {
+            position: relative;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(120, 219, 255, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-style: preserve-3d;
+        }
+
+        .creature-option:hover {
+            background: rgba(120, 219, 255, 0.1);
+            border-color: rgba(120, 219, 255, 0.8);
+            transform: translateZ(10px) scale(1.02);
+            box-shadow: 
+                0 10px 20px rgba(0, 0, 0, 0.3),
+                inset 0 0 20px rgba(120, 219, 255, 0.1);
+        }
+
+        .creature-option input[type="checkbox"] {
+            display: none;
+        }
+
+        .creature-option input[type="checkbox"]:checked + .creature-content {
+            background: rgba(120, 219, 255, 0.2);
+            border-left: 4px solid #78dbff;
+            transform: scale(1.05);
+        }
+
+        .creature-content {
             display: flex;
             align-items: center;
-            padding: 10px;
-            border-radius: 8px;
-            transition: background-color 0.3s ease;
-            cursor: pointer;
-        }
-
-        .checkbox-group:hover {
-            background-color: #f5f5f5;
-        }
-
-        .checkbox-group input[type="checkbox"] {
-            margin-right: 15px;
-            transform: scale(1.2);
-            accent-color: #667eea;
-        }
-
-        .checkbox-group label {
-            cursor: pointer;
-            font-size: 1.1rem;
-            color: #333;
-            text-transform: capitalize;
-        }
-
-        /* File Upload Box */
-        .upload-area {
-            border: 2px dashed #667eea;
-            border-radius: 10px;
-            padding: 40px;
-            text-align: center;
-            background-color: #f8f9ff;
+            gap: 20px;
             transition: all 0.3s ease;
+        }
+
+        .creature-icon {
+            font-size: 3rem;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+            animation: iconFloat 2s ease-in-out infinite;
+        }
+
+        @keyframes iconFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-5px) rotate(2deg); }
+        }
+
+        .creature-info {
+            flex: 1;
+        }
+
+        .creature-name {
+            color: #fff;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+        }
+
+        .creature-type {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            font-style: italic;
+        }
+
+        /* Quantum File Transport */
+        .quantum-upload-zone {
+            position: relative;
+            background: rgba(255, 119, 198, 0.05);
+            border: 2px dashed rgba(255, 119, 198, 0.3);
+            border-radius: 20px;
+            padding: 50px;
+            text-align: center;
             cursor: pointer;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow: hidden;
         }
 
-        .upload-area:hover {
-            border-color: #764ba2;
-            background-color: #f0f2ff;
+        .quantum-upload-zone::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: radial-gradient(circle, rgba(255, 119, 198, 0.2) 0%, transparent 70%);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.5s ease;
         }
 
-        .upload-area.dragover {
-            border-color: #764ba2;
-            background-color: #e8ebff;
-            transform: scale(1.02);
+        .quantum-upload-zone:hover::before {
+            width: 200px;
+            height: 200px;
+        }
+
+        .quantum-upload-zone:hover {
+            border-color: rgba(255, 119, 198, 0.8);
+            background: rgba(255, 119, 198, 0.1);
+            transform: scale(1.05);
+            box-shadow: 
+                0 15px 30px rgba(0, 0, 0, 0.3),
+                inset 0 0 30px rgba(255, 119, 198, 0.1);
+        }
+
+        .quantum-upload-zone.dragover {
+            border-color: rgba(255, 119, 198, 1);
+            background: rgba(255, 119, 198, 0.2);
+            transform: scale(1.1) rotateZ(1deg);
+            animation: quantumPulse 0.5s ease-in-out;
+        }
+
+        @keyframes quantumPulse {
+            0%, 100% { transform: scale(1.1) rotateZ(1deg); }
+            50% { transform: scale(1.15) rotateZ(-1deg); }
         }
 
         #fileInput {
             display: none;
         }
 
+        .upload-portal {
+            position: relative;
+            z-index: 2;
+        }
+
         .upload-icon {
-            font-size: 3rem;
-            color: #667eea;
-            margin-bottom: 15px;
+            font-size: 4rem;
+            color: #ff77c6;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 15px rgba(255, 119, 198, 0.5));
+            animation: portalSpin 4s linear infinite;
+        }
+
+        @keyframes portalSpin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
 
         .upload-text {
-            color: #666;
-            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.3rem;
+            font-weight: 600;
             margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(255, 119, 198, 0.3);
         }
 
         .upload-subtext {
-            color: #999;
-            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1rem;
         }
 
-        /* Results Display */
-        .results-container {
+        /* Hologram Results Display */
+        .hologram-display {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 30px;
+            gap: 40px;
+            perspective: 1200px;
         }
 
-        .result-box {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            min-height: 300px;
+        .hologram-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(120, 119, 198, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            min-height: 400px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        .result-box h3 {
-            color: #333;
-            margin-bottom: 20px;
-            font-size: 1.3rem;
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 10px;
+        .hologram-panel:hover {
+            transform: translateY(-10px) rotateX(2deg);
+            border-color: rgba(120, 119, 198, 0.6);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.3),
+                inset 0 0 30px rgba(120, 119, 198, 0.1);
         }
 
-        .animal-display {
+        .panel-title {
+            font-family: 'Orbitron', monospace;
+            color: #7877c6;
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 30px;
             text-align: center;
+            text-shadow: 0 0 10px rgba(120, 119, 198, 0.5);
+            border-bottom: 2px solid rgba(120, 119, 198, 0.3);
+            padding-bottom: 15px;
         }
 
-        .animal-image {
+        /* Creature Hologram */
+        .creature-hologram {
+            text-align: center;
+            position: relative;
+        }
+
+        .hologram-image {
             max-width: 100%;
-            max-height: 250px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            transition: transform 0.3s ease;
+            max-height: 280px;
+            border-radius: 15px;
+            filter: 
+                drop-shadow(0 0 20px rgba(120, 219, 255, 0.3))
+                hue-rotate(180deg)
+                saturate(1.2);
+            transition: all 0.5s ease;
+            animation: hologramFlicker 3s ease-in-out infinite;
         }
 
-        .animal-image:hover {
-            transform: scale(1.05);
+        @keyframes hologramFlicker {
+            0%, 100% { 
+                opacity: 0.9; 
+                filter: 
+                    drop-shadow(0 0 20px rgba(120, 219, 255, 0.3))
+                    hue-rotate(180deg)
+                    saturate(1.2);
+            }
+            50% { 
+                opacity: 1; 
+                filter: 
+                    drop-shadow(0 0 30px rgba(120, 219, 255, 0.6))
+                    hue-rotate(190deg)
+                    saturate(1.5);
+            }
         }
 
-        .file-info {
-            background: #f8f9ff;
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 15px;
+        .hologram-image:hover {
+            transform: scale(1.1) rotateY(5deg);
+            filter: 
+                drop-shadow(0 0 40px rgba(120, 219, 255, 0.8))
+                hue-rotate(200deg)
+                saturate(2);
         }
 
-        .file-info-item {
+        /* Data Matrix */
+        .data-matrix {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(120, 219, 255, 0.2);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .data-matrix::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(120, 219, 255, 0.1), 
+                transparent);
+            animation: dataScan 3s linear infinite;
+        }
+
+        @keyframes dataScan {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .data-entry {
             display: flex;
             justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #e0e0e0;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(120, 219, 255, 0.1);
+            position: relative;
+            z-index: 1;
         }
 
-        .file-info-item:last-child {
+        .data-entry:last-child {
             border-bottom: none;
         }
 
-        .file-info-label {
-            font-weight: bold;
-            color: #333;
+        .data-label {
+            color: #78dbff;
+            font-weight: 600;
+            font-size: 1rem;
+            text-shadow: 0 0 5px rgba(120, 219, 255, 0.3);
         }
 
-        .file-info-value {
-            color: #666;
+        .data-value {
+            color: rgba(255, 255, 255, 0.9);
             text-align: right;
+            font-family: 'Courier New', monospace;
             word-break: break-all;
+            max-width: 60%;
         }
 
-        .no-content {
+        .no-signal {
             text-align: center;
-            color: #999;
+            color: rgba(255, 255, 255, 0.4);
             font-style: italic;
-            margin-top: 50px;
+            margin-top: 60px;
+            font-size: 1.1rem;
+            animation: signalSearch 2s ease-in-out infinite;
         }
 
-        .error-message {
-            background: #ffe6e6;
-            color: #d00;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 15px;
-            border-left: 4px solid #d00;
+        @keyframes signalSearch {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.8; }
+        }
+
+        .error-matrix {
+            background: rgba(255, 0, 50, 0.1);
+            border: 1px solid rgba(255, 0, 50, 0.3);
+            color: #ff6b6b;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+            animation: errorPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes errorPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
         }
 
         /* Responsive Design */
         @media (max-width: 768px) {
-            .boxes-container,
-            .results-container {
+            .mission-control,
+            .hologram-display {
                 grid-template-columns: 1fr;
+                gap: 30px;
             }
             
             h1 {
-                font-size: 2rem;
+                font-size: 2.5rem;
             }
             
-            .box,
-            .result-box {
+            .space-module,
+            .hologram-panel {
+                padding: 25px;
+            }
+
+            .creature-icon {
+                font-size: 2.5rem;
+            }
+
+            .upload-icon {
+                font-size: 3rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px 15px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .space-module,
+            .hologram-panel {
                 padding: 20px;
             }
         }
     </style>
 </head>
 <body>
+    <!-- Animated Space Background -->
+    <div class="space-background"></div>
+    <div class="nebula"></div>
+    <div class="particles" id="particles"></div>
+
     <div class="container">
-        <h1>🐾 Animal & File Upload App</h1>
+        <!-- Hero Section -->
+        <div class="hero">
+            <h1>🚀 SPACE ODYSSEY</h1>
+            <div class="subtitle">Cosmic Creature & Quantum File Explorer</div>
+        </div>
         
-        <div class="boxes-container">
-            <!-- Animal Selection Box -->
-            <div class="box">
-                <h2>🐱 Select an Animal</h2>
-                <div class="animal-options">
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="cat" name="animal" value="cat" onchange="handleAnimalSelection(this)">
-                        <label for="cat">🐱 Cat</label>
+        <!-- Mission Control Interface -->
+        <div class="mission-control">
+            <!-- Creature Selection Module -->
+            <div class="space-module">
+                <h2 class="module-title">👽 COSMIC CREATURES</h2>
+                <div class="cosmic-creature-selector">
+                    <div class="creature-option" onclick="toggleCreatureSelection('cat')">
+                        <input type="checkbox" id="cat" name="animal" value="cat">
+                        <div class="creature-content">
+                            <div class="creature-icon">🐱</div>
+                            <div class="creature-info">
+                                <div class="creature-name">Feline Entity</div>
+                                <div class="creature-type">Terrestrial Predator</div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="dog" name="animal" value="dog" onchange="handleAnimalSelection(this)">
-                        <label for="dog">🐶 Dog</label>
+                    
+                    <div class="creature-option" onclick="toggleCreatureSelection('dog')">
+                        <input type="checkbox" id="dog" name="animal" value="dog">
+                        <div class="creature-content">
+                            <div class="creature-icon">🐶</div>
+                            <div class="creature-info">
+                                <div class="creature-name">Canine Companion</div>
+                                <div class="creature-type">Loyal Guardian</div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="elephant" name="animal" value="elephant" onchange="handleAnimalSelection(this)">
-                        <label for="elephant">🐘 Elephant</label>
+                    
+                    <div class="creature-option" onclick="toggleCreatureSelection('elephant')">
+                        <input type="checkbox" id="elephant" name="animal" value="elephant">
+                        <div class="creature-content">
+                            <div class="creature-icon">🐘</div>
+                            <div class="creature-info">
+                                <div class="creature-name">Megafauna Giant</div>
+                                <div class="creature-type">Ancient Wisdom</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- File Upload Box -->
-            <div class="box">
-                <h2>📁 Upload a File</h2>
-                <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
-                    <div class="upload-icon">📁</div>
-                    <div class="upload-text">Click to select a file</div>
-                    <div class="upload-subtext">or drag and drop</div>
-                    <input type="file" id="fileInput" onchange="handleFileUpload(this)">
+            <!-- Quantum File Transport Module -->
+            <div class="space-module">
+                <h2 class="module-title">🌌 QUANTUM TRANSPORT</h2>
+                <div class="quantum-upload-zone" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+                    <div class="upload-portal">
+                        <div class="upload-icon">🌀</div>
+                        <div class="upload-text">Initiate Quantum Transfer</div>
+                        <div class="upload-subtext">Drag files into the portal</div>
+                        <input type="file" id="fileInput" onchange="handleFileUpload(this)">
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="results-container">
-            <!-- Animal Display Box -->
-            <div class="result-box">
-                <h3>🖼️ Animal Display</h3>
-                <div id="animalResult" class="animal-display">
-                    <div class="no-content">Select an animal to see its image</div>
+        <!-- Holographic Display Interface -->
+        <div class="hologram-display">
+            <!-- Creature Hologram Panel -->
+            <div class="hologram-panel">
+                <h3 class="panel-title">🔬 SPECIMEN ANALYSIS</h3>
+                <div id="animalResult" class="creature-hologram">
+                    <div class="no-signal">Awaiting creature selection...</div>
                 </div>
             </div>
 
-            <!-- File Info Box -->
-            <div class="result-box">
-                <h3>📊 File Information</h3>
+            <!-- Data Matrix Panel -->
+            <div class="hologram-panel">
+                <h3 class="panel-title">📡 DATA MATRIX</h3>
                 <div id="fileResult">
-                    <div class="no-content">Upload a file to see its information</div>
+                    <div class="no-signal">No quantum signature detected...</div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Animal selection handling
-        function handleAnimalSelection(checkbox) {
-            // Uncheck other checkboxes (radio button behavior)
-            const checkboxes = document.querySelectorAll('input[name="animal"]');
-            checkboxes.forEach(cb => {
-                if (cb !== checkbox) {
-                    cb.checked = false;
-                }
-            });
-
-            const animalResult = document.getElementById('animalResult');
+        // Initialize particle system
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const numParticles = 50;
             
-            if (checkbox.checked) {
-                const animal = checkbox.value;
-                showAnimalImage(animal);
-            } else {
-                animalResult.innerHTML = '<div class="no-content">Select an animal to see its image</div>';
+            for (let i = 0; i < numParticles; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.width = (Math.random() * 3 + 1) + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 4 + 2) + 's';
+                particlesContainer.appendChild(particle);
             }
         }
 
-        async function showAnimalImage(animal) {
+        // Cosmic creature selection
+        function toggleCreatureSelection(animal) {
+            const checkboxes = document.querySelectorAll('input[name="animal"]');
+            const targetCheckbox = document.getElementById(animal);
+            
+            // Uncheck all others (radio button behavior)
+            checkboxes.forEach(cb => {
+                if (cb !== targetCheckbox) {
+                    cb.checked = false;
+                }
+            });
+            
+            // Toggle the selected one
+            targetCheckbox.checked = !targetCheckbox.checked;
+            
+            const animalResult = document.getElementById('animalResult');
+            
+            if (targetCheckbox.checked) {
+                showCreatureHologram(animal);
+            } else {
+                animalResult.innerHTML = '<div class="no-signal">Awaiting creature selection...</div>';
+            }
+        }
+
+        async function showCreatureHologram(animal) {
             const animalResult = document.getElementById('animalResult');
             
             try {
@@ -321,35 +720,48 @@
                 
                 if (response.ok) {
                     const imageUrl = `/animal/${animal}`;
+                    const creatureNames = {
+                        cat: 'Feline Entity',
+                        dog: 'Canine Companion', 
+                        elephant: 'Megafauna Giant'
+                    };
+                    
                     animalResult.innerHTML = `
-                        <img src="${imageUrl}" alt="${animal}" class="animal-image">
-                        <p style="margin-top: 15px; color: #333; font-weight: bold; text-transform: capitalize;">
-                            ${animal}
-                        </p>
+                        <img src="${imageUrl}" alt="${animal}" class="hologram-image">
+                        <div style="margin-top: 20px;">
+                            <div style="color: #78dbff; font-size: 1.4rem; font-weight: 700; text-shadow: 0 0 10px rgba(120, 219, 255, 0.5);">
+                                ${creatureNames[animal]}
+                            </div>
+                            <div style="color: rgba(255, 255, 255, 0.7); margin-top: 8px; font-style: italic;">
+                                Hologram projection active
+                            </div>
+                        </div>
                     `;
                 } else {
                     animalResult.innerHTML = `
-                        <div class="error-message">
-                            Sorry, image for ${animal} not found. Please add ${animal}.jpg to the static/images folder.
+                        <div class="error-matrix">
+                            ⚠️ Hologram data corrupted<br>
+                            Cannot project ${animal} specimen
                         </div>
                     `;
                 }
             } catch (error) {
                 animalResult.innerHTML = `
-                    <div class="error-message">
-                        Error loading image: ${error.message}
+                    <div class="error-matrix">
+                        🚨 System Error<br>
+                        ${error.message}
                     </div>
                 `;
             }
         }
 
-        // File upload handling
+        // Quantum file transport handling
         async function handleFileUpload(input) {
             const file = input.files[0];
             const fileResult = document.getElementById('fileResult');
             
             if (!file) {
-                fileResult.innerHTML = '<div class="no-content">Upload a file to see its information</div>';
+                fileResult.innerHTML = '<div class="no-signal">No quantum signature detected...</div>';
                 return;
             }
 
@@ -357,7 +769,11 @@
             formData.append('file', file);
 
             try {
-                fileResult.innerHTML = '<div style="text-align: center; color: #667eea;">Uploading...</div>';
+                fileResult.innerHTML = `
+                    <div style="text-align: center; color: #78dbff; animation: signalSearch 1s ease-in-out infinite;">
+                        🌀 Quantum transport in progress...
+                    </div>
+                `;
                 
                 const response = await fetch('/upload', {
                     method: 'POST',
@@ -366,63 +782,122 @@
 
                 if (response.ok) {
                     const fileInfo = await response.json();
-                    displayFileInfo(fileInfo);
+                    displayQuantumData(fileInfo);
                 } else {
-                    throw new Error('Upload failed');
+                    throw new Error('Quantum transport failed');
                 }
             } catch (error) {
                 fileResult.innerHTML = `
-                    <div class="error-message">
-                        Error uploading file: ${error.message}
+                    <div class="error-matrix">
+                        🚨 Transport Error<br>
+                        ${error.message}
                     </div>
                 `;
             }
         }
 
-        function displayFileInfo(fileInfo) {
+        function displayQuantumData(fileInfo) {
             const fileResult = document.getElementById('fileResult');
             
             fileResult.innerHTML = `
-                <div class="file-info">
-                    <div class="file-info-item">
-                        <span class="file-info-label">📝 File Name:</span>
-                        <span class="file-info-value">${fileInfo.filename}</span>
+                <div class="data-matrix">
+                    <div class="data-entry">
+                        <span class="data-label">📡 Quantum ID:</span>
+                        <span class="data-value">${fileInfo.filename}</span>
                     </div>
-                    <div class="file-info-item">
-                        <span class="file-info-label">📏 File Size:</span>
-                        <span class="file-info-value">${fileInfo.size_formatted} (${fileInfo.size} bytes)</span>
+                    <div class="data-entry">
+                        <span class="data-label">⚡ Energy Mass:</span>
+                        <span class="data-value">${fileInfo.size_formatted}</span>
                     </div>
-                    <div class="file-info-item">
-                        <span class="file-info-label">🏷️ File Type:</span>
-                        <span class="file-info-value">${fileInfo.type || 'Unknown'}</span>
+                    <div class="data-entry">
+                        <span class="data-label">🧬 Matter Type:</span>
+                        <span class="data-value">${fileInfo.type || 'Unknown Substance'}</span>
                     </div>
+                    <div class="data-entry">
+                        <span class="data-label">🔬 Atomic Count:</span>
+                        <span class="data-value">${fileInfo.size.toLocaleString()} bytes</span>
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: 20px; color: rgba(120, 219, 255, 0.8); font-style: italic;">
+                    ✅ Quantum signature acquired
                 </div>
             `;
         }
 
-        // Drag and drop functionality
-        const uploadArea = document.getElementById('uploadArea');
-        const fileInput = document.getElementById('fileInput');
+        // Enhanced quantum portal drag and drop
+        function initializeQuantumPortal() {
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
 
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
-        });
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
 
-        uploadArea.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-        });
+            uploadArea.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+            });
 
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-            
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                fileInput.files = files;
-                handleFileUpload(fileInput);
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    fileInput.files = files;
+                    handleFileUpload(fileInput);
+                }
+            });
+        }
+
+        // Mouse trail effect (optional enhancement)
+        function addMouseTrail() {
+            document.addEventListener('mousemove', (e) => {
+                const trail = document.createElement('div');
+                trail.style.position = 'fixed';
+                trail.style.left = e.clientX + 'px';
+                trail.style.top = e.clientY + 'px';
+                trail.style.width = '4px';
+                trail.style.height = '4px';
+                trail.style.background = 'rgba(120, 219, 255, 0.6)';
+                trail.style.borderRadius = '50%';
+                trail.style.pointerEvents = 'none';
+                trail.style.zIndex = '1000';
+                trail.style.animation = 'fadeOut 1s ease-out forwards';
+                
+                document.body.appendChild(trail);
+                
+                setTimeout(() => {
+                    if (trail.parentNode) {
+                        trail.parentNode.removeChild(trail);
+                    }
+                }, 1000);
+            });
+        }
+
+        // Add fade out animation for mouse trail
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeOut {
+                from { opacity: 1; transform: scale(1); }
+                to { opacity: 0; transform: scale(0); }
             }
+        `;
+        document.head.appendChild(style);
+
+        // Initialize everything when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            createParticles();
+            initializeQuantumPortal();
+            // addMouseTrail(); // Uncomment for mouse trail effect
+            
+            // Add welcome message
+            setTimeout(() => {
+                console.log('🚀 Space Odyssey System Online');
+                console.log('🌌 All quantum systems operational');
+                console.log('👽 Ready for cosmic exploration!');
+            }, 1000);
         });
     </script>
 </body>
