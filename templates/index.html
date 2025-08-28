@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animal & File Upload App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .boxes-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .box {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .box:hover {
+            transform: translateY(-5px);
+        }
+
+        .box h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        /* Animal Selection Box */
+        .animal-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        }
+
+        .checkbox-group:hover {
+            background-color: #f5f5f5;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 15px;
+            transform: scale(1.2);
+            accent-color: #667eea;
+        }
+
+        .checkbox-group label {
+            cursor: pointer;
+            font-size: 1.1rem;
+            color: #333;
+            text-transform: capitalize;
+        }
+
+        /* File Upload Box */
+        .upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            background-color: #f8f9ff;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background-color: #f0f2ff;
+        }
+
+        .upload-area.dragover {
+            border-color: #764ba2;
+            background-color: #e8ebff;
+            transform: scale(1.02);
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .upload-subtext {
+            color: #999;
+            font-size: 0.9rem;
+        }
+
+        /* Results Display */
+        .results-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .result-box {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            min-height: 300px;
+        }
+
+        .result-box h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .animal-display {
+            text-align: center;
+        }
+
+        .animal-image {
+            max-width: 100%;
+            max-height: 250px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .animal-image:hover {
+            transform: scale(1.05);
+        }
+
+        .file-info {
+            background: #f8f9ff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+
+        .file-info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .file-info-item:last-child {
+            border-bottom: none;
+        }
+
+        .file-info-label {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .file-info-value {
+            color: #666;
+            text-align: right;
+            word-break: break-all;
+        }
+
+        .no-content {
+            text-align: center;
+            color: #999;
+            font-style: italic;
+            margin-top: 50px;
+        }
+
+        .error-message {
+            background: #ffe6e6;
+            color: #d00;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #d00;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .boxes-container,
+            .results-container {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .box,
+            .result-box {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🐾 Animal & File Upload App</h1>
+        
+        <div class="boxes-container">
+            <!-- Animal Selection Box -->
+            <div class="box">
+                <h2>🐱 Select an Animal</h2>
+                <div class="animal-options">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="cat" name="animal" value="cat" onchange="handleAnimalSelection(this)">
+                        <label for="cat">🐱 Cat</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="dog" name="animal" value="dog" onchange="handleAnimalSelection(this)">
+                        <label for="dog">🐶 Dog</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="elephant" name="animal" value="elephant" onchange="handleAnimalSelection(this)">
+                        <label for="elephant">🐘 Elephant</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- File Upload Box -->
+            <div class="box">
+                <h2>📁 Upload a File</h2>
+                <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+                    <div class="upload-icon">📁</div>
+                    <div class="upload-text">Click to select a file</div>
+                    <div class="upload-subtext">or drag and drop</div>
+                    <input type="file" id="fileInput" onchange="handleFileUpload(this)">
+                </div>
+            </div>
+        </div>
+
+        <div class="results-container">
+            <!-- Animal Display Box -->
+            <div class="result-box">
+                <h3>🖼️ Animal Display</h3>
+                <div id="animalResult" class="animal-display">
+                    <div class="no-content">Select an animal to see its image</div>
+                </div>
+            </div>
+
+            <!-- File Info Box -->
+            <div class="result-box">
+                <h3>📊 File Information</h3>
+                <div id="fileResult">
+                    <div class="no-content">Upload a file to see its information</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Animal selection handling
+        function handleAnimalSelection(checkbox) {
+            // Uncheck other checkboxes (radio button behavior)
+            const checkboxes = document.querySelectorAll('input[name="animal"]');
+            checkboxes.forEach(cb => {
+                if (cb !== checkbox) {
+                    cb.checked = false;
+                }
+            });
+
+            const animalResult = document.getElementById('animalResult');
+            
+            if (checkbox.checked) {
+                const animal = checkbox.value;
+                showAnimalImage(animal);
+            } else {
+                animalResult.innerHTML = '<div class="no-content">Select an animal to see its image</div>';
+            }
+        }
+
+        async function showAnimalImage(animal) {
+            const animalResult = document.getElementById('animalResult');
+            
+            try {
+                const response = await fetch(`/animal/${animal}`);
+                
+                if (response.ok) {
+                    const imageUrl = `/animal/${animal}`;
+                    animalResult.innerHTML = `
+                        <img src="${imageUrl}" alt="${animal}" class="animal-image">
+                        <p style="margin-top: 15px; color: #333; font-weight: bold; text-transform: capitalize;">
+                            ${animal}
+                        </p>
+                    `;
+                } else {
+                    animalResult.innerHTML = `
+                        <div class="error-message">
+                            Sorry, image for ${animal} not found. Please add ${animal}.jpg to the static/images folder.
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                animalResult.innerHTML = `
+                    <div class="error-message">
+                        Error loading image: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // File upload handling
+        async function handleFileUpload(input) {
+            const file = input.files[0];
+            const fileResult = document.getElementById('fileResult');
+            
+            if (!file) {
+                fileResult.innerHTML = '<div class="no-content">Upload a file to see its information</div>';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                fileResult.innerHTML = '<div style="text-align: center; color: #667eea;">Uploading...</div>';
+                
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const fileInfo = await response.json();
+                    displayFileInfo(fileInfo);
+                } else {
+                    throw new Error('Upload failed');
+                }
+            } catch (error) {
+                fileResult.innerHTML = `
+                    <div class="error-message">
+                        Error uploading file: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function displayFileInfo(fileInfo) {
+            const fileResult = document.getElementById('fileResult');
+            
+            fileResult.innerHTML = `
+                <div class="file-info">
+                    <div class="file-info-item">
+                        <span class="file-info-label">📝 File Name:</span>
+                        <span class="file-info-value">${fileInfo.filename}</span>
+                    </div>
+                    <div class="file-info-item">
+                        <span class="file-info-label">📏 File Size:</span>
+                        <span class="file-info-value">${fileInfo.size_formatted} (${fileInfo.size} bytes)</span>
+                    </div>
+                    <div class="file-info-item">
+                        <span class="file-info-label">🏷️ File Type:</span>
+                        <span class="file-info-value">${fileInfo.type || 'Unknown'}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Drag and drop functionality
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                handleFileUpload(fileInput);
+            }
+        });
+    </script>
+</body>
+</html>
