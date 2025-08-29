@@ -48,7 +48,7 @@
             50% { transform: scale(1.5); opacity: 0.5; }
         }
 
-        /* Neural Network Background */
+        /* Simplified Neural Network Background */
         .neural-network {
             position: fixed;
             top: 0;
@@ -56,33 +56,33 @@
             width: 100%;
             height: 100%;
             z-index: -1;
+            opacity: 0.3;
         }
 
         .neuron {
             position: absolute;
-            width: 4px;
-            height: 4px;
-            background: rgba(0,255,255,0.6);
+            width: 2px;
+            height: 2px;
+            background: rgba(0,255,255,0.4);
             border-radius: 50%;
-            animation: neuronPulse 3s ease-in-out infinite;
+            animation: neuronPulse 6s ease-in-out infinite;
         }
 
         @keyframes neuronPulse {
-            0%, 100% { opacity: 0.3; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.5); }
+            0%, 100% { opacity: 0.2; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(1.2); }
         }
 
         .neural-connection {
             position: absolute;
             height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(0,255,255,0.4), transparent);
-            transform-origin: left center;
-            animation: connectionFlow 4s linear infinite;
+            background: rgba(0,255,255,0.1);
+            animation: connectionFlow 8s linear infinite;
         }
 
         @keyframes connectionFlow {
             0% { opacity: 0; }
-            50% { opacity: 1; }
+            50% { opacity: 0.2; }
             100% { opacity: 0; }
         }
 
@@ -178,15 +178,16 @@
             position: fixed;
             top: 20px;
             left: 20px;
-            background: rgba(0,20,20,0.8);
-            border: 1px solid rgba(0,255,255,0.3);
+            background: rgba(0,0,0,0.9);
+            border: 1px solid rgba(0,255,255,0.5);
             padding: 20px;
             border-radius: 10px;
             min-width: 300px;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(15px);
             opacity: 0;
             transform: translateX(-100%);
             transition: all 0.5s ease;
+            z-index: 1000;
         }
 
         .consciousness-status.active {
@@ -198,7 +199,8 @@
             display: flex;
             justify-content: space-between;
             margin-bottom: 10px;
-            font-size: 12px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.9);
         }
 
         .progress-bar {
@@ -228,15 +230,16 @@
             position: fixed;
             top: 20px;
             right: 20px;
-            background: rgba(0,20,20,0.8);
-            border: 1px solid rgba(0,255,255,0.3);
+            background: rgba(0,0,0,0.9);
+            border: 1px solid rgba(0,255,255,0.5);
             padding: 20px;
             border-radius: 10px;
             min-width: 300px;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(15px);
             opacity: 0;
             transform: translateX(100%);
             transition: all 0.5s ease;
+            z-index: 1000;
         }
 
         .personality-display.active {
@@ -247,8 +250,9 @@
         .trait-bar {
             display: flex;
             align-items: center;
-            margin-bottom: 8px;
-            font-size: 11px;
+            margin-bottom: 10px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.9);
         }
 
         .trait-name {
@@ -299,15 +303,17 @@
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0,20,20,0.9);
-            border: 1px solid rgba(0,255,255,0.3);
-            padding: 20px;
+            background: rgba(0,0,0,0.95);
+            border: 2px solid rgba(0,255,255,0.7);
+            padding: 25px;
             border-radius: 15px;
             max-width: 600px;
             text-align: center;
             opacity: 0;
             transform: translateX(-50%) translateY(100%);
             transition: all 0.5s ease;
+            z-index: 1001;
+            backdrop-filter: blur(20px);
         }
 
         .secrets-panel.active {
@@ -333,17 +339,18 @@
             position: fixed;
             bottom: 20px;
             right: 20px;
-            background: rgba(0,20,20,0.8);
-            border: 1px solid rgba(0,255,255,0.3);
+            background: rgba(0,0,0,0.9);
+            border: 1px solid rgba(0,255,255,0.5);
             padding: 15px;
             border-radius: 10px;
             width: 300px;
             max-height: 200px;
             overflow-y: auto;
-            font-size: 11px;
+            font-size: 12px;
             opacity: 0;
             transform: translateY(100%);
             transition: all 0.5s ease;
+            z-index: 1000;
         }
 
         .collective-feed.active {
@@ -595,38 +602,38 @@
             initializeCustomCursor();
             setupExplorationAreas();
             
-            // Auto-trigger first interaction after 3 seconds
+            // Auto-trigger first interaction after 5 seconds (less aggressive)
             setTimeout(() => {
                 if (!consciousnessId) {
                     showAutoHint();
                 }
-            }, 3000);
+            }, 5000);
         });
 
-        // Create dynamic neural network
+        // Create simplified neural network
         function initializeNeuralNetwork() {
             const network = document.getElementById('neuralNetwork');
-            const neuronCount = 50;
+            const neuronCount = 20; // Reduced from 50
             
             for (let i = 0; i < neuronCount; i++) {
                 const neuron = document.createElement('div');
                 neuron.className = 'neuron';
                 neuron.style.left = Math.random() * 100 + '%';
                 neuron.style.top = Math.random() * 100 + '%';
-                neuron.style.animationDelay = Math.random() * 3 + 's';
+                neuron.style.animationDelay = Math.random() * 6 + 's'; // Slower
                 network.appendChild(neuron);
                 
-                // Create connections between nearby neurons
-                if (i > 0 && Math.random() > 0.7) {
+                // Create fewer connections
+                if (i > 0 && Math.random() > 0.8) { // Reduced connections
                     const connection = document.createElement('div');
                     connection.className = 'neural-connection';
                     const angle = Math.random() * 360;
-                    const length = Math.random() * 200 + 50;
+                    const length = Math.random() * 150 + 30; // Shorter
                     connection.style.left = neuron.style.left;
                     connection.style.top = neuron.style.top;
                     connection.style.width = length + 'px';
                     connection.style.transform = `rotate(${angle}deg)`;
-                    connection.style.animationDelay = Math.random() * 4 + 's';
+                    connection.style.animationDelay = Math.random() * 8 + 's'; // Slower
                     network.appendChild(connection);
                 }
             }
@@ -640,8 +647,8 @@
                 cursor.style.left = e.clientX - 10 + 'px';
                 cursor.style.top = e.clientY - 10 + 'px';
                 
-                // Create ripple effect on mouse move
-                if (Math.random() > 0.95) {
+                // Create ripple effect much less frequently
+                if (Math.random() > 0.998) { // Much less frequent
                     createRipple(e.clientX, e.clientY);
                 }
             });
@@ -819,18 +826,18 @@
                         `${data.unlock_status.remaining} interactions to ${data.unlock_status.next_reward}`;
                 }
                 
-                // Show mystical response
-                if (Math.random() > 0.7) {
+                // Show mystical response less frequently
+                if (Math.random() > 0.85) { // Reduced frequency from 0.7 to 0.85
                     showMysticalMessage(data.mystical_response);
                 }
                 
-                // Check for secrets unlock
-                if (interactionCount % 10 === 0) {
+                // Check for secrets unlock less frequently
+                if (interactionCount % 15 === 0) { // Reduced frequency
                     loadSecrets();
                 }
                 
                 // Milestone unlocks
-                if ([1, 5, 10, 20, 50].includes(interactionCount)) {
+                if ([5, 15, 30, 50].includes(interactionCount)) { // Adjusted milestones
                     showUnlockNotification(
                         'CONSCIOUSNESS MILESTONE', 
                         `${interactionCount} interactions reached! New abilities unlocked.`
@@ -908,17 +915,39 @@
         `;
         document.head.appendChild(particleStyle);
 
-        // Start tracking general interactions
+        // Start tracking general interactions (much less aggressive)
+        let lastInteractionTime = 0;
+        let mouseMoveCounter = 0;
+        
         function startInteractionTracking() {
             document.addEventListener('click', (e) => {
-                if (!e.target.closest('.exploration-area') && consciousnessId) {
-                    recordInteraction('general', 'click', 1);
+                if (!e.target.closest('.exploration-area') && 
+                    !e.target.closest('.consciousness-status') && 
+                    !e.target.closest('.personality-display') && 
+                    !e.target.closest('.collective-feed') && 
+                    !e.target.closest('.secrets-panel') && 
+                    consciousnessId) {
+                    
+                    const now = Date.now();
+                    if (now - lastInteractionTime > 2000) { // At least 2 seconds between interactions
+                        recordInteraction('general', 'click', 1);
+                        lastInteractionTime = now;
+                    }
                 }
             });
             
+            // Much less frequent mousemove tracking
             document.addEventListener('mousemove', () => {
-                if (Math.random() > 0.99 && consciousnessId) {
-                    recordInteraction('general', 'explore', 1);
+                if (consciousnessId) {
+                    mouseMoveCounter++;
+                    // Only trigger every 500 mousemove events (very infrequent)
+                    if (mouseMoveCounter % 500 === 0) {
+                        const now = Date.now();
+                        if (now - lastInteractionTime > 5000) { // At least 5 seconds between mouse interactions
+                            recordInteraction('general', 'explore', 1);
+                            lastInteractionTime = now;
+                        }
+                    }
                 }
             });
         }
