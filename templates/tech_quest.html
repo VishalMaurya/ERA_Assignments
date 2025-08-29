@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 Tech Quest Academy - Learn AI/ML & DevOps Through Gaming</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Orbitron:wght@400;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Orbitron', monospace;
+            background: linear-gradient(135deg, #0a0a23 0%, #1a1a3a 50%, #2d1b69 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* Animated Background */
+        .game-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.1;
+        }
+        
+        .code-rain {
+            position: absolute;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #00ff00;
+            animation: codeRain 10s linear infinite;
+        }
+        
+        @keyframes codeRain {
+            0% { transform: translateY(-100vh); opacity: 1; }
+            100% { transform: translateY(100vh); opacity: 0; }
+        }
+        
+        /* Header */
+        .game-header {
+            background: rgba(0,0,0,0.8);
+            padding: 20px;
+            border-bottom: 2px solid #00ffff;
+            backdrop-filter: blur(10px);
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .game-logo {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 24px;
+            color: #00ffff;
+            text-shadow: 0 0 10px #00ffff;
+        }
+        
+        .player-stats {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .stat-item {
+            background: rgba(0,255,255,0.1);
+            padding: 10px 15px;
+            border-radius: 20px;
+            border: 1px solid #00ffff;
+            font-size: 14px;
+        }
+        
+        .xp-bar {
+            width: 200px;
+            height: 20px;
+            background: rgba(0,0,0,0.5);
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .xp-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #00ffff);
+            transition: width 0.5s ease;
+            box-shadow: 0 0 10px rgba(0,255,255,0.5);
+        }
+        
+        .xp-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px black;
+        }
+        
+        /* Main Game Interface */
+        .game-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+            display: grid;
+            grid-template-columns: 300px 1fr 300px;
+            gap: 30px;
+            min-height: calc(100vh - 120px);
+        }
+        
+        /* Character Panel */
+        .character-panel {
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #00ffff;
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            height: fit-content;
+        }
+        
+        .character-avatar {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            border: 3px solid #00ffff;
+            animation: avatarGlow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes avatarGlow {
+            0% { box-shadow: 0 0 20px rgba(0,255,255,0.5); }
+            100% { box-shadow: 0 0 30px rgba(0,255,255,0.8); }
+        }
+        
+        .character-info h3 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #00ffff;
+        }
+        
+        .level-badge {
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            color: #000;
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        
+        .achievements {
+            margin-top: 20px;
+        }
+        
+        .achievement-badge {
+            display: inline-block;
+            background: rgba(255,215,0,0.2);
+            border: 1px solid #ffd700;
+            padding: 5px 10px;
+            margin: 5px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+        
+        /* Learning Paths */
+        .learning-paths {
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #00ffff;
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .paths-header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #00ffff;
+            font-size: 24px;
+        }
+        
+        .path-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .path-card {
+            background: rgba(255,255,255,0.05);
+            border: 2px solid transparent;
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .path-card:hover {
+            border-color: #00ffff;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,255,255,0.3);
+        }
+        
+        .path-card.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .path-card.locked::after {
+            content: "🔒";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+        }
+        
+        .path-icon {
+            font-size: 40px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .path-title {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+            color: #00ffff;
+        }
+        
+        .path-progress {
+            width: 100%;
+            height: 8px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+        
+        .path-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #ffd700);
+            transition: width 0.5s ease;
+        }
+        
+        .unlock-level {
+            font-size: 12px;
+            color: #888;
+            text-align: center;
+            margin-top: 10px;
+        }
+        
+        /* Game Actions Panel */
+        .game-actions {
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #00ffff;
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            height: fit-content;
+        }
+        
+        .daily-challenge {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .daily-challenge h4 {
+            color: white;
+            margin-bottom: 10px;
+        }
+        
+        .challenge-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            color: white;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+        
+        .challenge-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.05);
+        }
+        
+        .leaderboard {
+            margin-top: 20px;
+        }
+        
+        .leaderboard h4 {
+            color: #00ffff;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .leader-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0,255,255,0.2);
+        }
+        
+        .leader-rank {
+            font-weight: bold;
+            color: #ffd700;
+        }
+        
+        /* Modals */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,20,40,0.95);
+            border: 2px solid #00ffff;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            color: white;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #00ffff;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            color: #ff6b6b;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .code-editor {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            width: 100%;
+            min-height: 300px;
+            color: #00ff00;
+            margin: 20px 0;
+            resize: vertical;
+        }
+        
+        .submit-btn {
+            background: linear-gradient(45deg, #00ff00, #00ffff);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            color: black;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+        
+        .submit-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,255,255,0.3);
+        }
+        
+        /* Welcome Screen */
+        .welcome-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .welcome-content {
+            text-align: center;
+            padding: 40px;
+            background: rgba(0,20,40,0.95);
+            border: 2px solid #00ffff;
+            border-radius: 20px;
+            max-width: 500px;
+        }
+        
+        .welcome-title {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 32px;
+            color: #00ffff;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px #00ffff;
+        }
+        
+        .player-name-input {
+            background: rgba(0,0,0,0.5);
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            padding: 15px;
+            color: white;
+            font-family: inherit;
+            font-size: 16px;
+            width: 100%;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .start-btn {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border: none;
+            padding: 15px 40px;
+            border-radius: 30px;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+        
+        .start-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 10px 30px rgba(255,107,107,0.3);
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .game-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .path-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .game-logo {
+                font-size: 18px;
+            }
+            
+            .player-stats {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .xp-bar {
+                width: 150px;
+            }
+        }
+        
+        /* Notification System */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(45deg, #00ff00, #00ffff);
+            color: black;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-weight: bold;
+            z-index: 1500;
+            animation: slideIn 0.5s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #00ffff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="game-background" id="gameBackground"></div>
+    
+    <!-- Welcome Screen -->
+    <div class="welcome-screen" id="welcomeScreen">
+        <div class="welcome-content">
+            <div class="welcome-title">TECH QUEST</div>
+            <p style="margin: 20px 0; color: #ccc;">🎮 Master AI/ML & DevOps Through Gaming 🎮</p>
+            <input type="text" id="playerNameInput" class="player-name-input" placeholder="Enter your name" maxlength="20">
+            <br>
+            <button class="start-btn" onclick="startGame()">🚀 BEGIN QUEST</button>
+        </div>
+    </div>
+    
+    <!-- Game Header -->
+    <div class="game-header">
+        <div class="header-content">
+            <div class="game-logo">🎮 TECH QUEST</div>
+            <div class="player-stats" id="playerStats" style="display: none;">
+                <div class="stat-item">
+                    <span id="playerName">Player</span>
+                </div>
+                <div class="stat-item">
+                    Level <span id="playerLevel">1</span>
+                </div>
+                <div class="xp-bar">
+                    <div class="xp-fill" id="xpFill" style="width: 0%"></div>
+                    <div class="xp-text"><span id="currentXP">0</span>/<span id="nextLevelXP">100</span> XP</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Game Interface -->
+    <div class="game-container" id="gameContainer" style="display: none;">
+        <!-- Character Panel -->
+        <div class="character-panel">
+            <div class="character-avatar" id="characterAvatar">🧑‍💻</div>
+            <div class="character-info">
+                <h3 id="characterName">Code Apprentice</h3>
+                <div class="level-badge">Level <span id="levelBadge">1</span></div>
+                <div class="achievements">
+                    <h4 style="color: #ffd700; margin-bottom: 10px;">🏆 Achievements</h4>
+                    <div id="achievementsList">
+                        <div style="color: #888; text-align: center; font-size: 12px;">Complete challenges to earn achievements!</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Learning Paths -->
+        <div class="learning-paths">
+            <h2 class="paths-header">🎯 Choose Your Learning Path</h2>
+            <div class="path-grid" id="pathGrid">
+                <!-- Paths will be loaded dynamically -->
+            </div>
+        </div>
+        
+        <!-- Game Actions Panel -->
+        <div class="game-actions">
+            <div class="daily-challenge">
+                <h4>⚡ Daily Challenge</h4>
+                <p style="font-size: 12px; margin-bottom: 10px;">Complete today's challenge for bonus XP!</p>
+                <button class="challenge-btn" onclick="openDailyChallenge()">Accept Challenge</button>
+            </div>
+            
+            <div class="leaderboard">
+                <h4>🏆 Leaderboard</h4>
+                <div id="leaderboardList">
+                    <div class="loading"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Challenge Modal -->
+    <div class="modal" id="challengeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="challengeTitle">Coding Challenge</h3>
+                <button class="close-btn" onclick="closeModal('challengeModal')">&times;</button>
+            </div>
+            <div id="challengeContent">
+                <p id="challengeDescription"></p>
+                <textarea class="code-editor" id="codeEditor" placeholder="Write your code here..."></textarea>
+                <button class="submit-btn" onclick="submitChallenge()">Submit Solution</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Path Details Modal -->
+    <div class="modal" id="pathModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="pathTitle">Learning Path</h3>
+                <button class="close-btn" onclick="closeModal('pathModal')">&times;</button>
+            </div>
+            <div id="pathContent">
+                <!-- Path modules will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game State
+        let currentPlayer = null;
+        let learningPaths = {};
+        let currentChallenge = null;
+        
+        // Initialize background animation
+        function initBackground() {
+            const background = document.getElementById('gameBackground');
+            const codeSnippets = [
+                'def neural_network():', 'import tensorflow as tf', 'class Agent:', 
+                'docker run -d', 'git commit -m', 'from sklearn import', 
+                'async def train():', 'kubectl apply -f', 'pip install torch'
+            ];
+            
+            setInterval(() => {
+                const rain = document.createElement('div');
+                rain.className = 'code-rain';
+                rain.textContent = codeSnippets[Math.floor(Math.random() * codeSnippets.length)];
+                rain.style.left = Math.random() * 100 + '%';
+                rain.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                background.appendChild(rain);
+                
+                setTimeout(() => rain.remove(), 5000);
+            }, 500);
+        }
+        
+        // Start the game
+        async function startGame() {
+            const playerName = document.getElementById('playerNameInput').value.trim() || 'Player';
+            
+            try {
+                const response = await fetch('/api/player/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: playerName })
+                });
+                
+                const data = await response.json();
+                currentPlayer = data.player;
+                
+                // Hide welcome screen and show game
+                document.getElementById('welcomeScreen').style.display = 'none';
+                document.getElementById('playerStats').style.display = 'flex';
+                document.getElementById('gameContainer').style.display = 'grid';
+                
+                // Update UI
+                updatePlayerUI();
+                loadLearningPaths();
+                loadLeaderboard();
+                
+            } catch (error) {
+                console.error('Failed to start game:', error);
+                showNotification('❌ Failed to start game. Please try again.');
+            }
+        }
+        
+        // Update player UI elements
+        function updatePlayerUI() {
+            if (!currentPlayer) return;
+            
+            document.getElementById('playerName').textContent = currentPlayer.name;
+            document.getElementById('playerLevel').textContent = currentPlayer.level;
+            document.getElementById('levelBadge').textContent = currentPlayer.level;
+            document.getElementById('characterName').textContent = getCharacterTitle(currentPlayer.level);
+            
+            // Update XP bar
+            const nextLevelXP = currentPlayer.level * 100;
+            const currentLevelXP = (currentPlayer.level - 1) * 100;
+            const progressXP = currentPlayer.xp - currentLevelXP;
+            const neededXP = nextLevelXP - currentLevelXP;
+            const xpPercentage = (progressXP / neededXP) * 100;
+            
+            document.getElementById('xpFill').style.width = xpPercentage + '%';
+            document.getElementById('currentXP').textContent = progressXP;
+            document.getElementById('nextLevelXP').textContent = neededXP;
+            
+            // Update achievements
+            updateAchievements();
+        }
+        
+        function getCharacterTitle(level) {
+            if (level < 5) return '🧑‍💻 Code Apprentice';
+            if (level < 10) return '🧠 AI Explorer';
+            if (level < 15) return '🤖 Neural Engineer';
+            if (level < 20) return '🚀 ML Specialist';
+            return '👑 Tech Master';
+        }
+        
+        function updateAchievements() {
+            const achievementsList = document.getElementById('achievementsList');
+            if (currentPlayer.achievements.length === 0) {
+                achievementsList.innerHTML = '<div style="color: #888; text-align: center; font-size: 12px;">Complete challenges to earn achievements!</div>';
+                return;
+            }
+            
+            achievementsList.innerHTML = currentPlayer.achievements.map(achievementId => 
+                `<div class="achievement-badge">${getAchievementInfo(achievementId)}</div>`
+            ).join('');
+        }
+        
+        function getAchievementInfo(achievementId) {
+            const achievements = {
+                'first_steps': '👶 First Steps',
+                'quick_learner': '⚡ Quick Learner',
+                'neural_master': '🧠 Neural Master',
+                'code_warrior': '⚔️ Code Warrior',
+                'perfectionist': '💯 Perfectionist',
+                'streak_master': '🔥 Streak Master'
+            };
+            return achievements[achievementId] || achievementId;
+        }
+        
+        // Load learning paths
+        async function loadLearningPaths() {
+            try {
+                const response = await fetch('/api/learning-paths');
+                const data = await response.json();
+                learningPaths = data.paths;
+                
+                const pathGrid = document.getElementById('pathGrid');
+                pathGrid.innerHTML = '';
+                
+                for (const [pathId, pathInfo] of Object.entries(learningPaths)) {
+                    const isUnlocked = currentPlayer.level >= pathInfo.unlock_level;
+                    const completedModules = currentPlayer.completed_modules.filter(m => m.startsWith(pathId)).length;
+                    const totalModules = pathInfo.modules.length;
+                    const progress = totalModules > 0 ? (completedModules / totalModules) * 100 : 0;
+                    
+                    const pathCard = document.createElement('div');
+                    pathCard.className = `path-card ${isUnlocked ? '' : 'locked'}`;
+                    pathCard.innerHTML = `
+                        <div class="path-icon">${pathInfo.icon}</div>
+                        <div class="path-title">${pathInfo.name}</div>
+                        <div class="path-progress">
+                            <div class="path-progress-fill" style="width: ${progress}%"></div>
+                        </div>
+                        <div class="unlock-level">
+                            ${isUnlocked ? `${completedModules}/${totalModules} completed` : `Unlock at Level ${pathInfo.unlock_level}`}
+                        </div>
+                    `;
+                    
+                    if (isUnlocked) {
+                        pathCard.onclick = () => openPath(pathId);
+                    }
+                    
+                    pathGrid.appendChild(pathCard);
+                }
+                
+            } catch (error) {
+                console.error('Failed to load learning paths:', error);
+            }
+        }
+        
+        // Open learning path
+        async function openPath(pathId) {
+            try {
+                const response = await fetch(`/api/path/${pathId}/modules`);
+                const data = await response.json();
+                
+                document.getElementById('pathTitle').textContent = data.path.name;
+                
+                const pathContent = document.getElementById('pathContent');
+                pathContent.innerHTML = `
+                    <p style="margin-bottom: 20px; color: #ccc;">${data.path.name} learning modules:</p>
+                    <div style="display: grid; gap: 15px;">
+                        ${data.modules.map((module, index) => `
+                            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; cursor: pointer; border: 1px solid transparent; transition: all 0.3s ease;" 
+                                 onmouseover="this.style.borderColor='#00ffff'" 
+                                 onmouseout="this.style.borderColor='transparent'"
+                                 onclick="startModule('${pathId}', '${module.id}', '${module.type}')">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span>${module.type === 'lesson' ? '📚' : '⚡'} ${module.name}</span>
+                                    <span style="color: #00ffff; font-size: 12px;">${module.type.toUpperCase()}</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                
+                document.getElementById('pathModal').style.display = 'block';
+                
+            } catch (error) {
+                console.error('Failed to open path:', error);
+            }
+        }
+        
+        // Start a module (lesson or challenge)
+        async function startModule(pathId, moduleId, type) {
+            closeModal('pathModal');
+            
+            if (type === 'challenge') {
+                openChallenge(pathId, moduleId);
+            } else {
+                // For lessons, show informational content
+                showNotification(`📚 Lesson: ${moduleId.replace('_', ' ')} - Coming soon!`);
+            }
+        }
+        
+        // Open coding challenge
+        async function openChallenge(pathId, moduleId) {
+            try {
+                const response = await fetch(`/api/challenge/${pathId}/${moduleId}`);
+                const challenge = await response.json();
+                
+                currentChallenge = { pathId, moduleId, ...challenge };
+                
+                document.getElementById('challengeTitle').textContent = challenge.title;
+                document.getElementById('challengeDescription').textContent = challenge.description;
+                document.getElementById('codeEditor').value = challenge.code_template || '# Write your solution here\n\n';
+                
+                document.getElementById('challengeModal').style.display = 'block';
+                
+            } catch (error) {
+                console.error('Failed to open challenge:', error);
+            }
+        }
+        
+        // Submit challenge solution
+        async function submitChallenge() {
+            if (!currentChallenge) return;
+            
+            const solution = document.getElementById('codeEditor').value;
+            
+            try {
+                const response = await fetch('/api/challenge/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        player_id: currentPlayer.id,
+                        path_id: currentChallenge.pathId,
+                        module_id: currentChallenge.moduleId,
+                        solution: solution
+                    })
+                });
+                
+                const result = await response.json();
+                
+                // Update player data
+                currentPlayer.xp += result.xp_earned;
+                currentPlayer.level = result.new_level;
+                currentPlayer.stats.challenges_completed++;
+                
+                // Show results
+                showNotification(`🎉 Score: ${result.score}% | +${result.xp_earned} XP`);
+                
+                if (result.new_achievements.length > 0) {
+                    result.new_achievements.forEach(achievement => {
+                        currentPlayer.achievements.push(achievement.name);
+                        showNotification(`🏆 Achievement Unlocked: ${achievement.name}`);
+                    });
+                }
+                
+                // Update UI
+                updatePlayerUI();
+                loadLearningPaths();
+                closeModal('challengeModal');
+                
+            } catch (error) {
+                console.error('Failed to submit challenge:', error);
+                showNotification('❌ Failed to submit solution. Please try again.');
+            }
+        }
+        
+        // Load leaderboard
+        async function loadLeaderboard() {
+            try {
+                const response = await fetch('/api/leaderboard');
+                const data = await response.json();
+                
+                const leaderboardList = document.getElementById('leaderboardList');
+                leaderboardList.innerHTML = data.leaderboard.slice(0, 5).map((player, index) => `
+                    <div class="leader-item">
+                        <span class="leader-rank">#${index + 1}</span>
+                        <span>${player.name}</span>
+                        <span style="color: #00ffff;">${player.xp} XP</span>
+                    </div>
+                `).join('') || '<div style="text-align: center; color: #888;">No players yet</div>';
+                
+            } catch (error) {
+                console.error('Failed to load leaderboard:', error);
+            }
+        }
+        
+        // Daily challenge
+        function openDailyChallenge() {
+            showNotification('⚡ Daily challenges coming soon!');
+        }
+        
+        // Utility functions
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => notification.remove(), 3000);
+        }
+        
+        // Initialize game
+        document.addEventListener('DOMContentLoaded', () => {
+            initBackground();
+        });
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && document.getElementById('welcomeScreen').style.display !== 'none') {
+                startGame();
+            }
+            if (e.key === 'Escape') {
+                closeModal('challengeModal');
+                closeModal('pathModal');
+            }
+        });
+    </script>
+</body>
+</html>

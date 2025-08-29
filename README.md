@@ -1,197 +1,284 @@
-# Animal & File Upload App
+# Session 2 Assignment - Web Applications
 
-A full-stack web application built with FastAPI backend and HTML/CSS/JS frontend featuring animal selection and file upload functionality.
+This repository contains multiple web application projects built with FastAPI backend and modern frontend technologies.
 
-## Features
+## 🎮 **TECH QUEST ACADEMY** - **LATEST PROJECT**
 
-### Animal Selection Box
-- Three checkboxes for selecting animals: Cat, Dog, Elephant
-- Displays corresponding animal images when selected
-- Only one animal can be selected at a time (radio button behavior)
+A **gamified learning platform** for mastering AI/ML and DevOps concepts through interactive challenges and progression systems.
 
-### File Upload Box  
-- Drag-and-drop file upload functionality
-- Click to select files
-- Displays file information including:
-  - File name
-  - File size (formatted and in bytes)
-  - File type/MIME type
+### 🎯 **Game Features:**
+- **Character Progression:** Level up from Code Apprentice to Tech Master
+- **Learning Paths:** Neural Networks, CNNs, LLMs, AI Agents, DevOps
+- **Interactive Challenges:** Real coding exercises with instant feedback  
+- **Achievement System:** Unlock badges and compete on leaderboards
+- **XP & Leveling:** Earn experience points for completing modules
+- **Visual Design:** Retro gaming aesthetic with animated backgrounds
 
-## Tech Stack
-
-- **Backend**: FastAPI (Python)
-- **Frontend**: HTML5, CSS3, JavaScript (Vanilla)
-- **File Handling**: Python multipart support
-- **Static Files**: SVG images for animal placeholders
-- **Package Manager**: uv (ultra-fast Python package installer)
-- **Environment**: Virtual environment with uv
-
-## Setup Instructions
-
-### Option 1: Automated Setup (Recommended)
-
+### 🚀 **Quick Start:**
 ```bash
-python run.py
+# Start the game
+python run_tech_quest.py
+
+# Visit: http://localhost:8000
 ```
 
-This script will automatically:
-- Install `uv` if not present
-- Create a virtual environment
-- Install all dependencies
-- Start the application
+### 📚 **Learning Paths Available:**
+1. **🔧 Programming Foundations** (Level 1+)
+2. **🧠 Neural Networks** (Level 5+) 
+3. **👁️ Convolutional Neural Networks** (Level 10+)
+4. **💬 Large Language Models** (Level 15+)
+5. **🤖 AI Agents** (Level 20+)
+6. **⚙️ DevOps & MLOps** (Level 12+)
 
-### Option 2: Manual Setup
+---
 
-#### 1. Install uv (if not already installed)
+## 📋 **All Projects in This Repository:**
 
+### 🎮 Tech Quest Academy (`tech_quest_main.py`)
+**Latest:** Gamified learning platform for AI/ML & DevOps
+- Interactive coding challenges
+- Character progression and achievements
+- Multiple learning paths with unlockable content
+
+### 🧠 The Consciousness Simulator (`consciousness_main.py`)
+Psychological experiment in digital consciousness
+- Real-time personality analysis
+- WebSocket-powered collective feed
+- Neural network visualization
+
+### 🐾 Animal & File Upload App (`main.py`)
+Simple demonstration app
+- Animal selection with images
+- File upload functionality
+
+---
+
+## 🛠️ **Setup Instructions**
+
+### Prerequisites
+- Python 3.12+ 
+- `uv` package manager (ultra-fast Python installer)
+
+### Quick Setup
 ```bash
-pip install uv
+# 1. Clone and navigate
+git clone <repository>
+cd Session2_Assignment
+
+# 2. Activate virtual environment
+source consciousness_env/bin/activate
+
+# 3. Install dependencies
+uv pip install -r requirements.txt
+
+# 4. Run Tech Quest Academy
+python run_tech_quest.py
 ```
 
-#### 2. Create Virtual Environment
-
+### Manual Setup
 ```bash
-uv venv venv
-```
+# Install uv if needed
+curl -LsSf https://astral.sh/uv/install.sh | sh
 
-#### 3. Activate Virtual Environment
+# Create virtual environment
+uv venv consciousness_env
 
-**macOS/Linux:**
-```bash
-source venv/bin/activate
-```
+# Activate environment
+source consciousness_env/bin/activate  # macOS/Linux
+# or consciousness_env\Scripts\activate  # Windows
 
-**Windows:**
-```bash
-venv\Scripts\activate
-```
-
-#### 4. Install Dependencies
-
-```bash
+# Install dependencies
 uv pip install -r requirements.txt
 ```
 
-#### 5. Run the Application
+---
 
-```bash
-python main.py
-```
-
-The application will start on `http://localhost:8000`
-
-### 3. Access the Application
-
-Open your web browser and navigate to:
-```
-http://localhost:8000
-```
-
-## File Structure
+## 📁 **File Structure**
 
 ```
 Session2_Assignment/
-├── main.py                 # FastAPI backend application
-├── run.py                  # Automated setup and run script
-├── check_setup.py          # Setup status checker
-├── requirements.txt        # Python dependencies
-├── README.md              # This file
-├── .gitignore             # Git ignore patterns
-├── venv/                  # Virtual environment (created by uv)
-├── templates/
-│   └── index.html         # Frontend HTML template
-└── static/
-    └── images/
-        ├── cat.svg        # Cat placeholder image
-        ├── dog.svg        # Dog placeholder image
-        └── elephant.svg   # Elephant placeholder image
+├── 🎮 TECH QUEST ACADEMY
+│   ├── tech_quest_main.py        # Game backend
+│   ├── run_tech_quest.py         # Game runner
+│   └── templates/tech_quest.html # Game frontend
+├── 🧠 CONSCIOUSNESS SIMULATOR  
+│   ├── consciousness_main.py     # Consciousness backend
+│   ├── run_consciousness.py      # Consciousness runner
+│   └── templates/consciousness.html # Consciousness frontend
+├── 🐾 ANIMAL & FILE UPLOAD
+│   ├── main.py                   # Simple app backend
+│   ├── run.py                    # App runner
+│   └── templates/index.html      # App frontend
+├── 📁 SHARED RESOURCES
+│   ├── requirements.txt          # Python dependencies
+│   ├── README.md                 # This documentation
+│   ├── .gitignore               # Git ignore patterns
+│   ├── check_setup.py           # Setup verification
+│   ├── youtube.md               # Video content
+│   └── static/images/           # Image assets
+└── 📁 ENVIRONMENT
+    └── consciousness_env/        # Virtual environment
 ```
 
-## API Endpoints
+---
 
-- `GET /` - Serves the main HTML page
-- `GET /animal/{animal_name}` - Returns animal image (cat, dog, elephant)
-- `POST /upload` - Handles file upload and returns file information
+## 🎮 **Tech Quest Academy - Detailed Guide**
 
-## Customization
+### Game Mechanics
+- **XP System:** Earn 100+ XP per completed challenge
+- **Leveling:** Each level requires 100 XP (Level 1: 0-99 XP, Level 2: 100-199 XP)
+- **Unlocks:** Higher levels unlock advanced learning paths
+- **Achievements:** Special badges for milestones and perfect scores
 
-### Adding Real Animal Images
+### Learning Paths
 
-To replace the placeholder SVG images with real photos:
+#### 🔧 **Programming Foundations** (Level 1+)
+- Variables and data types
+- Functions and control flow  
+- Data structures
+- Algorithm basics
 
-1. Add your images to the `static/images/` folder
-2. Name them `cat.jpg`, `dog.jpg`, `elephant.jpg` (or any supported image format)
-3. Update the file extension in `main.py` line 35:
-   ```python
-   image_path = f"static/images/{animal_name.lower()}.jpg"  # Change .svg to .jpg
-   ```
+#### 🧠 **Neural Networks** (Level 5+)
+- Perceptron implementation
+- Backpropagation algorithm
+- Activation functions
+- Training loops and optimization
 
-### Styling
+#### 👁️ **Convolutional Neural Networks** (Level 10+)
+- Convolution operations
+- Pooling layers
+- Filter design
+- Image classification projects
 
-The frontend uses modern CSS with:
-- Gradient background
-- Card-based layout
-- Hover effects
-- Responsive design
-- Drag-and-drop visual feedback
+#### 💬 **Large Language Models** (Level 15+)
+- Transformer architecture
+- Attention mechanisms
+- Fine-tuning techniques
+- Prompt engineering mastery
 
-## Browser Support
+#### 🤖 **AI Agents** (Level 20+)
+- Agent architectures
+- Reasoning systems
+- Tool integration
+- Multi-agent coordination
 
-- Modern browsers with ES6+ support
-- Chrome, Firefox, Safari, Edge
-- Mobile responsive design
+#### ⚙️ **DevOps & MLOps** (Level 12+)
+- Docker containerization
+- CI/CD pipelines
+- Model deployment
+- Monitoring and logging
 
-## Development
+### Challenge Types
+1. **Coding Challenges:** Implement algorithms and models
+2. **Quiz Modules:** Test theoretical knowledge
+3. **Project Builds:** Complete mini-projects
+4. **Debug Missions:** Fix broken code
 
-### Using uv environment
+---
 
-1. Activate the virtual environment:
-   ```bash
-   source venv/bin/activate  # macOS/Linux
-   # or
-   venv\Scripts\activate     # Windows
-   ```
+## 🎯 **API Endpoints**
 
-2. Run in development mode with auto-reload:
-   ```bash
-   uvicorn main:app --reload --host 0.0.0.0 --port 8000
-   ```
+### Tech Quest Academy
+- `GET /` - Game homepage
+- `POST /api/player/create` - Create new player
+- `GET /api/player/{player_id}` - Get player progress
+- `GET /api/learning-paths` - Available learning paths
+- `GET /api/challenge/{path_id}/{module_id}` - Get challenge
+- `POST /api/challenge/submit` - Submit solution
+- `GET /api/leaderboard` - Top players
+- `POST /api/quiz/submit` - Submit quiz answers
 
-### Adding new dependencies
+### Player Data Structure
+```json
+{
+  "id": "player123",
+  "name": "CodeMaster",
+  "xp": 1250,
+  "level": 13,
+  "completed_modules": ["neural_networks_perceptron", ...],
+  "achievements": ["first_steps", "code_warrior", ...],
+  "stats": {
+    "challenges_completed": 25,
+    "quizzes_passed": 15,
+    "perfect_scores": 5
+  }
+}
+```
 
+---
+
+## 🔧 **Development**
+
+### Running Different Projects
 ```bash
-# Add new package
-uv pip install package_name
+# Tech Quest Academy (recommended)
+python run_tech_quest.py
 
-# Update requirements.txt
-uv pip freeze > requirements.txt
+# Consciousness Simulator
+python run_consciousness.py
+
+# Original Animal App
+python run.py
 ```
 
-## Why uv?
+### Adding New Learning Content
+1. Update `LEARNING_PATHS` in `tech_quest_main.py`
+2. Add challenges to `CHALLENGES` dictionary
+3. Create challenge templates with solutions
+4. Test with different difficulty levels
 
-- **Fast**: uv is 10-100x faster than pip
-- **Reliable**: Better dependency resolution
-- **Modern**: Built in Rust with modern Python tooling
-- **Compatible**: Drop-in replacement for pip
+### Customization
+- **Styling:** Modify CSS in template files
+- **Game Balance:** Adjust XP rewards and level requirements
+- **Content:** Add new learning paths and challenges
+- **Achievements:** Create custom achievement conditions
 
-## Additional Utilities
+---
 
-### Setup Status Checker
+## 🌟 **Why Tech Quest Academy?**
 
-```bash
-python check_setup.py
-```
+### Educational Benefits
+- **Hands-on Learning:** Write real code, not just read theory
+- **Progressive Difficulty:** Unlock advanced topics as you improve
+- **Immediate Feedback:** Get instant results and suggestions
+- **Gamified Motivation:** Achievements and leaderboards drive engagement
 
-This utility checks:
-- ✅ uv installation and version
-- ✅ Virtual environment status
-- ✅ Dependencies installation
-- 🎯 Overall setup health
+### Technical Innovation
+- **Modern Stack:** FastAPI + HTML5/CSS3/JavaScript
+- **Real-time Updates:** Dynamic XP and progress tracking
+- **Responsive Design:** Works on desktop and mobile
+- **Extensible Architecture:** Easy to add new content
 
-### Project Structure
+### Unique Features
+- **Character Evolution:** Visual progression from apprentice to master
+- **Code Execution:** Submit and test real Python code
+- **Social Elements:** Leaderboards and achievement sharing
+- **Comprehensive Coverage:** From basics to advanced AI/DevOps
 
-The project is now organized with:
-- **Automated Setup**: `run.py` handles everything
-- **Health Checks**: `check_setup.py` verifies configuration
-- **Clean Environment**: Virtual environment isolation
-- **Git Ready**: Proper `.gitignore` for Python projects
+---
+
+## 🤝 **Contributing**
+
+Want to add new challenges or learning paths?
+
+1. Fork the repository
+2. Create a feature branch
+3. Add your content to the appropriate sections
+4. Test with different skill levels
+5. Submit a pull request
+
+---
+
+## 📜 **License & Credits**
+
+Built for educational purposes as part of ERA Session 2 Assignment.
+
+**Technologies Used:**
+- FastAPI (Python web framework)
+- HTML5/CSS3/JavaScript (Frontend)
+- uv (Package management)
+- Git (Version control)
+
+---
+
+🎮 **Ready to level up your AI/ML and DevOps skills? Start your quest today!**
