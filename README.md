@@ -1,16 +1,25 @@
-# Psychological Journey - AI-Powered Self Assessment
+# Psychological Journey - AI-Powered Self Assessment v1.1.0
 
-An immersive psychological self-assessment website that provides personalized insights through AI-powered analysis. This application offers guided journeys for anxiety, OCD, anger management, and general wellbeing.
+An immersive psychological self-assessment website that provides personalized insights through AI-powered analysis. This application offers guided journeys across 28 different assessment types with floating navigation, enhanced dashboard analytics, and robust error handling.
 
 ## ✨ Features
 
-- **🧠 AI-Powered Reports**: Personalized insights generated using Google's Gemini AI
+### 🆕 Latest in v1.1.0
+- **🎯 Floating Navigation**: Always-visible "Begin Journey" button that adapts to your selection
+- **🛡️ Enhanced Error Handling**: Robust dashboard with comprehensive error boundaries
+- **📊 Advanced Analytics**: Never shows "N/A" - comprehensive time tracking and insights
+- **📱 Improved Mobile UX**: Better responsive design with touch-optimized interactions
+- **🎨 28 Assessment Types**: Expanded from 4 to 28 different psychological assessments
+
+### 🚀 Core Features
+- **🧠 AI-Powered Reports**: Personalized insights generated using Google's Gemini 2.0 Flash
 - **🎨 Immersive Environments**: Beautiful animated backgrounds that change with each question
 - **📊 Comprehensive Assessment**: Multiple question types including MCQ, scales, open-ended, and mood tracking
 - **🎯 Evidence-Based Recommendations**: Therapeutic approaches like CBT, DBT, ACT, ERP, and mindfulness
-- **📈 Progress Tracking**: Visual journey with milestone indicators
-- **💾 Data Privacy**: All data stored locally in your browser
+- **📈 Progress Tracking**: Visual journey with milestone indicators and precise timing
+- **💾 Data Privacy**: All data stored locally in your browser with secure API key management
 - **📱 Responsive Design**: Works seamlessly on desktop and mobile devices
+- **🔄 Auto-Refresh**: Dashboard automatically updates when you return to the tab
 
 ## 🚀 Getting Started
 
@@ -39,7 +48,7 @@ An immersive psychological self-assessment website that provides personalized in
    ```
 
 4. **Open your browser**
-   Navigate to `http://localhost:3000`
+   Navigate to `http://localhost:3000` (or `http://localhost:3001` if port 3000 is in use)
 
 ### Setting up Gemini AI
 
@@ -77,27 +86,48 @@ src/
 └── utils/               # Helper functions and utilities
 ```
 
-## 🧠 Assessment Types
+## 🧠 Assessment Types (28 Categories)
 
-### Anxiety Assessment
-- **Focus**: Anxiety patterns, triggers, and coping mechanisms
-- **Therapies**: CBT, ACT, MBSR, Mindfulness, Behavioral Activation
-- **Questions**: 8 interactive questions with mood tracking
+### 🧠 Cognitive Behavioral Therapy (CBT) - 5 Assessments
+- **Anxiety**: Patterns, triggers, and coping mechanisms
+- **OCD**: Obsessive thoughts and compulsive behaviors
+- **Behavioral Activation**: Overcoming avoidance patterns
+- **Habit Reversal**: Identifying and replacing unwanted habits
+- **Problem Solving**: Structured approaches to life challenges
 
-### OCD Assessment  
-- **Focus**: Obsessive thoughts and compulsive behaviors
-- **Therapies**: ERP, HRT, ACT, CBT
-- **Questions**: 8 questions exploring thought patterns and rituals
+### 🧘 Mindfulness & Acceptance - 3 Assessments
+- **Mindfulness**: Present-moment awareness practices
+- **Acceptance & Commitment**: Value-driven actions despite difficult thoughts
+- **Mindful Cognitive**: Blending mindfulness with cognitive strategies
 
-### Anger Management
-- **Focus**: Anger triggers, expression, and impact
-- **Therapies**: DBT skills, Anger Management, Mindfulness
-- **Questions**: 8 questions about triggers and coping strategies
+### ❤️ Emotion Regulation & Interpersonal - 3 Assessments
+- **Anger Management**: Triggers, expression, and healthy coping
+- **Emotion Regulation**: Managing intense emotions and mood fluctuations
+- **Interpersonal Skills**: Communication and relationship enhancement
 
-### General Wellbeing
-- **Focus**: Overall mental health and life satisfaction
-- **Therapies**: Mindfulness, Relaxation, Behavioral Activation, Self-care
-- **Questions**: 8 holistic wellbeing questions
+### 💝 Self-Compassion & Strengths - 3 Assessments
+- **Self-Compassion**: Developing kindness toward yourself
+- **Positive Psychology**: Strengths, gratitude, and optimistic thinking
+- **Personal Strengths**: Identifying and leveraging your unique abilities
+
+### 🌱 Lifestyle & Wellness - 5 Assessments
+- **Sleep Health**: Quality sleep and healthy bedtime routines
+- **Relaxation & Stress Relief**: Effective stress management techniques
+- **Breathing & Mindfulness**: Breathing techniques for calm and focus
+- **Exercise & Movement**: Physical activity for mental health benefits
+- **Nutrition & Wellness**: Connection between nutrition and emotional wellbeing
+
+### 🎯 Specialized Therapies - 5 Assessments
+- **Trauma Recovery**: Processing difficult experiences safely
+- **Schema Therapy**: Healing deep-rooted relationship patterns
+- **Narrative Therapy**: Reframing your life story for empowerment
+- **Motivational Enhancement**: Exploring and enhancing motivation for change
+- **Solution-Focused**: Building on what works to create positive change
+
+### 🌟 General Wellbeing - 1 Assessment
+- **General**: Overall mental health and life satisfaction assessment
+
+> **📋 Total**: 28 evidence-based assessments covering the full spectrum of psychological wellbeing
 
 ## 🎨 Design Philosophy
 
@@ -116,12 +146,14 @@ src/
 
 ## 🛠️ Built With
 
-- **Frontend**: Next.js 14, TypeScript, TailwindCSS
-- **Animations**: Framer Motion
-- **Charts**: Recharts  
-- **Icons**: FontAwesome (Free Solid & Regular Icons)
-- **AI**: Google Gemini 2.0 Flash API
-- **Storage**: Browser Local Storage
+- **Frontend**: Next.js 14 (App Router), TypeScript, TailwindCSS
+- **Animations**: Framer Motion with GPU acceleration
+- **Charts**: Recharts for analytics visualization
+- **Icons**: Lucide React (clean, consistent icon library)
+- **AI**: Google Gemini 2.0 Flash API with performance tracking
+- **Storage**: Browser Local/Session Storage with secure API key management
+- **State**: React Hooks with localStorage persistence
+- **Error Handling**: Comprehensive error boundaries and recovery mechanisms
 
 ## 📦 Scripts
 
@@ -151,10 +183,12 @@ This is a therapeutic tool designed to help people explore their mental health. 
 ## 🛠️ Technical Support
 
 Having trouble with the application?
-- **Report Generation Issues**: Check our [Troubleshooting Guide](./TROUBLESHOOTING.md) for common solutions
-- **API Key Problems**: Ensure your Gemini API key is valid and properly configured
-- **Browser Issues**: Check the browser console for detailed error messages
-- **Connection Problems**: Verify your internet connection for API calls
+- **📋 Architecture**: See our [Solution Architecture Guide](./SOLUTION_ARCHITECTURE.md) for technical details
+- **🔧 Troubleshooting**: Check our [Troubleshooting Guide](./TROUBLESHOOTING.md) for common solutions
+- **🔑 API Key Problems**: Ensure your Gemini API key is valid and properly configured
+- **🌐 Browser Issues**: Check the browser console for detailed error messages
+- **📡 Connection Problems**: Verify your internet connection for API calls
+- **📊 Dashboard Issues**: The dashboard automatically handles errors and provides fallback states
 
 ## 📞 Support
 
