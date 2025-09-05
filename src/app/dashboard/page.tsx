@@ -656,7 +656,7 @@ export default function DashboardPage() {
                       </button>
                     </div>
                   ) : (
-                    <div className="grid md:grid-cols-2 gap-6" role="list" aria-label="Assessment report cards">
+                    <div className="grid md:grid-cols-2 gap-6 items-stretch" role="list" aria-label="Assessment report cards">
                       <AnimatePresence>
                         {filteredData.map((item, index) => {
                           const typeColor = getAssessmentTypeColor(item.assessment.type);
@@ -673,11 +673,11 @@ export default function DashboardPage() {
                               exit={{ opacity: 0, y: -20, scale: 0.95 }}
                               transition={{ duration: 0.3, delay: index * 0.1 }}
                               whileHover={{ y: -4, scale: 1.02 }}
-                              className="group cursor-pointer"
+                              className="group cursor-pointer h-full"
                               onClick={() => handleViewReport(item.assessment.id)}
                               role="listitem"
                             >
-                              <div className={`card overflow-hidden border-2 ${typeColor.border} hover:shadow-xl transition-all duration-300 min-h-[420px] flex flex-col`}>
+                              <div className={`card overflow-hidden border-2 ${typeColor.border} hover:shadow-xl transition-all duration-300 h-full flex flex-col`}>
                                 {/* Header */}
                                 <div className={`bg-gradient-to-r ${typeColor.bg} p-6 text-white`}>
                                   <div className="flex items-center mb-4">
@@ -748,56 +748,64 @@ export default function DashboardPage() {
 
                                   {/* Bottom Section - AI Details and Action */}
                                   <div className="mt-auto space-y-4">
-                                    {/* AI Generation Details */}
-                                    {item.report && (
-                                      <div className="border-t border-calm-100 pt-4">
-                                        <div className="flex items-center justify-between mb-3">
-                                          <h5 className="font-semibold text-calm-800 flex items-center">
-                                            <FontAwesomeIcon icon={'wand-sparkles' as IconProp} className="w-4 h-4 mr-2 text-indigo-500" aria-hidden="true" />
-                                            AI Analysis
-                                          </h5>
-                                          {item.report.severityLevel && (
-                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                              item.report.severityLevel === 'mild' ? 'bg-green-100 text-green-700' :
-                                              item.report.severityLevel === 'moderate' ? 'bg-yellow-100 text-yellow-700' :
-                                              'bg-red-100 text-red-700'
-                                            }`}>
-                                              {item.report.severityLevel} level
-                                            </span>
-                                          )}
-                                        </div>
-                                        
-                                        <div className="grid grid-cols-2 gap-4 text-sm mb-3">
-                                          <div>
-                                            <p className="text-calm-500 mb-1">Report Generation Time</p>
-                                            <p className="font-medium text-indigo-600">
-                                              {item.report.generationTimeMs ? formatGenTime(item.report.generationTimeMs) : 'N/A'}
-                                            </p>
+                                    {/* AI Generation Details or Placeholder */}
+                                    <div className="border-t border-calm-100 pt-4 min-h-[120px] flex flex-col justify-between">
+                                      {item.report ? (
+                                        <div>
+                                          <div className="flex items-center justify-between mb-3">
+                                            <h5 className="font-semibold text-calm-800 flex items-center">
+                                              <FontAwesomeIcon icon={'wand-sparkles' as IconProp} className="w-4 h-4 mr-2 text-indigo-500" aria-hidden="true" />
+                                              AI Analysis
+                                            </h5>
+                                            {item.report.severityLevel && (
+                                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                                item.report.severityLevel === 'mild' ? 'bg-green-100 text-green-700' :
+                                                item.report.severityLevel === 'moderate' ? 'bg-yellow-100 text-yellow-700' :
+                                                'bg-red-100 text-red-700'
+                                              }`}>
+                                                {item.report.severityLevel} level
+                                              </span>
+                                            )}
                                           </div>
-                                          <div>
-                                            <p className="text-calm-500 mb-1">AI Model Used</p>
-                                            <p className="font-medium text-indigo-600">Gemini 2.0 Flash</p>
-                                          </div>
-                                        </div>
-                                        
-                                        {item.report.recommendations.length > 0 && (
-                                          <div className="pt-3 border-t border-calm-100">
-                                            <p className="text-xs text-calm-500 mb-2">Generated Insights</p>
-                                            <div className="flex flex-wrap gap-2">
-                                              <span className="px-2 py-1 bg-primary-100 text-primary-700 rounded-full text-xs">
-                                                {item.report.recommendations.length} Recommendations
-                                              </span>
-                                              <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs">
-                                                {item.report.insights.length} Key Insights
-                                              </span>
-                                              <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">
-                                                {item.report.nextSteps.length} Action Steps
-                                              </span>
+                                          
+                                          <div className="grid grid-cols-2 gap-4 text-sm mb-3">
+                                            <div>
+                                              <p className="text-calm-500 mb-1">Report Generation Time</p>
+                                              <p className="font-medium text-indigo-600">
+                                                {item.report.generationTimeMs ? formatGenTime(item.report.generationTimeMs) : 'N/A'}
+                                              </p>
+                                            </div>
+                                            <div>
+                                              <p className="text-calm-500 mb-1">AI Model Used</p>
+                                              <p className="font-medium text-indigo-600">Gemini 2.0 Flash</p>
                                             </div>
                                           </div>
-                                        )}
-                                      </div>
-                                    )}
+                                          
+                                          {item.report.recommendations.length > 0 && (
+                                            <div className="pt-3 border-t border-calm-100">
+                                              <p className="text-xs text-calm-500 mb-2">Generated Insights</p>
+                                              <div className="flex flex-wrap gap-2">
+                                                <span className="px-2 py-1 bg-primary-100 text-primary-700 rounded-full text-xs">
+                                                  {item.report.recommendations.length} Recommendations
+                                                </span>
+                                                <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs">
+                                                  {item.report.insights.length} Key Insights
+                                                </span>
+                                                <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">
+                                                  {item.report.nextSteps.length} Action Steps
+                                                </span>
+                                              </div>
+                                            </div>
+                                          )}
+                                        </div>
+                                      ) : (
+                                        <div className="flex flex-col items-center justify-center py-6 text-center">
+                                          <FontAwesomeIcon icon={'clock' as IconProp} className="w-8 h-8 text-amber-400 mb-2" aria-hidden="true" />
+                                          <p className="text-sm font-medium text-calm-700 mb-1">Report Generation Pending</p>
+                                          <p className="text-xs text-calm-500">Click to generate AI-powered insights</p>
+                                        </div>
+                                      )}
+                                    </div>
 
                                     {/* Action Button */}
                                     <div className="flex items-center justify-between pt-4 border-t border-calm-100">
