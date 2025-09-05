@@ -1,16 +1,20 @@
 import './globals.css'
 import '@/lib/fontawesome' // Initialize FontAwesome
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 
 const inter = Inter({ subsets: ['latin'] })
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+}
 
 export const metadata: Metadata = {
   title: 'Psychological Journey - AI-Powered Self Assessment',
   description: 'An immersive psychological self-assessment website with personalized AI insights for anxiety, OCD, anger management, and general wellbeing.',
   keywords: 'psychology, mental health, self-assessment, AI, therapy, anxiety, OCD, anger management, wellbeing',
   authors: [{ name: 'Psychological Journey Team' }],
-  viewport: 'width=device-width, initial-scale=1',
   robots: 'index, follow',
   openGraph: {
     title: 'Psychological Journey - AI-Powered Self Assessment',
