@@ -34,18 +34,13 @@ export default function AssessmentPage() {
   }, [assessmentType]);
 
   const initializeAssessment = () => {
-    // Validate assessment type
-    if (!['anxiety', 'ocd', 'anger', 'general'].includes(assessmentType)) {
-      router.push('/');
-      return;
-    }
-
-    // Load questions for this assessment type
+    // Validate assessment type by checking if questions exist
     const assessmentQuestions = getQuestionsForAssessment(assessmentType);
     if (assessmentQuestions.length === 0) {
       router.push('/');
       return;
     }
+
 
     // Check for existing assessment in progress
     const existingAssessment = StorageService.getCurrentAssessment();

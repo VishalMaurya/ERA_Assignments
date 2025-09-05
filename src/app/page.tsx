@@ -2,7 +2,22 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { FontAwesomeIcon, IconProp } from '@/lib/fontawesome';
+import { 
+  Brain, 
+  Leaf, 
+  Heart, 
+  Moon, 
+  Award, 
+  RotateCcw, 
+  Zap, 
+  Shield, 
+  TrendingUp,
+  Stethoscope,
+  Play,
+  ShieldCheck,
+  Sparkles,
+  ChevronRight
+} from 'lucide-react';
 import { AssessmentType } from '@/types';
 import { getAssessmentTitle, getAssessmentDescription } from '@/utils/helpers';
 import { useRouter } from 'next/navigation';
@@ -16,61 +31,61 @@ export default function HomePage() {
 
   const assessmentTypes: Array<{
     type: AssessmentType;
-    icon: IconProp;
+    icon: React.ComponentType<any>;
     color: string;
     gradient: string;
   }> = [
     {
       type: 'anxiety',
-      icon: 'brain' as IconProp,
+      icon: Brain,
       color: 'text-blue-600',
       gradient: 'from-blue-500 to-indigo-600'
     },
     {
       type: 'mindfulness',
-      icon: 'leaf' as IconProp,
+      icon: Leaf,
       color: 'text-teal-600',
       gradient: 'from-teal-500 to-green-600'
     },
     {
       type: 'self-compassion',
-      icon: 'heart' as IconProp,
+      icon: Heart,
       color: 'text-amber-600',
       gradient: 'from-amber-500 to-orange-600'
     },
     {
       type: 'sleep',
-      icon: 'moon' as IconProp,
+      icon: Moon,
       color: 'text-slate-600',
       gradient: 'from-slate-500 to-gray-600'
     },
     {
       type: 'strengths',
-      icon: 'award' as IconProp,
+      icon: Award,
       color: 'text-orange-600',
       gradient: 'from-orange-500 to-red-600'
     },
     {
       type: 'general',
-      icon: 'heart' as IconProp,
+      icon: Heart,
       color: 'text-green-600',
       gradient: 'from-green-500 to-emerald-600'
     },
     {
       type: 'ocd',
-      icon: 'rotate' as IconProp,
+      icon: RotateCcw,
       color: 'text-purple-600',
       gradient: 'from-purple-500 to-violet-600'
     },
     {
       type: 'anger',
-      icon: 'bolt' as IconProp,
+      icon: Zap,
       color: 'text-red-600',
       gradient: 'from-red-500 to-rose-600'
     },
     {
       type: 'trauma',
-      icon: 'shield' as IconProp,
+      icon: Shield,
       color: 'text-indigo-600',
       gradient: 'from-indigo-500 to-blue-600'
     },
@@ -119,7 +134,7 @@ export default function HomePage() {
               onClick={() => router.push('/dashboard')}
               className="inline-flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-6 py-3 rounded-lg transition-colors shadow-lg hover:shadow-xl group"
             >
-              <FontAwesomeIcon icon={'chart-line' as IconProp} className="w-4 h-4" />
+              <TrendingUp className="w-4 h-4" />
               <span>Analytics Dashboard</span>
               <span className="text-xs bg-emerald-500 px-2 py-1 rounded-full group-hover:bg-emerald-400 transition-colors">
                 25+ Assessments
@@ -129,7 +144,7 @@ export default function HomePage() {
                           onClick={() => setShowApiTestModal(true)}
                           className="inline-flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg transition-colors shadow-lg hover:shadow-xl"
                         >
-                          <FontAwesomeIcon icon={'stethoscope' as IconProp} className="w-4 h-4" />
+                          <Stethoscope className="w-4 h-4" />
                           <span>Test Gemini API</span>
                         </button>
                         
@@ -137,7 +152,7 @@ export default function HomePage() {
                           onClick={() => router.push('/therapy')}
                           className="inline-flex items-center space-x-2 bg-purple-600 hover:bg-purple-700 text-white font-medium px-6 py-3 rounded-lg transition-colors shadow-lg hover:shadow-xl"
                         >
-                          <FontAwesomeIcon icon={'play' as IconProp} className="w-4 h-4" />
+                          <Play className="w-4 h-4" />
                           <span>Therapy Center</span>
                         </button>
           </div>
@@ -155,7 +170,7 @@ export default function HomePage() {
         >
           <div className="card p-6 text-center">
             <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <FontAwesomeIcon icon={'brain' as IconProp} className="w-6 h-6 text-primary-600" />
+              <Brain className="w-6 h-6 text-primary-600" />
             </div>
             <h3 className="text-lg font-semibold text-calm-800 mb-2">
               AI-Powered Insights
@@ -167,7 +182,7 @@ export default function HomePage() {
 
           <div className="card p-6 text-center">
             <div className="w-12 h-12 bg-nature-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <FontAwesomeIcon icon={'shield-alt' as IconProp} className="w-6 h-6 text-nature-600" />
+              <ShieldCheck className="w-6 h-6 text-nature-600" />
             </div>
             <h3 className="text-lg font-semibold text-calm-800 mb-2">
               Safe & Private
@@ -179,7 +194,7 @@ export default function HomePage() {
 
           <div className="card p-6 text-center">
             <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <FontAwesomeIcon icon={'wand-sparkles' as IconProp} className="w-6 h-6 text-purple-600" />
+              <Sparkles className="w-6 h-6 text-purple-600" />
             </div>
             <h3 className="text-lg font-semibold text-calm-800 mb-2">
               Immersive Experience
@@ -204,7 +219,7 @@ export default function HomePage() {
             Select from our 9 featured assessments below, or explore 25+ therapeutic assessments from the dashboard
           </p>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12 max-w-5xl mx-auto">
             {assessmentTypes.map((assessment, index) => (
               <motion.div
                 key={assessment.type}
@@ -221,7 +236,7 @@ export default function HomePage() {
                 {/* Icon */}
                 <div className="flex justify-center mb-4">
                   <div className={`p-3 rounded-lg bg-gradient-to-r ${assessment.gradient} text-white`}>
-                    <FontAwesomeIcon icon={assessment.icon} className="w-6 h-6" />
+                    <assessment.icon className="w-6 h-6" />
                   </div>
                 </div>
 
@@ -274,9 +289,9 @@ export default function HomePage() {
                 selectedAssessment ? 'animate-glow' : ''
               }`}
             >
-              <FontAwesomeIcon icon={'play' as IconProp} className="w-5 h-5 mr-2" />
+              <Play className="w-5 h-5 mr-2" />
               Begin Your Journey
-              <FontAwesomeIcon icon={'chevron-right' as IconProp} className="w-5 h-5 ml-2" />
+              <ChevronRight className="w-5 h-5 ml-2" />
             </button>
           </motion.div>
 
