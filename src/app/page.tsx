@@ -22,25 +22,37 @@ export default function HomePage() {
   }> = [
     {
       type: 'anxiety',
-      icon: 'heart' as IconProp,
+      icon: 'brain' as IconProp,
       color: 'text-blue-600',
       gradient: 'from-blue-500 to-indigo-600'
     },
     {
-      type: 'ocd',
-      icon: 'brain' as IconProp,
-      color: 'text-purple-600',
-      gradient: 'from-purple-500 to-pink-600'
+      type: 'mindfulness',
+      icon: 'leaf' as IconProp,
+      color: 'text-teal-600',
+      gradient: 'from-teal-500 to-green-600'
     },
     {
-      type: 'anger',
-      icon: 'shield-alt' as IconProp,
-      color: 'text-red-600',
-      gradient: 'from-red-500 to-orange-600'
+      type: 'self-compassion',
+      icon: 'heart-handshake' as IconProp,
+      color: 'text-amber-600',
+      gradient: 'from-amber-500 to-orange-600'
+    },
+    {
+      type: 'sleep',
+      icon: 'moon' as IconProp,
+      color: 'text-slate-600',
+      gradient: 'from-slate-500 to-gray-600'
+    },
+    {
+      type: 'strengths',
+      icon: 'award' as IconProp,
+      color: 'text-orange-600',
+      gradient: 'from-orange-500 to-red-600'
     },
     {
       type: 'general',
-      icon: 'wand-sparkles' as IconProp,
+      icon: 'heart' as IconProp,
       color: 'text-green-600',
       gradient: 'from-green-500 to-emerald-600'
     }
@@ -83,8 +95,18 @@ export default function HomePage() {
             explore your mind, and receive personalized insights powered by AI.
           </p>
           
-          {/* API Test Button */}
-          <div className="mt-8">
+          {/* Action Buttons */}
+          <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <button
+              onClick={() => router.push('/dashboard')}
+              className="inline-flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-6 py-3 rounded-lg transition-colors shadow-lg hover:shadow-xl group"
+            >
+              <FontAwesomeIcon icon={'chart-line' as IconProp} className="w-4 h-4" />
+              <span>Analytics Dashboard</span>
+              <span className="text-xs bg-emerald-500 px-2 py-1 rounded-full group-hover:bg-emerald-400 transition-colors">
+                25+ Assessments
+              </span>
+            </button>
             <button
               onClick={() => setShowApiTestModal(true)}
               className="inline-flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg transition-colors shadow-lg hover:shadow-xl"
@@ -92,10 +114,10 @@ export default function HomePage() {
               <FontAwesomeIcon icon={'stethoscope' as IconProp} className="w-4 h-4" />
               <span>Test Gemini API</span>
             </button>
-            <p className="text-sm text-calm-500 mt-2">
-              Validate your API key before starting an assessment
-            </p>
           </div>
+          <p className="text-sm text-calm-500 mt-3 text-center">
+            Access your analytics dashboard or validate your API key before starting
+          </p>
         </motion.div>
 
         {/* Features */}
@@ -149,11 +171,14 @@ export default function HomePage() {
           transition={{ duration: 0.8, delay: 0.4 }}
           className="max-w-4xl mx-auto"
         >
-          <h2 className="text-3xl font-bold text-center text-calm-800 mb-8">
+          <h2 className="text-3xl font-bold text-center text-calm-800 mb-4">
             Choose Your Journey
           </h2>
+          <p className="text-center text-calm-600 mb-8">
+            Select from our featured assessments below, or explore 25+ therapeutic assessments from the dashboard
+          </p>
           
-          <div className="grid md:grid-cols-2 gap-6 mb-12">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
             {assessmentTypes.map((assessment, index) => (
               <motion.div
                 key={assessment.type}
@@ -167,20 +192,20 @@ export default function HomePage() {
                 }`}
                 onClick={() => setSelectedAssessment(assessment.type)}
               >
-                <div className="flex items-start space-x-4">
+                <div className="flex flex-col items-center text-center space-y-3">
                   <div className={`p-3 rounded-lg bg-gradient-to-r ${assessment.gradient} text-white`}>
-                    <FontAwesomeIcon icon={assessment.icon} className="w-8 h-8" />
+                    <FontAwesomeIcon icon={assessment.icon} className="w-6 h-6" />
                   </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-semibold text-calm-800 mb-2">
+                  <div>
+                    <h3 className="text-lg font-semibold text-calm-800 mb-2">
                       {getAssessmentTitle(assessment.type)}
                     </h3>
-                    <p className="text-calm-600 mb-4">
+                    <p className="text-sm text-calm-600 mb-3 line-clamp-3">
                       {getAssessmentDescription(assessment.type)}
                     </p>
-                    <div className="flex items-center text-sm text-calm-500">
+                    <div className="text-xs text-calm-500">
                       <span>8-10 minutes</span>
-                      <span className="mx-2">•</span>
+                      <span className="mx-1">•</span>
                       <span>Skip anytime</span>
                     </div>
                   </div>
