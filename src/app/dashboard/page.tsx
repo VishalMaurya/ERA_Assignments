@@ -488,55 +488,105 @@ export default function DashboardPage() {
                   className="lg:col-span-1 space-y-6"
                 >
                   {/* Assessment Type Distribution */}
-                  <div className="card p-6" role="region" aria-labelledby="type-distribution-heading">
-                    <h3 id="type-distribution-heading" className="text-lg font-semibold text-calm-800 mb-4 flex items-center">
-                      <FontAwesomeIcon icon={'chart-pie' as IconProp} className="w-5 h-5 mr-2 text-primary-600" aria-hidden="true" />
+                  <div className="card p-6 bg-gradient-to-br from-white to-calm-50 shadow-lg" role="region" aria-labelledby="type-distribution-heading">
+                    <h3 id="type-distribution-heading" className="text-lg font-bold text-calm-800 mb-6 flex items-center">
+                      <FontAwesomeIcon icon={'chart-pie' as IconProp} className="w-5 h-5 mr-3 text-primary-600" aria-hidden="true" />
                       Assessment Types
                     </h3>
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       {Object.entries(analytics.typeDistribution).map(([type, count]) => {
                         const typeInfo = getAssessmentTypeColor(type as AssessmentType);
                         const percentage = analytics.totalAssessments > 0 ? Math.round((count / analytics.totalAssessments) * 100) : 0;
                         return (
-                          <div key={type} className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                              <div className={`w-3 h-3 rounded-full bg-gradient-to-r ${typeInfo.bg}`} aria-hidden="true"></div>
-                              <span className="text-sm font-medium text-calm-700 capitalize">{type}</span>
+                          <div key={type} className="group">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center space-x-3">
+                                <div className={`w-4 h-4 rounded-full bg-gradient-to-r ${typeInfo.bg} shadow-sm`} aria-hidden="true"></div>
+                                <span className="text-sm font-semibold text-calm-700 capitalize">{type}</span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <span className="text-sm font-bold text-calm-800">{count}</span>
+                                <span className="text-xs text-calm-500 bg-calm-100 px-2 py-1 rounded-full">{percentage}%</span>
+                              </div>
                             </div>
-                            <div className="flex items-center space-x-2">
-                              <span className="text-sm text-calm-600">{count}</span>
-                              <span className="text-xs text-calm-500">({percentage}%)</span>
+                            {/* Progress bar */}
+                            <div className="w-full bg-calm-200 rounded-full h-2">
+                              <div 
+                                className={`bg-gradient-to-r ${typeInfo.bg} h-2 rounded-full transition-all duration-500 ease-out`}
+                                style={{ width: `${percentage}%` }}
+                              ></div>
                             </div>
                           </div>
                         );
                       })}
                     </div>
+                    
+                    {analytics.totalAssessments === 0 && (
+                      <div className="text-center py-6">
+                        <FontAwesomeIcon icon={'chart-pie' as IconProp} className="w-8 h-8 text-calm-300 mb-2" />
+                        <p className="text-sm text-calm-500">No assessments completed yet</p>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Quick Navigation */}
-                  <div className="card p-6" role="region" aria-labelledby="quick-nav-heading">
-                    <h3 id="quick-nav-heading" className="text-lg font-semibold text-calm-800 mb-4 flex items-center">
-                      <FontAwesomeIcon icon={'compass' as IconProp} className="w-5 h-5 mr-2 text-primary-600" aria-hidden="true" />
+                  {/* Quick Actions & Stats */}
+                  <div className="card p-6 bg-gradient-to-br from-white to-primary-50 shadow-lg" role="region" aria-labelledby="quick-nav-heading">
+                    <h3 id="quick-nav-heading" className="text-lg font-bold text-calm-800 mb-6 flex items-center">
+                      <FontAwesomeIcon icon={'rocket' as IconProp} className="w-5 h-5 mr-3 text-primary-600" aria-hidden="true" />
                       Quick Actions
                     </h3>
+                    
+                    {/* Key Stats */}
+                    <div className="grid grid-cols-2 gap-3 mb-6">
+                      <div className="bg-white rounded-lg p-3 text-center shadow-sm">
+                        <p className="text-2xl font-bold text-primary-600">{analytics.totalAssessments}</p>
+                        <p className="text-xs text-calm-600">Total</p>
+                      </div>
+                      <div className="bg-white rounded-lg p-3 text-center shadow-sm">
+                        <p className="text-2xl font-bold text-green-600">{analytics.totalReports}</p>
+                        <p className="text-xs text-calm-600">Reports</p>
+                      </div>
+                    </div>
+                    
                     <div className="space-y-3">
                       <button
                         onClick={handleNewAssessment}
-                        className="w-full flex items-center space-x-3 p-3 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors text-left"
+                        className="w-full flex items-center space-x-3 p-4 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 rounded-lg transition-all duration-200 transform hover:scale-105 text-white shadow-md"
                         aria-label="Start a new mental health assessment"
                       >
-                        <FontAwesomeIcon icon={'plus' as IconProp} className="w-4 h-4 text-primary-600" aria-hidden="true" />
-                        <span className="text-sm font-medium text-primary-700">New Assessment</span>
+                        <FontAwesomeIcon icon={'plus' as IconProp} className="w-5 h-5" aria-hidden="true" />
+                        <div className="text-left">
+                          <div className="font-semibold">New Assessment</div>
+                          <div className="text-xs text-white/80">Start your journey</div>
+                        </div>
                       </button>
                       
                       <button
                         onClick={() => setActiveFilter('all')}
-                        className="w-full flex items-center space-x-3 p-3 bg-calm-50 hover:bg-calm-100 rounded-lg transition-colors text-left"
+                        className="w-full flex items-center space-x-3 p-4 bg-white hover:bg-calm-50 rounded-lg transition-all duration-200 transform hover:scale-105 text-left border border-calm-200 shadow-sm"
                         aria-label="View all assessment reports"
                       >
-                        <FontAwesomeIcon icon={'chart-bar' as IconProp} className="w-4 h-4 text-calm-600" aria-hidden="true" />
-                        <span className="text-sm font-medium text-calm-700">View All Reports</span>
+                        <FontAwesomeIcon icon={'chart-bar' as IconProp} className="w-5 h-5 text-calm-600" aria-hidden="true" />
+                        <div>
+                          <div className="font-semibold text-calm-700">View All Reports</div>
+                          <div className="text-xs text-calm-500">Browse insights</div>
+                        </div>
                       </button>
+                      
+                      {analytics.totalAssessments > 0 && (
+                        <div className="pt-3 border-t border-calm-200">
+                          <div className="text-xs text-calm-500 mb-2">Completion Rate</div>
+                          <div className="flex items-center space-x-2">
+                            <div className="flex-1 bg-calm-200 rounded-full h-2">
+                              <div 
+                                className="bg-gradient-to-r from-green-400 to-green-500 h-2 rounded-full transition-all duration-500"
+                                style={{ width: `${analytics.completionRate}%` }}
+                              ></div>
+                            </div>
+                            <span className="text-sm font-bold text-green-600">{analytics.completionRate}%</span>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </motion.div>
@@ -627,20 +677,15 @@ export default function DashboardPage() {
                               onClick={() => handleViewReport(item.assessment.id)}
                               role="listitem"
                             >
-                              <div className={`card overflow-hidden border-2 ${typeColor.border} hover:shadow-xl transition-all duration-300`}>
+                              <div className={`card overflow-hidden border-2 ${typeColor.border} hover:shadow-xl transition-all duration-300 min-h-[420px] flex flex-col`}>
                                 {/* Header */}
                                 <div className={`bg-gradient-to-r ${typeColor.bg} p-6 text-white`}>
-                                  <div className="flex items-center justify-between mb-3">
-                                    <div className="flex items-center space-x-3">
-                                      <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                                        <FontAwesomeIcon icon={typeColor.icon} className="w-5 h-5" aria-hidden="true" />
-                                      </div>
-                                      <div>
-                                        <h4 className="font-bold text-lg">{getAssessmentTitle(item.assessment.type)}</h4>
-                                        <p className="text-white/80 text-sm">{formatDate(new Date(item.assessment.completedAt || 0))}</p>
-                                      </div>
+                                  <div className="flex items-center mb-4">
+                                    <FontAwesomeIcon icon={typeColor.icon} className="w-6 h-6 mr-3" aria-hidden="true" />
+                                    <div className="flex-1">
+                                      <h4 className="font-bold text-xl leading-tight">{getAssessmentTitle(item.assessment.type)}</h4>
+                                      <p className="text-white/80 text-sm mt-1">{formatDate(new Date(item.assessment.completedAt || 0))}</p>
                                     </div>
-                                    <span className="text-3xl" aria-hidden="true">{typeColor.emoji}</span>
                                   </div>
                                   
                                   {/* Quick Stats in Header */}
@@ -657,108 +702,114 @@ export default function DashboardPage() {
                                 </div>
 
                                 {/* Content */}
-                                <div className="p-6 space-y-5">
-                                  {/* Report Status */}
-                                  <div className="flex items-center justify-between">
-                                    {item.report ? (
-                                      <div className="flex items-center space-x-2 text-green-600">
-                                        <FontAwesomeIcon icon={'check-circle' as IconProp} className="w-5 h-5" aria-hidden="true" />
-                                        <span className="font-semibold">Report Generated</span>
-                                      </div>
-                                    ) : (
-                                      <div className="flex items-center space-x-2 text-amber-600">
-                                        <FontAwesomeIcon icon={'clock' as IconProp} className="w-5 h-5" aria-hidden="true" />
-                                        <span className="font-semibold">Report Pending</span>
-                                      </div>
-                                    )}
-                                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                      completion === 100 ? 'bg-green-100 text-green-700' :
-                                      completion >= 80 ? 'bg-yellow-100 text-yellow-700' :
-                                      'bg-orange-100 text-orange-700'
-                                    }`}>
-                                      {completion === 100 ? 'Complete' : completion >= 80 ? 'Nearly Complete' : 'Partial'}
-                                    </span>
-                                  </div>
-
-                                  {/* Assessment Details */}
-                                  <div className="bg-calm-50 rounded-lg p-4">
-                                    <div className="grid grid-cols-3 gap-4 text-center">
-                                      <div>
-                                        <p className="text-xs text-calm-500 mb-1">Questions Answered</p>
-                                        <p className="font-bold text-calm-800">{item.assessment.responses.length}/{item.assessment.questions.length}</p>
-                                      </div>
-                                      <div>
-                                        <p className="text-xs text-calm-500 mb-1">Response Rate</p>
-                                        <p className="font-bold text-calm-800">{Math.round(completion)}%</p>
-                                      </div>
-                                      <div>
-                                        <p className="text-xs text-calm-500 mb-1">Skipped Questions</p>
-                                        <p className="font-bold text-calm-800">{item.assessment.skippedQuestions.length}</p>
-                                      </div>
-                                    </div>
-                                  </div>
-
-                                  {/* AI Generation Details */}
-                                  {item.report && (
-                                    <div className="border-t border-calm-100 pt-4">
-                                      <div className="flex items-center justify-between mb-3">
-                                        <h5 className="font-semibold text-calm-800 flex items-center">
-                                          <FontAwesomeIcon icon={'wand-sparkles' as IconProp} className="w-4 h-4 mr-2 text-indigo-500" aria-hidden="true" />
-                                          AI Analysis
-                                        </h5>
-                                        {item.report.severityLevel && (
-                                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                            item.report.severityLevel === 'mild' ? 'bg-green-100 text-green-700' :
-                                            item.report.severityLevel === 'moderate' ? 'bg-yellow-100 text-yellow-700' :
-                                            'bg-red-100 text-red-700'
-                                          }`}>
-                                            {item.report.severityLevel} level
-                                          </span>
-                                        )}
-                                      </div>
-                                      
-                                      <div className="grid grid-cols-2 gap-4 text-sm">
-                                        <div>
-                                          <p className="text-calm-500 mb-1">Report Generation Time</p>
-                                          <p className="font-medium text-indigo-600">
-                                            {item.report.generationTimeMs ? formatGenTime(item.report.generationTimeMs) : 'N/A'}
-                                          </p>
+                                <div className="p-6 space-y-4 flex-1 flex flex-col">
+                                  {/* Top Section */}
+                                  <div className="space-y-4">
+                                    {/* Report Status */}
+                                    <div className="flex items-center justify-between">
+                                      {item.report ? (
+                                        <div className="flex items-center space-x-2 text-green-600">
+                                          <FontAwesomeIcon icon={'check-circle' as IconProp} className="w-5 h-5" aria-hidden="true" />
+                                          <span className="font-semibold">Report Generated</span>
                                         </div>
-                                        <div>
-                                          <p className="text-calm-500 mb-1">AI Model Used</p>
-                                          <p className="font-medium text-indigo-600">Gemini 2.0 Flash</p>
-                                        </div>
-                                      </div>
-                                      
-                                      {item.report.recommendations.length > 0 && (
-                                        <div className="mt-3 pt-3 border-t border-calm-100">
-                                          <p className="text-xs text-calm-500 mb-2">Generated Insights</p>
-                                          <div className="flex flex-wrap gap-2">
-                                            <span className="px-2 py-1 bg-primary-100 text-primary-700 rounded-full text-xs">
-                                              {item.report.recommendations.length} Recommendations
-                                            </span>
-                                            <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs">
-                                              {item.report.insights.length} Key Insights
-                                            </span>
-                                            <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">
-                                              {item.report.nextSteps.length} Action Steps
-                                            </span>
-                                          </div>
+                                      ) : (
+                                        <div className="flex items-center space-x-2 text-amber-600">
+                                          <FontAwesomeIcon icon={'clock' as IconProp} className="w-5 h-5" aria-hidden="true" />
+                                          <span className="font-semibold">Report Pending</span>
                                         </div>
                                       )}
+                                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                        completion === 100 ? 'bg-green-100 text-green-700' :
+                                        completion >= 80 ? 'bg-yellow-100 text-yellow-700' :
+                                        'bg-orange-100 text-orange-700'
+                                      }`}>
+                                        {completion === 100 ? 'Complete' : completion >= 80 ? 'Nearly Complete' : 'Partial'}
+                                      </span>
                                     </div>
-                                  )}
 
-                                  {/* Action Button */}
-                                  <div className="flex items-center justify-between pt-4 border-t border-calm-100">
-                                    <div className="text-xs text-calm-500">
-                                      Click to {item.report ? 'view full report' : 'generate report'}
+                                    {/* Assessment Details */}
+                                    <div className="bg-calm-50 rounded-lg p-4">
+                                      <div className="grid grid-cols-3 gap-4 text-center">
+                                        <div>
+                                          <p className="text-xs text-calm-500 mb-1">Questions Answered</p>
+                                          <p className="font-bold text-calm-800">{item.assessment.responses.length}/{item.assessment.questions.length}</p>
+                                        </div>
+                                        <div>
+                                          <p className="text-xs text-calm-500 mb-1">Response Rate</p>
+                                          <p className="font-bold text-calm-800">{Math.round(completion)}%</p>
+                                        </div>
+                                        <div>
+                                          <p className="text-xs text-calm-500 mb-1">Skipped Questions</p>
+                                          <p className="font-bold text-calm-800">{item.assessment.skippedQuestions.length}</p>
+                                        </div>
+                                      </div>
                                     </div>
-                                    <FontAwesomeIcon 
-                                      icon={'chevron-right' as IconProp} 
-                                      className="w-5 h-5 text-calm-400 group-hover:text-primary-500 transition-colors" 
-                                      aria-hidden="true"
-                                    />
+                                  </div>
+
+                                  {/* Bottom Section - AI Details and Action */}
+                                  <div className="mt-auto space-y-4">
+                                    {/* AI Generation Details */}
+                                    {item.report && (
+                                      <div className="border-t border-calm-100 pt-4">
+                                        <div className="flex items-center justify-between mb-3">
+                                          <h5 className="font-semibold text-calm-800 flex items-center">
+                                            <FontAwesomeIcon icon={'wand-sparkles' as IconProp} className="w-4 h-4 mr-2 text-indigo-500" aria-hidden="true" />
+                                            AI Analysis
+                                          </h5>
+                                          {item.report.severityLevel && (
+                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                              item.report.severityLevel === 'mild' ? 'bg-green-100 text-green-700' :
+                                              item.report.severityLevel === 'moderate' ? 'bg-yellow-100 text-yellow-700' :
+                                              'bg-red-100 text-red-700'
+                                            }`}>
+                                              {item.report.severityLevel} level
+                                            </span>
+                                          )}
+                                        </div>
+                                        
+                                        <div className="grid grid-cols-2 gap-4 text-sm mb-3">
+                                          <div>
+                                            <p className="text-calm-500 mb-1">Report Generation Time</p>
+                                            <p className="font-medium text-indigo-600">
+                                              {item.report.generationTimeMs ? formatGenTime(item.report.generationTimeMs) : 'N/A'}
+                                            </p>
+                                          </div>
+                                          <div>
+                                            <p className="text-calm-500 mb-1">AI Model Used</p>
+                                            <p className="font-medium text-indigo-600">Gemini 2.0 Flash</p>
+                                          </div>
+                                        </div>
+                                        
+                                        {item.report.recommendations.length > 0 && (
+                                          <div className="pt-3 border-t border-calm-100">
+                                            <p className="text-xs text-calm-500 mb-2">Generated Insights</p>
+                                            <div className="flex flex-wrap gap-2">
+                                              <span className="px-2 py-1 bg-primary-100 text-primary-700 rounded-full text-xs">
+                                                {item.report.recommendations.length} Recommendations
+                                              </span>
+                                              <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs">
+                                                {item.report.insights.length} Key Insights
+                                              </span>
+                                              <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">
+                                                {item.report.nextSteps.length} Action Steps
+                                              </span>
+                                            </div>
+                                          </div>
+                                        )}
+                                      </div>
+                                    )}
+
+                                    {/* Action Button */}
+                                    <div className="flex items-center justify-between pt-4 border-t border-calm-100">
+                                      <div className="text-xs text-calm-500">
+                                        Click to {item.report ? 'view full report' : 'generate report'}
+                                      </div>
+                                      <FontAwesomeIcon 
+                                        icon={'chevron-right' as IconProp} 
+                                        className="w-5 h-5 text-calm-400 group-hover:text-primary-500 transition-colors" 
+                                        aria-hidden="true"
+                                      />
+                                    </div>
                                   </div>
                                 </div>
                               </div>
