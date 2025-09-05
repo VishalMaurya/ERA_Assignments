@@ -110,12 +110,14 @@ Please provide a structured response in the following JSON format:
   "insights": ["Insight 1", "Insight 2", "Insight 3"],
   "recommendations": [
     {
-      "type": "CBT|DBT|ACT|MBSR|ERP|HRT|Mindfulness|Exercise",
-      "title": "Recommendation Title",
-      "description": "Brief description of why this is helpful",
-      "exercises": ["Exercise 1", "Exercise 2", "Exercise 3"],
-      "resources": ["Resource 1", "Resource 2"],
-      "priority": "high|medium|low"
+      "therapyType": "anxiety|ocd|anger|mindfulness|sleep|general|trauma|strengths",
+      "priority": "primary|secondary|supplementary",
+      "confidence": 0.8,
+      "reasoning": ["Explanation of why this therapy is recommended", "Evidence-based rationale"],
+      "suggestedExercises": ["exercise_1", "exercise_2", "exercise_3"],
+      "estimatedDuration": "4-6 weeks",
+      "successPredictors": ["Factor that increases success", "Another success factor"],
+      "potentialBarriers": ["Potential challenge", "Another barrier"]
     }
   ],
   "nextSteps": ["Step 1", "Step 2", "Step 3"]
@@ -145,6 +147,9 @@ Guidelines:
 
       const parsed = JSON.parse(jsonMatch[0]);
       
+      // Transform recommendations to ensure correct format
+      const transformedRecommendations = this.transformRecommendations(parsed.recommendations || [], assessment.type);
+      
       return {
         id: `report_${Date.now()}`,
         assessmentId: assessment.id,
@@ -152,7 +157,7 @@ Guidelines:
         summary: parsed.summary || 'Thank you for completing this assessment.',
         patterns: parsed.patterns || [],
         severityLevel: parsed.severityLevel || 'mild',
-        recommendations: parsed.recommendations || [],
+        recommendations: transformedRecommendations,
         insights: parsed.insights || [],
         nextSteps: parsed.nextSteps || [],
         generatedAt: new Date(),
@@ -176,6 +181,56 @@ Guidelines:
         rawAIResponse: text
       };
     }
+  }
+
+  private transformRecommendations(recommendations: any[], assessmentType: string): TherapyRecommendation[] {
+    if (!recommendations || recommendations.length === 0) {
+      return this.getFallbackRecommendations(assessmentType);
+    }
+
+    return recommendations.map((rec, index) => {
+      // Handle new format (already correct)
+      if (rec.therapyType && rec.priority && rec.reasoning) {
+        return rec as TherapyRecommendation;
+      }
+
+      // Handle old format - transform to new format
+      if (rec.type || rec.title) {
+        return {
+          therapyType: this.mapOldTypeToNew(rec.type, assessmentType),
+          priority: this.mapOldPriorityToNew(rec.priority, index),
+          confidence: 0.7, // Default confidence
+          reasoning: rec.description ? [rec.description] : ['AI-generated recommendation'],
+          suggestedExercises: rec.exercises || [],
+          estimatedDuration: '4-6 weeks', // Default duration
+          successPredictors: rec.resources ? rec.resources.slice(0, 2) : ['Regular practice'],
+          potentialBarriers: ['Time constraints', 'Initial resistance']
+        } as TherapyRecommendation;
+      }
+
+      // Invalid format - skip
+      return null;
+    }).filter(rec => rec !== null) as TherapyRecommendation[];
+  }
+
+  private mapOldTypeToNew(oldType: string, assessmentType: string): string {
+    const typeMap: Record<string, string> = {
+      'CBT': 'anxiety',
+      'DBT': 'anger', 
+      'ACT': 'mindfulness',
+      'MBSR': 'mindfulness',
+      'ERP': 'ocd',
+      'HRT': 'ocd',
+      'Mindfulness': 'mindfulness',
+      'Exercise': 'general'
+    };
+    return typeMap[oldType] || assessmentType;
+  }
+
+  private mapOldPriorityToNew(oldPriority: string, index: number): 'primary' | 'secondary' | 'supplementary' {
+    if (oldPriority === 'high' || index === 0) return 'primary';
+    if (oldPriority === 'medium' || index < 3) return 'secondary';
+    return 'supplementary';
   }
 
   private getFallbackRecommendations(type: string): TherapyRecommendation[] {
@@ -214,6 +269,66 @@ Guidelines:
           estimatedDuration: '6-10 weeks',
           successPredictors: ['Recognition of triggers', 'Commitment to practice'],
           potentialBarriers: ['Impulsivity', 'Blame patterns']
+        }
+      ],
+      sleep: [
+        {
+          therapyType: 'sleep',
+          priority: 'primary',
+          confidence: 0.8,
+          reasoning: ['Sleep hygiene and relaxation techniques needed', 'CBT-I is effective for sleep issues'],
+          suggestedExercises: ['sleep_diary', 'progressive_relaxation', 'sleep_restriction'],
+          estimatedDuration: '4-6 weeks',
+          successPredictors: ['Consistent bedtime routine', 'Willingness to change habits'],
+          potentialBarriers: ['Lifestyle constraints', 'Chronic conditions']
+        }
+      ],
+      mindfulness: [
+        {
+          therapyType: 'mindfulness',
+          priority: 'primary',
+          confidence: 0.8,
+          reasoning: ['Mindfulness practice supports emotional regulation', 'Evidence-based stress reduction'],
+          suggestedExercises: ['body_scan', 'mindful_breathing', 'loving_kindness'],
+          estimatedDuration: '6-8 weeks',
+          successPredictors: ['Regular practice', 'Open to present moment awareness'],
+          potentialBarriers: ['Impatience', 'Difficulty sitting still']
+        }
+      ],
+      'self-compassion': [
+        {
+          therapyType: 'self-compassion',
+          priority: 'primary',
+          confidence: 0.7,
+          reasoning: ['Self-criticism patterns identified', 'Compassion-focused therapy helps'],
+          suggestedExercises: ['self_compassion_break', 'kind_self_talk'],
+          estimatedDuration: '4-6 weeks',
+          successPredictors: ['Willingness to be kind to self', 'Recognition of self-criticism'],
+          potentialBarriers: ['Feeling undeserving', 'Cultural barriers to self-care']
+        }
+      ],
+      trauma: [
+        {
+          therapyType: 'trauma',
+          priority: 'primary',
+          confidence: 0.9,
+          reasoning: ['Trauma-informed approach needed', 'EMDR or CPT recommended'],
+          suggestedExercises: ['grounding_techniques', 'safety_planning'],
+          estimatedDuration: '12-20 weeks',
+          successPredictors: ['Therapeutic alliance', 'Support system'],
+          potentialBarriers: ['Avoidance', 'Trust issues']
+        }
+      ],
+      strengths: [
+        {
+          therapyType: 'strengths',
+          priority: 'primary',
+          confidence: 0.7,
+          reasoning: ['Strengths-based approach supports resilience', 'Positive psychology techniques'],
+          suggestedExercises: ['strengths_identification', 'gratitude_practice'],
+          estimatedDuration: '3-5 weeks',
+          successPredictors: ['Self-awareness', 'Growth mindset'],
+          potentialBarriers: ['Negative self-perception', 'Comparison with others']
         }
       ],
       general: [

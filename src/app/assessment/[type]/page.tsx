@@ -41,7 +41,6 @@ export default function AssessmentPage() {
       return;
     }
 
-
     // Check for existing assessment in progress
     const existingAssessment = StorageService.getCurrentAssessment();
     if (existingAssessment && existingAssessment.type === assessmentType) {

@@ -73,21 +73,21 @@ export default function JourneyComplete({
     // Use individual response times if available, otherwise use total time
     let finalTimeMinutes = responseTimeMinutes > 0 ? responseTimeMinutes : totalTimeMinutes;
     
-    // Format time display
-    let timeDisplay = 'N/A';
-    if (finalTimeMinutes > 0) {
-      if (finalTimeMinutes >= 60) {
-        const hours = Math.floor(finalTimeMinutes / 60);
-        const minutes = finalTimeMinutes % 60;
-        timeDisplay = minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
-      } else {
-        timeDisplay = `${finalTimeMinutes}m`;
-      }
+    // Format time display - never show N/A
+    let timeDisplay: string;
+    if (finalTimeMinutes <= 0) {
+      timeDisplay = '< 1m';
+    } else if (finalTimeMinutes >= 60) {
+      const hours = Math.floor(finalTimeMinutes / 60);
+      const minutes = finalTimeMinutes % 60;
+      timeDisplay = minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+    } else {
+      timeDisplay = `${finalTimeMinutes}m`;
     }
     
-    // Calculate average time per question
+    // Calculate average time per question - never show N/A
     const avgTimePerQuestion = answeredQuestions > 0 ? Math.round(responseTimeSeconds / answeredQuestions) : 0;
-    const avgTimeDisplay = avgTimePerQuestion > 0 ? `${avgTimePerQuestion}s` : 'N/A';
+    const avgTimeDisplay = avgTimePerQuestion <= 0 ? '< 1s' : `${avgTimePerQuestion}s`;
     
     return {
       totalQuestions,

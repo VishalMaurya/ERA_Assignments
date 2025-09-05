@@ -73,43 +73,62 @@ export default function ReportDisplay({
     downloadAsJSON(reportData, `${assessment.type}-assessment-report-${new Date().toISOString().split('T')[0]}`);
   };
 
-  const renderRecommendationCard = (recommendation: TherapyRecommendation, index: number) => (
-    <motion.div
-      key={index}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
-      className={`p-6 rounded-lg border-l-4 ${getPriorityColor(recommendation.priority)} mb-6`}
-    >
-      <div className="flex items-start justify-between mb-4">
-        <div>
-          <h3 className="text-lg font-semibold text-calm-800 mb-2">
-            {recommendation.therapyType.replace('-', ' ').replace(/^\w/, c => c.toUpperCase())} Therapy
-          </h3>
+  const renderRecommendationCard = (recommendation: any, index: number) => {
+    // Defensive check for recommendation data
+    if (!recommendation) {
+      console.warn('Invalid recommendation object:', recommendation);
+      return null;
+    }
+
+    // Handle both old and new format
+    const therapyType = recommendation.therapyType || recommendation.type || 'general';
+    const priority = recommendation.priority || (recommendation.priority === 'high' ? 'primary' : 'secondary');
+    const reasoning = recommendation.reasoning || (recommendation.description ? [recommendation.description] : ['AI-generated recommendation']);
+    const suggestedExercises = recommendation.suggestedExercises || recommendation.exercises || [];
+    const successPredictors = recommendation.successPredictors || recommendation.resources || ['Regular practice'];
+    
+    if (!therapyType) {
+      console.warn('No therapy type found in recommendation:', recommendation);
+      return null;
+    }
+
+    return (
+      <motion.div
+        key={index}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: index * 0.1 }}
+        className={`p-6 rounded-lg border-l-4 ${getPriorityColor(priority)} mb-6`}
+      >
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-semibold text-calm-800 mb-2">
+              {therapyType.replace('-', ' ').replace(/^\w/, (c: string) => c.toUpperCase())} Therapy
+            </h3>
           <span className="inline-block px-3 py-1 text-xs font-medium bg-primary-100 text-primary-700 rounded-full mb-2">
-            {recommendation.priority}
+            {priority}
           </span>
           <p className="text-calm-600">
-            {recommendation.reasoning.join(' ')}
+            {Array.isArray(reasoning) ? reasoning.join(' ') : reasoning}
           </p>
         </div>
         <span className={`px-2 py-1 text-xs font-medium rounded ${
-          recommendation.priority === 'primary' ? 'bg-red-100 text-red-700' :
-          recommendation.priority === 'secondary' ? 'bg-yellow-100 text-yellow-700' :
+          priority === 'primary' ? 'bg-red-100 text-red-700' :
+          priority === 'secondary' ? 'bg-yellow-100 text-yellow-700' :
           'bg-green-100 text-green-700'
         }`}>
-          {recommendation.priority} priority
+          {priority} priority
         </span>
       </div>
 
-      {recommendation.suggestedExercises.length > 0 && (
+      {suggestedExercises && suggestedExercises.length > 0 && (
         <div className="mb-4">
           <h4 className="font-medium text-calm-700 mb-2 flex items-center">
             <FontAwesomeIcon icon={'bullseye' as IconProp} className="w-4 h-4 mr-2" />
             Recommended Exercises
           </h4>
           <ul className="space-y-2">
-            {recommendation.suggestedExercises.map((exercise, i) => (
+            {suggestedExercises.map((exercise: string, i: number) => (
               <li key={i} className="flex items-start space-x-2">
                 <FontAwesomeIcon icon={'chevron-right' as IconProp} className="w-4 h-4 text-primary-500 mt-0.5 flex-shrink-0" />
                 <span className="text-sm text-calm-600">{exercise}</span>
@@ -119,14 +138,14 @@ export default function ReportDisplay({
         </div>
       )}
 
-      {recommendation.successPredictors.length > 0 && (
+      {successPredictors && successPredictors.length > 0 && (
         <div>
           <h4 className="font-medium text-calm-700 mb-2 flex items-center">
             <FontAwesomeIcon icon={'star' as IconProp} className="w-4 h-4 mr-2 text-yellow-500" />
             Success Factors
           </h4>
           <ul className="space-y-1">
-            {recommendation.successPredictors.map((factor, i) => (
+            {successPredictors.map((factor: string, i: number) => (
               <li key={i} className="text-sm text-calm-600 flex items-start">
                 <FontAwesomeIcon icon={'check' as IconProp} className="w-3 h-3 mr-2 text-green-500 mt-0.5 flex-shrink-0" />
                 {factor}
@@ -136,7 +155,8 @@ export default function ReportDisplay({
         </div>
       )}
     </motion.div>
-  );
+    );
+  };
 
   const renderSectionContent = () => {
     switch (activeSection) {
@@ -406,9 +426,35 @@ export default function ReportDisplay({
               </p>
             </div>
 
-            {report.recommendations.map((recommendation, index) => 
-              renderRecommendationCard(recommendation, index)
-            )}
+            {(() => {
+              console.log('Recommendations data:', report.recommendations);
+              const validRecommendations = report.recommendations && report.recommendations.length > 0 
+                ? report.recommendations.filter(rec => rec && (rec.therapyType || (rec as any).type)) 
+                : [];
+              
+              console.log('Valid recommendations:', validRecommendations);
+              
+              return validRecommendations.length > 0 ? (
+                validRecommendations.map((recommendation, index) => 
+                  renderRecommendationCard(recommendation, index)
+                )
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-calm-600 mb-4">No recommendations available at this time.</p>
+                  <p className="text-sm text-calm-500">
+                    This could be due to incomplete assessment data or processing issues.
+                    {report.recommendations && `Found ${report.recommendations.length} raw recommendations.`}
+                  </p>
+                  {/* Debug info */}
+                  {process.env.NODE_ENV === 'development' && (
+                    <details className="mt-4 text-xs text-left bg-gray-100 p-2 rounded">
+                      <summary>Debug Info</summary>
+                      <pre>{JSON.stringify(report.recommendations, null, 2)}</pre>
+                    </details>
+                  )}
+                </div>
+              );
+            })()}
           </motion.div>
         );
 

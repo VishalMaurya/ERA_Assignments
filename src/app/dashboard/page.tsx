@@ -37,6 +37,7 @@ export default function DashboardPage() {
   const [sortBy, setSortBy] = useState<'date' | 'type' | 'completion'>('date');
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'cards' | 'analytics'>('analytics');
+  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const router = useRouter();
 
   // Calculate comprehensive analytics
@@ -139,23 +140,112 @@ export default function DashboardPage() {
   }, [data]);
 
   useEffect(() => {
+    // Only run on client side
+    if (typeof window === 'undefined') return;
+    
     loadDashboardData();
+    
+    // Refresh data when window gains focus (user returns to the tab)
+    const handleFocus = () => {
+      loadDashboardData();
+    };
+    
+    // Refresh data when the page becomes visible again
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        loadDashboardData();
+      }
+    };
+    
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    // Cleanup event listeners
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   useEffect(() => {
     applyFiltersAndSorting();
   }, [data, activeFilter, sortBy]);
 
-  const loadDashboardData = () => {
+  const loadDashboardData = async (showLoadingState = false) => {
+    // Check if we're running on the client side
+    if (typeof window === 'undefined') {
+      setLoading(false);
+      return;
+    }
+
+    if (showLoadingState) {
+      setLoading(true);
+    }
+    
     try {
-      const assessments = StorageService.getAssessments().filter(a => a.isCompleted);
-      const reports = StorageService.getReports();
+      // Add a small delay to show loading state for manual refresh
+      if (showLoadingState) {
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
+      
+      // Safely get data from localStorage with error handling
+      let assessments: Assessment[] = [];
+      let reports: AssessmentReport[] = [];
+      
+      try {
+        assessments = StorageService.getAssessments().filter(a => a.isCompleted);
+      } catch (storageError) {
+        console.warn('Failed to load assessments from storage:', storageError);
+        assessments = [];
+      }
+      
+      try {
+        reports = StorageService.getReports();
+      } catch (storageError) {
+        console.warn('Failed to load reports from storage:', storageError);
+        reports = [];
+      }
+      
       setData({ assessments, reports });
+      setLastRefresh(new Date());
+      
+      console.log('Dashboard data refreshed:', { 
+        assessments: assessments.length, 
+        reports: reports.length,
+        timestamp: new Date().toISOString(),
+        hasLocalStorage: typeof Storage !== 'undefined',
+        sampleAssessment: assessments[0] ? {
+          id: assessments[0].id,
+          startedAt: assessments[0].startedAt,
+          completedAt: assessments[0].completedAt,
+          timeSpent: assessments[0].completedAt && assessments[0].startedAt ? 
+            Math.round((new Date(assessments[0].completedAt).getTime() - new Date(assessments[0].startedAt).getTime()) / (1000 * 60)) : 0
+        } : null,
+        sampleReport: reports[0] ? {
+          id: reports[0].id,
+          generationTimeMs: reports[0].generationTimeMs,
+          generatedAt: reports[0].generatedAt
+        } : null
+      });
     } catch (error) {
       console.error('Error loading dashboard data:', error);
+      // Set empty data on error to prevent infinite loading
+      setData({ assessments: [], reports: [] });
+      setLastRefresh(new Date());
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleManualRefresh = () => {
+    // Force a complete refresh by clearing data first
+    setData({ assessments: [], reports: [] });
+    setFilteredData([]);
+    
+    // Then reload after a brief delay to show the refresh animation
+    setTimeout(() => {
+      loadDashboardData(true);
+    }, 100);
   };
 
   const applyFiltersAndSorting = () => {
@@ -443,14 +533,16 @@ export default function DashboardPage() {
   };
 
   const formatTime = (minutes: number) => {
-    if (minutes < 60) return `${minutes}m`;
+    if (minutes <= 0) return "< 1m";
+    if (minutes < 60) return `${Math.round(minutes)}m`;
     const hours = Math.floor(minutes / 60);
-    const remainingMinutes = minutes % 60;
+    const remainingMinutes = Math.round(minutes % 60);
     return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`;
   };
 
   const formatGenTime = (ms: number) => {
-    if (ms < 1000) return `${ms}ms`;
+    if (ms <= 0) return "< 1ms";
+    if (ms < 1000) return `${Math.round(ms)}ms`;
     const seconds = Math.round(ms / 1000 * 10) / 10;
     return `${seconds}s`;
   };
@@ -560,6 +652,27 @@ export default function DashboardPage() {
               <motion.button
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.15 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleManualRefresh}
+                disabled={loading}
+                className={`bg-calm-600 hover:bg-calm-700 text-white font-medium px-4 py-2 rounded-lg transition-colors flex items-center space-x-2 ${
+                  loading ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+                aria-label="Refresh analytics data"
+              >
+                <FontAwesomeIcon 
+                  icon={'refresh' as IconProp} 
+                  className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} 
+                  aria-hidden="true" 
+                />
+                <span>{loading ? 'Refreshing...' : 'Refresh'}</span>
+              </motion.button>
+
+              <motion.button
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.2 }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -588,6 +701,22 @@ export default function DashboardPage() {
               role="tabpanel"
               aria-labelledby="analytics-tab"
             >
+              {/* Last Updated Indicator */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="flex items-center justify-center mb-6"
+              >
+                <div className="bg-white/60 backdrop-blur-sm border border-calm-200 rounded-full px-4 py-2 flex items-center space-x-2 text-sm text-calm-600">
+                  <FontAwesomeIcon icon={'clock' as IconProp} className="w-4 h-4" />
+                  <span>Last updated: {lastRefresh.toLocaleTimeString()}</span>
+                  {loading && (
+                    <FontAwesomeIcon icon={'refresh' as IconProp} className="w-4 h-4 animate-spin text-primary-500" />
+                  )}
+                </div>
+              </motion.div>
+
               {/* Key Metrics */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <motion.div
@@ -616,6 +745,7 @@ export default function DashboardPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
+                  key={`time-${analytics.totalTimeSpent}-${lastRefresh.getTime()}`}
                   className="card p-6"
                   role="region"
                   aria-labelledby="time-invested-heading"
@@ -628,7 +758,12 @@ export default function DashboardPage() {
                       Avg: {formatTime(analytics.averageSessionTime)}
                     </span>
                   </div>
-                  <h3 id="time-invested-heading" className="text-2xl font-bold text-calm-800 mb-1">{formatTime(analytics.totalTimeSpent)}</h3>
+                  <h3 id="time-invested-heading" className="text-2xl font-bold text-calm-800 mb-1">
+                    {formatTime(analytics.totalTimeSpent)}
+                    {analytics.totalTimeSpent === 0 && (
+                      <span className="text-xs text-calm-400 ml-2">(No data)</span>
+                    )}
+                  </h3>
                   <p className="text-calm-600 text-sm">Time Invested</p>
                   <div className="mt-2 w-full bg-calm-200 rounded-full h-2">
                     <div 
@@ -673,6 +808,7 @@ export default function DashboardPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 }}
+                  key={`ai-${analytics.averageReportGenTime}-${lastRefresh.getTime()}`}
                   className="card p-6"
                   role="region"
                   aria-labelledby="ai-performance-heading"
@@ -686,7 +822,10 @@ export default function DashboardPage() {
                     </span>
                   </div>
                   <h3 id="ai-performance-heading" className="text-2xl font-bold text-calm-800 mb-1">
-                    {analytics.averageReportGenTime > 0 ? formatGenTime(analytics.averageReportGenTime) : 'N/A'}
+                    {formatGenTime(analytics.averageReportGenTime)}
+                    {analytics.averageReportGenTime === 0 && (
+                      <span className="text-xs text-calm-400 ml-2">(No data)</span>
+                    )}
                   </h3>
                   <p className="text-calm-600 text-sm">AI Generation Time</p>
                   <p className="text-xs text-calm-500 mt-2">Powered by Gemini 2.0</p>
@@ -922,7 +1061,7 @@ export default function DashboardPage() {
                                     </div>
                                     <div className="bg-white/10 rounded-lg p-2">
                                       <p className="text-white/70 text-xs">Duration</p>
-                                      <p className="font-bold text-lg">{timeSpent > 0 ? formatTime(timeSpent) : 'N/A'}</p>
+                                      <p className="font-bold text-lg">{formatTime(timeSpent)}</p>
                                     </div>
                                   </div>
                                 </div>
@@ -998,7 +1137,7 @@ export default function DashboardPage() {
                                             <div>
                                               <p className="text-calm-500 mb-1">Report Generation Time</p>
                                               <p className="font-medium text-indigo-600">
-                                                {item.report.generationTimeMs ? formatGenTime(item.report.generationTimeMs) : 'N/A'}
+                                                {formatGenTime(item.report.generationTimeMs || 0)}
                                               </p>
                                             </div>
                                             <div>
@@ -1203,7 +1342,7 @@ export default function DashboardPage() {
                               <div className="grid grid-cols-2 gap-4 pt-3 border-t border-calm-100">
                                 <div>
                                   <p className="text-xs text-calm-500">Time Spent</p>
-                                  <p className="font-semibold text-calm-700">{timeSpent > 0 ? formatTime(timeSpent) : 'N/A'}</p>
+                                  <p className="font-semibold text-calm-700">{formatTime(timeSpent)}</p>
                                 </div>
                                 <div>
                                   <p className="text-xs text-calm-500">Questions</p>
