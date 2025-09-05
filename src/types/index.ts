@@ -55,6 +55,11 @@ export interface Question {
   example?: string;
   required?: boolean;
   environment: EnvironmentTheme;
+  therapyMapping?: AssessmentType[];
+  cognitivePattern?: string;
+  emotionalPattern?: string;
+  behavioralPattern?: string;
+  severityIndicator?: 'low' | 'moderate' | 'high';
 }
 
 export type EnvironmentTheme = 'forest' | 'ocean' | 'mountains' | 'garden' | 'sky' | 'lighthouse' | 'room';
@@ -81,12 +86,15 @@ export interface Assessment {
 }
 
 export interface TherapyRecommendation {
-  type: string;
-  title: string;
-  description: string;
-  exercises: string[];
-  resources: string[];
-  priority: 'high' | 'medium' | 'low';
+  therapyType: AssessmentType;
+  priority: 'primary' | 'secondary' | 'supplementary';
+  confidence: number;
+  reasoning: string[];
+  suggestedExercises: string[];
+  estimatedDuration: string;
+  successPredictors: string[];
+  potentialBarriers: string[];
+  evidenceLevel?: 'strong' | 'moderate' | 'emerging';
 }
 
 export interface AssessmentReport {
@@ -152,4 +160,82 @@ export interface AnimationState {
   isVisible: boolean;
   isAnimating: boolean;
   currentAnimation: string;
+}
+
+// Therapy Exercise System
+export interface TherapyExercise {
+  id: string;
+  name: string;
+  type: 'interactive' | 'reflection' | 'behavioral' | 'cognitive';
+  therapyType: AssessmentType;
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  estimatedDuration: number; // minutes
+  description: string;
+  instructions: string[];
+  requiredInputs: ExerciseInput[];
+  learningObjectives: string[];
+  evidenceBase?: string;
+}
+
+export interface ExerciseInput {
+  id: string;
+  type: 'text' | 'scale' | 'choice' | 'file' | 'audio';
+  label: string;
+  required: boolean;
+  validation?: any;
+}
+
+export interface ExerciseSession {
+  id: string;
+  exerciseId: string;
+  userId: string;
+  startTime: Date;
+  endTime?: Date;
+  responses: Record<string, any>;
+  completionStatus: 'started' | 'completed' | 'abandoned';
+  insights?: string[];
+  mood?: {
+    before: number;
+    after: number;
+  };
+  difficulty?: number; // 1-10 scale
+  helpfulness?: number; // 1-10 scale
+}
+
+// Progress Tracking
+export interface ProgressMetric {
+  id: string;
+  userId: string;
+  metricType: 'symptom_severity' | 'skill_mastery' | 'engagement' | 'functional_improvement';
+  value: number;
+  maxValue: number;
+  date: Date;
+  therapyContext: AssessmentType;
+  notes?: string;
+}
+
+// Gamification
+export interface Achievement {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  criteria: {
+    type: 'streak' | 'completion' | 'improvement' | 'milestone';
+    threshold: number;
+    metric: string;
+  };
+  rarity: 'common' | 'uncommon' | 'rare' | 'legendary';
+  earnedDate?: Date;
+}
+
+export interface UserProgress {
+  userId: string;
+  currentStreak: number;
+  longestStreak: number;
+  totalExercisesCompleted: number;
+  skillLevels: Partial<Record<AssessmentType, number>>; // 0-100 scale
+  achievements: Achievement[];
+  preferredTherapies: AssessmentType[];
+  lastActiveDate: Date;
 }

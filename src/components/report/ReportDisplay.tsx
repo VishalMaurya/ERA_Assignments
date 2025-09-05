@@ -45,11 +45,11 @@ export default function ReportDisplay({
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high':
+      case 'primary':
         return 'border-l-red-500 bg-red-50';
-      case 'medium':
+      case 'secondary':
         return 'border-l-yellow-500 bg-yellow-50';
-      case 'low':
+      case 'supplementary':
         return 'border-l-green-500 bg-green-50';
       default:
         return 'border-l-gray-500 bg-gray-50';
@@ -84,32 +84,32 @@ export default function ReportDisplay({
       <div className="flex items-start justify-between mb-4">
         <div>
           <h3 className="text-lg font-semibold text-calm-800 mb-2">
-            {recommendation.title}
+            {recommendation.therapyType.replace('-', ' ').replace(/^\w/, c => c.toUpperCase())} Therapy
           </h3>
           <span className="inline-block px-3 py-1 text-xs font-medium bg-primary-100 text-primary-700 rounded-full mb-2">
-            {recommendation.type}
+            {recommendation.priority}
           </span>
           <p className="text-calm-600">
-            {recommendation.description}
+            {recommendation.reasoning.join(' ')}
           </p>
         </div>
         <span className={`px-2 py-1 text-xs font-medium rounded ${
-          recommendation.priority === 'high' ? 'bg-red-100 text-red-700' :
-          recommendation.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+          recommendation.priority === 'primary' ? 'bg-red-100 text-red-700' :
+          recommendation.priority === 'secondary' ? 'bg-yellow-100 text-yellow-700' :
           'bg-green-100 text-green-700'
         }`}>
           {recommendation.priority} priority
         </span>
       </div>
 
-      {recommendation.exercises.length > 0 && (
+      {recommendation.suggestedExercises.length > 0 && (
         <div className="mb-4">
           <h4 className="font-medium text-calm-700 mb-2 flex items-center">
             <FontAwesomeIcon icon={'bullseye' as IconProp} className="w-4 h-4 mr-2" />
             Recommended Exercises
           </h4>
           <ul className="space-y-2">
-            {recommendation.exercises.map((exercise, i) => (
+            {recommendation.suggestedExercises.map((exercise, i) => (
               <li key={i} className="flex items-start space-x-2">
                 <FontAwesomeIcon icon={'chevron-right' as IconProp} className="w-4 h-4 text-primary-500 mt-0.5 flex-shrink-0" />
                 <span className="text-sm text-calm-600">{exercise}</span>
@@ -119,16 +119,17 @@ export default function ReportDisplay({
         </div>
       )}
 
-      {recommendation.resources.length > 0 && (
+      {recommendation.successPredictors.length > 0 && (
         <div>
           <h4 className="font-medium text-calm-700 mb-2 flex items-center">
-            <FontAwesomeIcon icon={'book-open' as IconProp} className="w-4 h-4 mr-2" />
-            Helpful Resources
+            <FontAwesomeIcon icon={'star' as IconProp} className="w-4 h-4 mr-2 text-yellow-500" />
+            Success Factors
           </h4>
           <ul className="space-y-1">
-            {recommendation.resources.map((resource, i) => (
-              <li key={i} className="text-sm text-calm-600">
-                • {resource}
+            {recommendation.successPredictors.map((factor, i) => (
+              <li key={i} className="text-sm text-calm-600 flex items-start">
+                <FontAwesomeIcon icon={'check' as IconProp} className="w-3 h-3 mr-2 text-green-500 mt-0.5 flex-shrink-0" />
+                {factor}
               </li>
             ))}
           </ul>

@@ -75,6 +75,20 @@ import {
   faStethoscope,
   faUserMd,
   faComments,
+  faUsers,
+  faRocket,
+  faFire,
+  faShieldHeart,
+  faRotateRight,
+  faPuzzlePiece,
+  faSeedling,
+  faWind,
+  faDumbbell,
+  faAppleWhole,
+  faSitemap,
+  faTable,
+  faClipboard,
+  faHeartPulse,
   
   // Actions & Interactions
   faArrowRight,
@@ -102,6 +116,7 @@ import {
   faShapes,
   faCrop,
   faImage,
+  
   
 } from '@fortawesome/free-solid-svg-icons';
 

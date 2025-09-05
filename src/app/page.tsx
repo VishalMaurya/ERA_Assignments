@@ -34,7 +34,7 @@ export default function HomePage() {
     },
     {
       type: 'self-compassion',
-      icon: 'heart-handshake' as IconProp,
+      icon: 'heart' as IconProp,
       color: 'text-amber-600',
       gradient: 'from-amber-500 to-orange-600'
     },
@@ -107,16 +107,24 @@ export default function HomePage() {
                 25+ Assessments
               </span>
             </button>
-            <button
-              onClick={() => setShowApiTestModal(true)}
-              className="inline-flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg transition-colors shadow-lg hover:shadow-xl"
-            >
-              <FontAwesomeIcon icon={'stethoscope' as IconProp} className="w-4 h-4" />
-              <span>Test Gemini API</span>
-            </button>
+                                    <button
+                          onClick={() => setShowApiTestModal(true)}
+                          className="inline-flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg transition-colors shadow-lg hover:shadow-xl"
+                        >
+                          <FontAwesomeIcon icon={'stethoscope' as IconProp} className="w-4 h-4" />
+                          <span>Test Gemini API</span>
+                        </button>
+                        
+                        <button
+                          onClick={() => router.push('/therapy')}
+                          className="inline-flex items-center space-x-2 bg-purple-600 hover:bg-purple-700 text-white font-medium px-6 py-3 rounded-lg transition-colors shadow-lg hover:shadow-xl"
+                        >
+                          <FontAwesomeIcon icon={'play' as IconProp} className="w-4 h-4" />
+                          <span>Therapy Center</span>
+                        </button>
           </div>
           <p className="text-sm text-calm-500 mt-3 text-center">
-            Access your analytics dashboard or validate your API key before starting
+            Access your analytics dashboard, practice therapy exercises, or validate your API key before starting
           </p>
         </motion.div>
 

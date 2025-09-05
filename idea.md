@@ -369,7 +369,7 @@ This table can be directly used in your **assessment → Gemmi AI → report →
 * **Micro Check-ins:** Daily or weekly short questions with progress indicators.
 * **Gamification:** Streaks, badges, and milestone celebrations.
 * **Therapeutic Journey Continuity:** Users feel like progressing through different worlds/levels for each condition.
-
+ expand catalogs plication with all functionality
 ---
 
 ## 6. Visual & Interactive Design Principles

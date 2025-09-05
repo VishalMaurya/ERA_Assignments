@@ -224,7 +224,7 @@ export default function DashboardPage() {
           accent: 'bg-indigo-100 text-indigo-700',
           border: 'border-indigo-200',
           text: 'text-indigo-800',
-          icon: 'rotate-right' as IconProp,
+          icon: 'arrow-right' as IconProp,
           emoji: '🔄'
         };
       case 'problem-solving':
@@ -233,7 +233,7 @@ export default function DashboardPage() {
           accent: 'bg-emerald-100 text-emerald-700',
           border: 'border-emerald-200',
           text: 'text-emerald-800',
-          icon: 'puzzle-piece' as IconProp,
+          icon: 'lightbulb' as IconProp,
           emoji: '🧩'
         };
       
@@ -253,7 +253,7 @@ export default function DashboardPage() {
           accent: 'bg-lime-100 text-lime-700',
           border: 'border-lime-200',
           text: 'text-lime-800',
-          icon: 'seedling' as IconProp,
+          icon: 'leaf' as IconProp,
           emoji: '🌱'
         };
       case 'mindful-cognitive':
@@ -282,7 +282,7 @@ export default function DashboardPage() {
           accent: 'bg-rose-100 text-rose-700',
           border: 'border-rose-200',
           text: 'text-rose-800',
-          icon: 'heart-pulse' as IconProp,
+          icon: 'heart' as IconProp,
           emoji: '💗'
         };
       case 'interpersonal':
@@ -291,7 +291,7 @@ export default function DashboardPage() {
           accent: 'bg-pink-100 text-pink-700',
           border: 'border-pink-200',
           text: 'text-pink-800',
-          icon: 'users' as IconProp,
+          icon: 'user' as IconProp,
           emoji: '👥'
         };
       
@@ -302,7 +302,7 @@ export default function DashboardPage() {
           accent: 'bg-amber-100 text-amber-700',
           border: 'border-amber-200',
           text: 'text-amber-800',
-          icon: 'heart-handshake' as IconProp,
+          icon: 'heart' as IconProp,
           emoji: '🤗'
         };
       case 'positive-psychology':
@@ -349,7 +349,7 @@ export default function DashboardPage() {
           accent: 'bg-cyan-100 text-cyan-700',
           border: 'border-cyan-200',
           text: 'text-cyan-800',
-          icon: 'wind' as IconProp,
+          icon: 'cloud' as IconProp,
           emoji: '💨'
         };
       case 'exercise':
@@ -358,7 +358,7 @@ export default function DashboardPage() {
           accent: 'bg-violet-100 text-violet-700',
           border: 'border-violet-200',
           text: 'text-violet-800',
-          icon: 'dumbbell' as IconProp,
+          icon: 'play' as IconProp,
           emoji: '💪'
         };
       case 'nutrition':
@@ -367,7 +367,7 @@ export default function DashboardPage() {
           accent: 'bg-green-100 text-green-700',
           border: 'border-green-200',
           text: 'text-green-800',
-          icon: 'apple-whole' as IconProp,
+          icon: 'heart' as IconProp,
           emoji: '🍎'
         };
       
@@ -378,7 +378,7 @@ export default function DashboardPage() {
           accent: 'bg-gray-100 text-gray-700',
           border: 'border-gray-200',
           text: 'text-gray-800',
-          icon: 'shield-heart' as IconProp,
+          icon: 'shield-alt' as IconProp,
           emoji: '🛡️'
         };
       case 'schema':
@@ -387,7 +387,7 @@ export default function DashboardPage() {
           accent: 'bg-stone-100 text-stone-700',
           border: 'border-stone-200',
           text: 'text-stone-800',
-          icon: 'sitemap' as IconProp,
+          icon: 'chart-bar' as IconProp,
           emoji: '🗺️'
         };
       case 'narrative':
@@ -405,7 +405,7 @@ export default function DashboardPage() {
           accent: 'bg-red-100 text-red-700',
           border: 'border-red-200',
           text: 'text-red-800',
-          icon: 'rocket' as IconProp,
+          icon: 'arrow-up' as IconProp,
           emoji: '🚀'
         };
       case 'solution-focused':
@@ -436,7 +436,7 @@ export default function DashboardPage() {
           accent: 'bg-gray-100 text-gray-700',
           border: 'border-gray-200',
           text: 'text-gray-800',
-          icon: 'circle-question' as IconProp,
+          icon: 'question' as IconProp,
           emoji: '❓'
         };
     }
@@ -552,7 +552,7 @@ export default function DashboardPage() {
                   aria-selected={viewMode === 'cards'}
                   aria-controls="cards-panel"
                 >
-                  <FontAwesomeIcon icon={'table' as IconProp} className="w-4 h-4 mr-2" aria-hidden="true" />
+                  <FontAwesomeIcon icon={'chart-bar' as IconProp} className="w-4 h-4 mr-2" aria-hidden="true" />
                   Assessments
                 </button>
               </div>
@@ -747,7 +747,7 @@ export default function DashboardPage() {
                   {/* Quick Actions & Stats */}
                   <div className="card p-6 bg-gradient-to-br from-white to-primary-50 shadow-lg" role="region" aria-labelledby="quick-nav-heading">
                     <h3 id="quick-nav-heading" className="text-lg font-bold text-calm-800 mb-6 flex items-center">
-                      <FontAwesomeIcon icon={'rocket' as IconProp} className="w-5 h-5 mr-3 text-primary-600" aria-hidden="true" />
+                      <FontAwesomeIcon icon={'arrow-up' as IconProp} className="w-5 h-5 mr-3 text-primary-600" aria-hidden="true" />
                       Quick Actions
                     </h3>
                     
@@ -835,12 +835,12 @@ export default function DashboardPage() {
                           { key: 'mindfulness', label: 'Mindfulness', icon: 'leaf' as IconProp },
                           // Emotions
                           { key: 'anger', label: 'Anger', icon: 'fire' as IconProp },
-                          { key: 'emotion-regulation', label: 'Emotions', icon: 'heart-pulse' as IconProp },
+                          { key: 'emotion-regulation', label: 'Emotions', icon: 'heart' as IconProp },
                           // Lifestyle
                           { key: 'sleep', label: 'Sleep', icon: 'moon' as IconProp },
-                          { key: 'exercise', label: 'Exercise', icon: 'dumbbell' as IconProp },
+                          { key: 'exercise', label: 'Exercise', icon: 'play' as IconProp },
                           // Specialized
-                          { key: 'trauma', label: 'Trauma', icon: 'shield-heart' as IconProp },
+                          { key: 'trauma', label: 'Trauma', icon: 'shield-alt' as IconProp },
                           { key: 'general', label: 'General', icon: 'heart' as IconProp },
                         ].map((option) => (
                           <button
@@ -1083,12 +1083,12 @@ export default function DashboardPage() {
                         { key: 'mindfulness', label: 'Mindfulness', icon: 'leaf' as IconProp },
                         // Emotions
                         { key: 'anger', label: 'Anger', icon: 'fire' as IconProp },
-                        { key: 'emotion-regulation', label: 'Emotions', icon: 'heart-pulse' as IconProp },
+                        { key: 'emotion-regulation', label: 'Emotions', icon: 'heart' as IconProp },
                         // Lifestyle
                         { key: 'sleep', label: 'Sleep', icon: 'moon' as IconProp },
-                        { key: 'exercise', label: 'Exercise', icon: 'dumbbell' as IconProp },
+                        { key: 'exercise', label: 'Exercise', icon: 'play' as IconProp },
                         // Specialized
-                        { key: 'trauma', label: 'Trauma', icon: 'shield-heart' as IconProp },
+                        { key: 'trauma', label: 'Trauma', icon: 'shield-alt' as IconProp },
                         { key: 'general', label: 'General', icon: 'heart' as IconProp },
                       ].map((option) => (
                         <button

@@ -308,6 +308,8 @@ export const assessmentQuestions: Record<AssessmentType, Question[]> = {
       options: ['Rarely', 'Sometimes', 'Often', 'Most of the time', 'Always'],
       environment: 'garden',
       required: true,
+      therapyMapping: ['behavioral-activation', 'anxiety'],
+      cognitivePattern: 'avoidance',
     },
     {
       id: 'ba_2',
@@ -317,6 +319,7 @@ export const assessmentQuestions: Record<AssessmentType, Question[]> = {
       hint: 'Examples: hobbies, social activities, exercise, creative pursuits',
       environment: 'garden',
       required: true,
+      therapyMapping: ['behavioral-activation'],
     },
     {
       id: 'ba_3',
@@ -328,6 +331,36 @@ export const assessmentQuestions: Record<AssessmentType, Question[]> = {
       scaleLabels: ['No motivation', 'Very motivated'],
       environment: 'garden',
       required: true,
+      therapyMapping: ['behavioral-activation', 'motivation'],
+    },
+    {
+      id: 'ba_4',
+      type: 'mcq',
+      question: 'When you avoid activities, what thoughts go through your mind?',
+      description: 'Identify the thoughts that lead to avoidance.',
+      options: [
+        'I don\'t have the energy',
+        'It won\'t be enjoyable anymore',
+        'I might fail or disappoint others',
+        'I don\'t deserve to enjoy myself',
+        'It feels pointless'
+      ],
+      environment: 'garden',
+      required: false,
+      therapyMapping: ['behavioral-activation', 'anxiety'],
+      cognitivePattern: 'negative_prediction',
+    },
+    {
+      id: 'ba_5',
+      type: 'scale',
+      question: 'How much do you believe that activity scheduling could help your mood?',
+      description: 'Rate your confidence in behavioral activation as a helpful approach.',
+      scaleMin: 1,
+      scaleMax: 10,
+      scaleLabels: ['Not helpful at all', 'Extremely helpful'],
+      environment: 'garden',
+      required: true,
+      therapyMapping: ['behavioral-activation'],
     }
   ],
 
