@@ -273,7 +273,7 @@ export default function DashboardPage() {
           accent: 'bg-red-100 text-red-700',
           border: 'border-red-200',
           text: 'text-red-800',
-          icon: 'fire' as IconProp,
+          icon: 'bolt' as IconProp,
           emoji: '🔥'
         };
       case 'emotion-regulation':
@@ -834,7 +834,7 @@ export default function DashboardPage() {
                           // Mindfulness
                           { key: 'mindfulness', label: 'Mindfulness', icon: 'leaf' as IconProp },
                           // Emotions
-                          { key: 'anger', label: 'Anger', icon: 'fire' as IconProp },
+                          { key: 'anger', label: 'Anger', icon: 'bolt' as IconProp },
                           { key: 'emotion-regulation', label: 'Emotions', icon: 'heart' as IconProp },
                           // Lifestyle
                           { key: 'sleep', label: 'Sleep', icon: 'moon' as IconProp },
@@ -1082,7 +1082,7 @@ export default function DashboardPage() {
                         // Mindfulness
                         { key: 'mindfulness', label: 'Mindfulness', icon: 'leaf' as IconProp },
                         // Emotions
-                        { key: 'anger', label: 'Anger', icon: 'fire' as IconProp },
+                        { key: 'anger', label: 'Anger', icon: 'bolt' as IconProp },
                         { key: 'emotion-regulation', label: 'Emotions', icon: 'heart' as IconProp },
                         // Lifestyle
                         { key: 'sleep', label: 'Sleep', icon: 'moon' as IconProp },

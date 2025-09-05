@@ -58,25 +58,25 @@ export default function HomePage() {
     },
     {
       type: 'ocd',
-      icon: 'arrows-spin' as IconProp,
+      icon: 'rotate' as IconProp,
       color: 'text-purple-600',
       gradient: 'from-purple-500 to-violet-600'
     },
     {
       type: 'anger',
-      icon: 'fire' as IconProp,
+      icon: 'bolt' as IconProp,
       color: 'text-red-600',
       gradient: 'from-red-500 to-rose-600'
     },
     {
       type: 'trauma',
-      icon: 'shield-heart' as IconProp,
+      icon: 'shield' as IconProp,
       color: 'text-indigo-600',
       gradient: 'from-indigo-500 to-blue-600'
     },
     {
       type: 'emotion-regulation',
-      icon: 'scale-balanced' as IconProp,
+      icon: 'balance-scale' as IconProp,
       color: 'text-emerald-600',
       gradient: 'from-emerald-500 to-teal-600'
     },
@@ -88,7 +88,7 @@ export default function HomePage() {
     },
     {
       type: 'breathing',
-      icon: 'lungs' as IconProp,
+      icon: 'wind' as IconProp,
       color: 'text-sky-600',
       gradient: 'from-sky-500 to-blue-600'
     }
@@ -229,31 +229,33 @@ export default function HomePage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.5 + index * 0.1 }}
-                className={`card card-hover p-6 transition-all duration-300 cursor-pointer ${
+                className={`card card-hover p-6 transition-all duration-300 cursor-pointer h-72 flex flex-col ${
                   selectedAssessment === assessment.type
                     ? 'ring-2 ring-primary-400 bg-primary-50/50'
                     : 'hover:bg-white/70'
                 }`}
                 onClick={() => setSelectedAssessment(assessment.type)}
               >
-                <div className="flex flex-col items-center text-center space-y-3">
-                  <div className={`p-3 rounded-lg bg-gradient-to-r ${assessment.gradient} text-white`}>
+                <div className="flex flex-col items-center text-center h-full">
+                  <div className={`p-3 rounded-lg bg-gradient-to-r ${assessment.gradient} text-white mb-4`}>
                     <FontAwesomeIcon icon={assessment.icon} className="w-6 h-6" />
                   </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-calm-800 mb-2">
-                      {getAssessmentTitle(assessment.type)}
-                    </h3>
-                    <p className="text-sm text-calm-600 mb-3 line-clamp-3">
-                      {getAssessmentDescription(assessment.type)}
-                    </p>
-                    <div className="text-xs text-calm-500">
+                  <div className="flex-1 flex flex-col justify-between">
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-calm-800 mb-3 leading-tight">
+                        {getAssessmentTitle(assessment.type)}
+                      </h3>
+                      <p className="text-sm text-calm-600 mb-4 leading-relaxed min-h-[3rem] flex items-center justify-center">
+                        {getAssessmentDescription(assessment.type)}
+                      </p>
+                    </div>
+                    <div className="text-xs text-calm-500 mt-auto">
                       <span>8-10 minutes</span>
                       <span className="mx-1">•</span>
                       <span>Skip anytime</span>
                     </div>
                   </div>
-                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center mt-4 ${
                     selectedAssessment === assessment.type
                       ? 'border-primary-400 bg-primary-400'
                       : 'border-calm-300'

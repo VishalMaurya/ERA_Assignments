@@ -25,6 +25,11 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/assessment/[type]/page.js"
+    ],
+    "/report/[assessmentId]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/report/[assessmentId]/page.js"
     ]
   }
 }
