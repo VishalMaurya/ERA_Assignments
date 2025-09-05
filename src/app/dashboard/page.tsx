@@ -213,9 +213,10 @@ export default function DashboardPage() {
               <motion.h1 
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-3xl md:text-4xl font-bold text-calm-800 mb-2"
+                className="text-3xl md:text-4xl font-bold text-calm-800 mb-2 flex items-center"
               >
-                Your Journey Dashboard 📊
+                <FontAwesomeIcon icon={'chart-line' as IconProp} className="w-8 h-8 mr-3 text-primary-600" />
+                Mental Health Analytics
               </motion.h1>
               <motion.p 
                 initial={{ opacity: 0, y: -10 }}
