@@ -74,24 +74,6 @@ export default function HomePage() {
       color: 'text-indigo-600',
       gradient: 'from-indigo-500 to-blue-600'
     },
-    {
-      type: 'emotion-regulation',
-      icon: 'balance-scale' as IconProp,
-      color: 'text-emerald-600',
-      gradient: 'from-emerald-500 to-teal-600'
-    },
-    {
-      type: 'acceptance-commitment',
-      icon: 'check-circle' as IconProp,
-      color: 'text-cyan-600',
-      gradient: 'from-cyan-500 to-blue-600'
-    },
-    {
-      type: 'breathing',
-      icon: 'wind' as IconProp,
-      color: 'text-sky-600',
-      gradient: 'from-sky-500 to-blue-600'
-    }
   ];
 
   const startJourney = () => {
@@ -219,43 +201,48 @@ export default function HomePage() {
             Choose Your Journey
           </h2>
           <p className="text-center text-calm-600 mb-8">
-            Select from our featured assessments below, or explore 25+ therapeutic assessments from the dashboard
+            Select from our 9 featured assessments below, or explore 25+ therapeutic assessments from the dashboard
           </p>
           
-          <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-6 mb-12">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
             {assessmentTypes.map((assessment, index) => (
               <motion.div
                 key={assessment.type}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.5 + index * 0.1 }}
-                className={`card card-hover p-6 transition-all duration-300 cursor-pointer h-72 flex flex-col ${
+                className={`card card-hover p-6 transition-all duration-300 cursor-pointer h-80 flex flex-col justify-between ${
                   selectedAssessment === assessment.type
                     ? 'ring-2 ring-primary-400 bg-primary-50/50'
                     : 'hover:bg-white/70'
                 }`}
                 onClick={() => setSelectedAssessment(assessment.type)}
               >
-                <div className="flex flex-col items-center text-center h-full">
-                  <div className={`p-3 rounded-lg bg-gradient-to-r ${assessment.gradient} text-white mb-4`}>
+                {/* Icon */}
+                <div className="flex justify-center mb-4">
+                  <div className={`p-3 rounded-lg bg-gradient-to-r ${assessment.gradient} text-white`}>
                     <FontAwesomeIcon icon={assessment.icon} className="w-6 h-6" />
                   </div>
-                  <div className="flex-1 flex flex-col justify-between">
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-calm-800 mb-3 leading-tight">
-                        {getAssessmentTitle(assessment.type)}
-                      </h3>
-                      <p className="text-sm text-calm-600 mb-4 leading-relaxed min-h-[3rem] flex items-center justify-center">
-                        {getAssessmentDescription(assessment.type)}
-                      </p>
-                    </div>
-                    <div className="text-xs text-calm-500 mt-auto">
-                      <span>8-10 minutes</span>
-                      <span className="mx-1">•</span>
-                      <span>Skip anytime</span>
-                    </div>
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 flex flex-col text-center">
+                  <h3 className="text-lg font-semibold text-calm-800 mb-3 leading-tight">
+                    {getAssessmentTitle(assessment.type)}
+                  </h3>
+                  <p className="text-sm text-calm-600 leading-relaxed flex-1 px-2">
+                    {getAssessmentDescription(assessment.type)}
+                  </p>
+                </div>
+
+                {/* Footer */}
+                <div className="mt-4 flex flex-col items-center space-y-3">
+                  <div className="text-xs text-calm-500">
+                    <span>8-10 minutes</span>
+                    <span className="mx-1">•</span>
+                    <span>Skip anytime</span>
                   </div>
-                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center mt-4 ${
+                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
                     selectedAssessment === assessment.type
                       ? 'border-primary-400 bg-primary-400'
                       : 'border-calm-300'
