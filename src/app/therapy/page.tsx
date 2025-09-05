@@ -1,275 +1,137 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { Assessment, AssessmentType, UserProgress, TherapyRecommendation } from '@/types';
-import { StorageService } from '@/utils/storage';
-import { therapyEngine } from '@/lib/therapy-engine';
-import TherapyDashboard from '@/components/therapy/TherapyDashboard';
 
 export default function TherapyPage() {
-  const [assessments, setAssessments] = useState<Assessment[]>([]);
-  const [userProgress, setUserProgress] = useState<UserProgress | null>(null);
-  const [recommendations, setRecommendations] = useState<TherapyRecommendation[]>([]);
-  const [selectedTherapy, setSelectedTherapy] = useState<AssessmentType>('general');
-  const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState<string>('anxiety');
 
-  useEffect(() => {
-    loadUserData();
-  }, []);
+  const therapyCategories = [
+    { id: 'anxiety', name: 'Anxiety Management', color: 'blue', exercises: 5 },
+    { id: 'mindfulness', name: 'Mindfulness', color: 'green', exercises: 8 },
+    { id: 'self-compassion', name: 'Self-Compassion', color: 'purple', exercises: 4 },
+    { id: 'sleep', name: 'Sleep Health', color: 'indigo', exercises: 3 },
+  ];
 
-  const loadUserData = async () => {
-    try {
-      setLoading(true);
-      
-      // Load assessments
-      const userAssessments = StorageService.getAssessments();
-      setAssessments(userAssessments);
-
-      // Load or create user progress
-      let progress = loadUserProgress();
-      if (!progress) {
-        progress = createInitialProgress();
-        saveUserProgress(progress);
-      }
-      setUserProgress(progress);
-
-      // Generate recommendations from most recent assessment
-      if (userAssessments.length > 0) {
-        const latestAssessment = userAssessments[userAssessments.length - 1];
-        const therapyRecommendations = await therapyEngine.generateRecommendations(latestAssessment);
-        setRecommendations(therapyRecommendations);
-        
-        // Set primary therapy from recommendations
-        if (therapyRecommendations.length > 0) {
-          setSelectedTherapy(therapyRecommendations[0].therapyType);
-        }
-      }
-    } catch (error) {
-      console.error('Error loading user data:', error);
-    } finally {
-      setLoading(false);
-    }
+  const sampleExercises = {
+    anxiety: [
+      { name: 'Deep Breathing', duration: '5 min', difficulty: 'Beginner' },
+      { name: 'Thought Record', duration: '10 min', difficulty: 'Intermediate' },
+      { name: 'Progressive Muscle Relaxation', duration: '15 min', difficulty: 'Beginner' },
+    ],
+    mindfulness: [
+      { name: 'Body Scan Meditation', duration: '12 min', difficulty: 'Beginner' },
+      { name: 'Mindful Walking', duration: '8 min', difficulty: 'Beginner' },
+      { name: 'Present Moment Awareness', duration: '6 min', difficulty: 'Beginner' },
+    ],
+    'self-compassion': [
+      { name: 'Self-Kindness Exercise', duration: '7 min', difficulty: 'Beginner' },
+      { name: 'Loving-Kindness Meditation', duration: '15 min', difficulty: 'Intermediate' },
+    ],
+    sleep: [
+      { name: 'Sleep Hygiene Check', duration: '5 min', difficulty: 'Beginner' },
+      { name: 'Bedtime Relaxation', duration: '10 min', difficulty: 'Beginner' },
+    ],
   };
-
-  const loadUserProgress = (): UserProgress | null => {
-    try {
-      const stored = localStorage.getItem('userProgress');
-      if (stored) {
-        const progress = JSON.parse(stored);
-        // Convert date strings back to Date objects
-        progress.lastActiveDate = new Date(progress.lastActiveDate);
-        progress.achievements = progress.achievements.map((achievement: any) => ({
-          ...achievement,
-          earnedDate: achievement.earnedDate ? new Date(achievement.earnedDate) : undefined
-        }));
-        return progress;
-      }
-    } catch (error) {
-      console.error('Error loading user progress:', error);
-    }
-    return null;
-  };
-
-  const createInitialProgress = (): UserProgress => {
-    return {
-      userId: 'current-user',
-      currentStreak: 0,
-      longestStreak: 0,
-      totalExercisesCompleted: 0,
-      skillLevels: {},
-      achievements: [],
-      preferredTherapies: [],
-      lastActiveDate: new Date()
-    };
-  };
-
-  const saveUserProgress = (progress: UserProgress) => {
-    try {
-      localStorage.setItem('userProgress', JSON.stringify(progress));
-    } catch (error) {
-      console.error('Error saving user progress:', error);
-    }
-  };
-
-  const handleProgressUpdate = (updatedProgress: UserProgress) => {
-    setUserProgress(updatedProgress);
-    saveUserProgress(updatedProgress);
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-nature-50 flex items-center justify-center">
-        <div className="text-center">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full mx-auto mb-4"
-          />
-          <p className="text-calm-600">Loading your therapy center...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-nature-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-6xl mx-auto px-6 py-8">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center"
-          >
-            <h1 className="text-4xl font-bold text-gradient mb-4">Therapy Center</h1>
-            <p className="text-xl text-calm-600 max-w-3xl mx-auto">
-              Practice evidence-based exercises tailored to your needs. Build skills, track progress, 
-              and develop lasting mental health habits.
-            </p>
-          </motion.div>
-
-          {/* Recommendations Summary */}
-          {recommendations.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="mt-8 bg-gradient-to-r from-primary-500 to-nature-500 rounded-lg p-6 text-white"
-            >
-              <div className="flex items-center space-x-3 mb-4">
-                <FontAwesomeIcon icon={'lightbulb' as IconProp} className="w-6 h-6" />
-                <h2 className="text-xl font-semibold">Personalized Recommendations</h2>
-              </div>
-              <p className="text-primary-100 mb-4">
-                Based on your assessment, we recommend focusing on these therapeutic approaches:
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {recommendations.slice(0, 3).map((rec, index) => (
-                  <span
-                    key={rec.therapyType}
-                    className={`px-3 py-1 rounded-full text-sm font-medium ${
-                      index === 0 
-                        ? 'bg-white text-primary-600' 
-                        : 'bg-primary-600 text-white border border-primary-400'
-                    }`}
-                  >
-                    {rec.therapyType.replace('-', ' ').replace(/^\w/, c => c.toUpperCase())}
-                    {index === 0 && ' (Primary)'}
-                  </span>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </div>
-      </div>
-
-      {/* No Assessments State */}
-      {assessments.length === 0 && (
-        <div className="max-w-4xl mx-auto px-6 py-16">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center bg-white rounded-lg p-12 shadow-lg"
-          >
-            <div className="w-20 h-20 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <FontAwesomeIcon icon={'stethoscope' as IconProp} className="w-10 h-10 text-primary-600" />
-            </div>
-            <h2 className="text-2xl font-bold text-calm-800 mb-4">Start Your Journey</h2>
-            <p className="text-calm-600 mb-8 max-w-2xl mx-auto">
-              To get personalized therapy recommendations and exercises, take your first assessment. 
-              This will help us understand your unique needs and suggest the most effective approaches.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <motion.a
-                href="/"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="btn-primary"
-              >
-                <FontAwesomeIcon icon={'play' as IconProp} className="w-4 h-4 mr-2" />
-                Take Assessment
-              </motion.a>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setSelectedTherapy('general')}
-                className="btn-secondary"
-              >
-                <FontAwesomeIcon icon={'heart' as IconProp} className="w-4 h-4 mr-2" />
-                Explore General Exercises
-              </motion.button>
-            </div>
-          </motion.div>
-        </div>
-      )}
-
-      {/* Therapy Dashboard */}
-      {(assessments.length > 0 || selectedTherapy === 'general') && (
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
+        {/* Header */}
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-12"
         >
-          <TherapyDashboard
-            primaryTherapy={selectedTherapy}
-            userProgress={userProgress || undefined}
-            onProgressUpdate={handleProgressUpdate}
-          />
+          <h1 className="text-4xl md:text-5xl font-bold text-calm-800 mb-4">
+            🧠 Therapy Center
+          </h1>
+          <p className="text-lg text-calm-600 mb-4">
+            Practice evidence-based therapeutic exercises designed to support your mental wellbeing
+          </p>
+          <div className="text-sm text-calm-500">
+            Choose a category to explore guided exercises and techniques
+          </div>
         </motion.div>
-      )}
 
-      {/* Assessment History */}
-      {assessments.length > 0 && (
-        <div className="max-w-6xl mx-auto px-6 py-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-lg border p-6"
-          >
-            <h3 className="text-xl font-bold text-calm-800 mb-4">Your Assessment History</h3>
-            <div className="space-y-3">
-              {assessments.slice(-5).reverse().map(assessment => (
-                <div
-                  key={assessment.id}
-                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
-                      <FontAwesomeIcon 
-                        icon={'brain' as IconProp} 
-                        className="w-5 h-5 text-primary-600" 
-                      />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-800 capitalize">
-                        {assessment.type.replace('-', ' ')} Assessment
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        Completed {assessment.completedAt?.toLocaleDateString()}
-                      </p>
+        {/* Category Selection */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
+        >
+          {therapyCategories.map((category) => (
+            <button
+              key={category.id}
+              onClick={() => setSelectedCategory(category.id)}
+              className={`p-4 rounded-lg border-2 transition-all duration-300 ${
+                selectedCategory === category.id
+                  ? `border-${category.color}-500 bg-${category.color}-50`
+                  : 'border-gray-200 bg-white hover:border-gray-300'
+              }`}
+            >
+              <div className="text-center">
+                <h3 className="font-semibold text-calm-800 mb-1">{category.name}</h3>
+                <p className="text-xs text-calm-500">{category.exercises} exercises</p>
+              </div>
+            </button>
+          ))}
+        </motion.div>
+
+        {/* Exercise List */}
+        <motion.div
+          key={selectedCategory}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3 }}
+          className="bg-white rounded-lg shadow-lg p-6"
+        >
+          <h2 className="text-2xl font-bold text-calm-800 mb-6">
+            {therapyCategories.find(c => c.id === selectedCategory)?.name} Exercises
+          </h2>
+          
+          <div className="grid gap-4">
+            {(sampleExercises as any)[selectedCategory]?.map((exercise: any, index: number) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-semibold text-calm-800 mb-2">{exercise.name}</h3>
+                    <div className="flex gap-4 text-sm text-calm-500">
+                      <span>⏱️ {exercise.duration}</span>
+                      <span>📊 {exercise.difficulty}</span>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm text-gray-500">
-                      {assessment.responses.length} questions
-                    </span>
-                    <motion.a
-                      href={`/dashboard`}
-                      whileHover={{ scale: 1.05 }}
-                      className="text-primary-600 hover:text-primary-700 transition-colors"
-                    >
-                      <FontAwesomeIcon icon={'arrow-right' as IconProp} className="w-4 h-4" />
-                    </motion.a>
-                  </div>
+                  <button className="bg-primary-500 text-white px-4 py-2 rounded-lg hover:bg-primary-600 transition-colors">
+                    Start
+                  </button>
                 </div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-      )}
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Coming Soon Features */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          className="mt-8 text-center"
+        >
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-amber-800 mb-2">🚀 Coming Soon</h3>
+            <p className="text-amber-700 text-sm">
+              Interactive guided exercises, progress tracking, personalized recommendations, and more advanced therapy modules
+            </p>
+          </div>
+        </motion.div>
+      </div>
     </div>
   );
 }

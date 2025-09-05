@@ -182,42 +182,50 @@ Guidelines:
     const commonRecommendations: Record<string, TherapyRecommendation[]> = {
       anxiety: [
         {
-          type: 'CBT',
-          title: 'Cognitive Behavioral Techniques',
-          description: 'Learn to identify and challenge anxious thoughts',
-          exercises: ['Thought record keeping', 'Deep breathing exercises', 'Progressive muscle relaxation'],
-          resources: ['CBT workbooks', 'Mindfulness apps'],
-          priority: 'high'
+          therapyType: 'anxiety',
+          priority: 'primary',
+          confidence: 0.8,
+          reasoning: ['Common cognitive patterns identified', 'Evidence-based approach for anxiety'],
+          suggestedExercises: ['thought_record_basic', 'exposure_hierarchy'],
+          estimatedDuration: '4-8 weeks',
+          successPredictors: ['Willingness to face fears', 'Regular practice'],
+          potentialBarriers: ['Avoidance patterns', 'High anxiety sensitivity']
         }
       ],
       ocd: [
         {
-          type: 'ERP',
-          title: 'Exposure and Response Prevention',
-          description: 'Gradually face fears while resisting compulsions',
-          exercises: ['Start with easier exposures', 'Delay compulsive behaviors', 'Track your progress'],
-          resources: ['OCD support groups', 'ERP workbooks'],
-          priority: 'high'
+          therapyType: 'ocd',
+          priority: 'primary',
+          confidence: 0.9,
+          reasoning: ['Compulsive behaviors identified', 'ERP is gold standard treatment'],
+          suggestedExercises: ['erp_planning'],
+          estimatedDuration: '8-12 weeks',
+          successPredictors: ['Understanding of ERP principles', 'Motivation to resist compulsions'],
+          potentialBarriers: ['Fear of anxiety', 'Perfectionist beliefs']
         }
       ],
       anger: [
         {
-          type: 'DBT',
-          title: 'Emotion Regulation Skills',
-          description: 'Learn healthy ways to manage intense emotions',
-          exercises: ['STOP technique', 'Opposite action', 'Distress tolerance skills'],
-          resources: ['DBT skill books', 'Anger management classes'],
-          priority: 'high'
+          therapyType: 'anger',
+          priority: 'primary',
+          confidence: 0.8,
+          reasoning: ['Emotional regulation challenges', 'Anger management skills needed'],
+          suggestedExercises: ['anger_diary', 'dbt_stop_skill'],
+          estimatedDuration: '6-10 weeks',
+          successPredictors: ['Recognition of triggers', 'Commitment to practice'],
+          potentialBarriers: ['Impulsivity', 'Blame patterns']
         }
       ],
       general: [
         {
-          type: 'Mindfulness',
-          title: 'Mindfulness Practice',
-          description: 'Develop awareness and acceptance of present moment experiences',
-          exercises: ['Daily meditation', 'Body scan practice', 'Mindful breathing'],
-          resources: ['Meditation apps', 'Mindfulness books'],
-          priority: 'medium'
+          therapyType: 'general',
+          priority: 'primary',
+          confidence: 0.7,
+          reasoning: ['General wellbeing focus', 'Mindfulness supports overall mental health'],
+          suggestedExercises: ['daily_mood_check', 'gratitude_moment'],
+          estimatedDuration: '2-4 weeks',
+          successPredictors: ['Regular practice', 'Open to new approaches'],
+          potentialBarriers: ['Lack of specific focus', 'Low motivation']
         }
       ]
     };
