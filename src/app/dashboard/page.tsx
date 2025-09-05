@@ -27,7 +27,7 @@ interface AnalyticsData {
   averageReportGenTime: number; // in milliseconds
   thisMonthAssessments: number;
   improvementTrend: 'improving' | 'stable' | 'declining';
-  typeDistribution: Record<AssessmentType, number>;
+  typeDistribution: Partial<Record<AssessmentType, number>>;
 }
 
 export default function DashboardPage() {
@@ -54,7 +54,7 @@ export default function DashboardPage() {
         averageReportGenTime: 0,
         thisMonthAssessments: 0,
         improvementTrend: 'stable',
-        typeDistribution: { anxiety: 0, ocd: 0, anger: 0, general: 0 }
+        typeDistribution: {}
       };
     }
 
@@ -98,13 +98,15 @@ export default function DashboardPage() {
       return dist;
     }, {} as Record<AssessmentType, number>);
 
-    // Ensure all types are represented
-    const completeTypeDistribution: Record<AssessmentType, number> = {
-      anxiety: typeDistribution.anxiety || 0,
-      ocd: typeDistribution.ocd || 0,
-      anger: typeDistribution.anger || 0,
-      general: typeDistribution.general || 0
-    };
+    // Ensure all types are represented (only show types that have data)
+    const completeTypeDistribution: Partial<Record<AssessmentType, number>> = {};
+    
+    // Only include types that have assessments
+    Object.entries(typeDistribution).forEach(([type, count]) => {
+      if (count > 0) {
+        completeTypeDistribution[type as AssessmentType] = count;
+      }
+    });
 
 
     // Calculate improvement trend (simplified)
@@ -188,6 +190,7 @@ export default function DashboardPage() {
 
   const getAssessmentTypeColor = (type: AssessmentType) => {
     switch (type) {
+      // CBT Family
       case 'anxiety':
         return {
           bg: 'from-blue-500 to-indigo-600',
@@ -206,6 +209,64 @@ export default function DashboardPage() {
           icon: 'bullseye' as IconProp,
           emoji: '🎯'
         };
+      case 'behavioral-activation':
+        return {
+          bg: 'from-cyan-500 to-blue-600',
+          accent: 'bg-cyan-100 text-cyan-700',
+          border: 'border-cyan-200',
+          text: 'text-cyan-800',
+          icon: 'play' as IconProp,
+          emoji: '🎬'
+        };
+      case 'habit-reversal':
+        return {
+          bg: 'from-indigo-500 to-purple-600',
+          accent: 'bg-indigo-100 text-indigo-700',
+          border: 'border-indigo-200',
+          text: 'text-indigo-800',
+          icon: 'rotate-right' as IconProp,
+          emoji: '🔄'
+        };
+      case 'problem-solving':
+        return {
+          bg: 'from-emerald-500 to-teal-600',
+          accent: 'bg-emerald-100 text-emerald-700',
+          border: 'border-emerald-200',
+          text: 'text-emerald-800',
+          icon: 'puzzle-piece' as IconProp,
+          emoji: '🧩'
+        };
+      
+      // Mindfulness & Acceptance
+      case 'mindfulness':
+        return {
+          bg: 'from-teal-500 to-green-600',
+          accent: 'bg-teal-100 text-teal-700',
+          border: 'border-teal-200',
+          text: 'text-teal-800',
+          icon: 'leaf' as IconProp,
+          emoji: '🍃'
+        };
+      case 'acceptance-commitment':
+        return {
+          bg: 'from-lime-500 to-green-600',
+          accent: 'bg-lime-100 text-lime-700',
+          border: 'border-lime-200',
+          text: 'text-lime-800',
+          icon: 'seedling' as IconProp,
+          emoji: '🌱'
+        };
+      case 'mindful-cognitive':
+        return {
+          bg: 'from-green-500 to-emerald-600',
+          accent: 'bg-green-100 text-green-700',
+          border: 'border-green-200',
+          text: 'text-green-800',
+          icon: 'tree' as IconProp,
+          emoji: '🌳'
+        };
+      
+      // Emotion Regulation & Interpersonal
       case 'anger':
         return {
           bg: 'from-red-500 to-rose-600',
@@ -215,14 +276,168 @@ export default function DashboardPage() {
           icon: 'fire' as IconProp,
           emoji: '🔥'
         };
-      case 'general':
+      case 'emotion-regulation':
         return {
-          bg: 'from-green-500 to-emerald-600',
+          bg: 'from-rose-500 to-pink-600',
+          accent: 'bg-rose-100 text-rose-700',
+          border: 'border-rose-200',
+          text: 'text-rose-800',
+          icon: 'heart-pulse' as IconProp,
+          emoji: '💗'
+        };
+      case 'interpersonal':
+        return {
+          bg: 'from-pink-500 to-rose-600',
+          accent: 'bg-pink-100 text-pink-700',
+          border: 'border-pink-200',
+          text: 'text-pink-800',
+          icon: 'users' as IconProp,
+          emoji: '👥'
+        };
+      
+      // Compassion & Self-Kindness
+      case 'self-compassion':
+        return {
+          bg: 'from-amber-500 to-orange-600',
+          accent: 'bg-amber-100 text-amber-700',
+          border: 'border-amber-200',
+          text: 'text-amber-800',
+          icon: 'heart-handshake' as IconProp,
+          emoji: '🤗'
+        };
+      case 'positive-psychology':
+        return {
+          bg: 'from-yellow-500 to-amber-600',
+          accent: 'bg-yellow-100 text-yellow-700',
+          border: 'border-yellow-200',
+          text: 'text-yellow-800',
+          icon: 'sun' as IconProp,
+          emoji: '☀️'
+        };
+      case 'strengths':
+        return {
+          bg: 'from-orange-500 to-red-600',
+          accent: 'bg-orange-100 text-orange-700',
+          border: 'border-orange-200',
+          text: 'text-orange-800',
+          icon: 'award' as IconProp,
+          emoji: '🏆'
+        };
+      
+      // Lifestyle & Holistic
+      case 'sleep':
+        return {
+          bg: 'from-slate-500 to-gray-600',
+          accent: 'bg-slate-100 text-slate-700',
+          border: 'border-slate-200',
+          text: 'text-slate-800',
+          icon: 'moon' as IconProp,
+          emoji: '🌙'
+        };
+      case 'relaxation':
+        return {
+          bg: 'from-sky-500 to-blue-600',
+          accent: 'bg-sky-100 text-sky-700',
+          border: 'border-sky-200',
+          text: 'text-sky-800',
+          icon: 'cloud' as IconProp,
+          emoji: '☁️'
+        };
+      case 'breathing':
+        return {
+          bg: 'from-cyan-500 to-teal-600',
+          accent: 'bg-cyan-100 text-cyan-700',
+          border: 'border-cyan-200',
+          text: 'text-cyan-800',
+          icon: 'wind' as IconProp,
+          emoji: '💨'
+        };
+      case 'exercise':
+        return {
+          bg: 'from-violet-500 to-purple-600',
+          accent: 'bg-violet-100 text-violet-700',
+          border: 'border-violet-200',
+          text: 'text-violet-800',
+          icon: 'dumbbell' as IconProp,
+          emoji: '💪'
+        };
+      case 'nutrition':
+        return {
+          bg: 'from-green-500 to-lime-600',
           accent: 'bg-green-100 text-green-700',
           border: 'border-green-200',
           text: 'text-green-800',
+          icon: 'apple-whole' as IconProp,
+          emoji: '🍎'
+        };
+      
+      // Specialized Therapies
+      case 'trauma':
+        return {
+          bg: 'from-gray-500 to-slate-600',
+          accent: 'bg-gray-100 text-gray-700',
+          border: 'border-gray-200',
+          text: 'text-gray-800',
+          icon: 'shield-heart' as IconProp,
+          emoji: '🛡️'
+        };
+      case 'schema':
+        return {
+          bg: 'from-stone-500 to-gray-600',
+          accent: 'bg-stone-100 text-stone-700',
+          border: 'border-stone-200',
+          text: 'text-stone-800',
+          icon: 'sitemap' as IconProp,
+          emoji: '🗺️'
+        };
+      case 'narrative':
+        return {
+          bg: 'from-fuchsia-500 to-purple-600',
+          accent: 'bg-fuchsia-100 text-fuchsia-700',
+          border: 'border-fuchsia-200',
+          text: 'text-fuchsia-800',
+          icon: 'book-open' as IconProp,
+          emoji: '📖'
+        };
+      case 'motivation':
+        return {
+          bg: 'from-red-500 to-orange-600',
+          accent: 'bg-red-100 text-red-700',
+          border: 'border-red-200',
+          text: 'text-red-800',
+          icon: 'rocket' as IconProp,
+          emoji: '🚀'
+        };
+      case 'solution-focused':
+        return {
+          bg: 'from-emerald-500 to-green-600',
+          accent: 'bg-emerald-100 text-emerald-700',
+          border: 'border-emerald-200',
+          text: 'text-emerald-800',
+          icon: 'lightbulb' as IconProp,
+          emoji: '💡'
+        };
+      
+      // General
+      case 'general':
+        return {
+          bg: 'from-blue-500 to-indigo-600',
+          accent: 'bg-blue-100 text-blue-700',
+          border: 'border-blue-200',
+          text: 'text-blue-800',
           icon: 'heart' as IconProp,
           emoji: '💚'
+        };
+      
+      // Default fallback
+      default:
+        return {
+          bg: 'from-gray-500 to-slate-600',
+          accent: 'bg-gray-100 text-gray-700',
+          border: 'border-gray-200',
+          text: 'text-gray-800',
+          icon: 'circle-question' as IconProp,
+          emoji: '❓'
         };
     }
   };
@@ -612,9 +827,20 @@ export default function DashboardPage() {
                       <div className="flex flex-wrap gap-2">
                         {[
                           { key: 'all', label: 'All', icon: 'chart-bar' as IconProp },
+                          // CBT Family
                           { key: 'anxiety', label: 'Anxiety', icon: 'brain' as IconProp },
                           { key: 'ocd', label: 'OCD', icon: 'bullseye' as IconProp },
+                          { key: 'behavioral-activation', label: 'Behavioral', icon: 'play' as IconProp },
+                          // Mindfulness
+                          { key: 'mindfulness', label: 'Mindfulness', icon: 'leaf' as IconProp },
+                          // Emotions
                           { key: 'anger', label: 'Anger', icon: 'fire' as IconProp },
+                          { key: 'emotion-regulation', label: 'Emotions', icon: 'heart-pulse' as IconProp },
+                          // Lifestyle
+                          { key: 'sleep', label: 'Sleep', icon: 'moon' as IconProp },
+                          { key: 'exercise', label: 'Exercise', icon: 'dumbbell' as IconProp },
+                          // Specialized
+                          { key: 'trauma', label: 'Trauma', icon: 'shield-heart' as IconProp },
                           { key: 'general', label: 'General', icon: 'heart' as IconProp },
                         ].map((option) => (
                           <button
@@ -849,9 +1075,20 @@ export default function DashboardPage() {
                     <div className="flex flex-wrap gap-2">
                       {[
                         { key: 'all', label: 'All Types', icon: 'chart-bar' as IconProp },
+                        // CBT Family
                         { key: 'anxiety', label: 'Anxiety', icon: 'brain' as IconProp },
                         { key: 'ocd', label: 'OCD', icon: 'bullseye' as IconProp },
+                        { key: 'behavioral-activation', label: 'Behavioral', icon: 'play' as IconProp },
+                        // Mindfulness
+                        { key: 'mindfulness', label: 'Mindfulness', icon: 'leaf' as IconProp },
+                        // Emotions
                         { key: 'anger', label: 'Anger', icon: 'fire' as IconProp },
+                        { key: 'emotion-regulation', label: 'Emotions', icon: 'heart-pulse' as IconProp },
+                        // Lifestyle
+                        { key: 'sleep', label: 'Sleep', icon: 'moon' as IconProp },
+                        { key: 'exercise', label: 'Exercise', icon: 'dumbbell' as IconProp },
+                        // Specialized
+                        { key: 'trauma', label: 'Trauma', icon: 'shield-heart' as IconProp },
                         { key: 'general', label: 'General', icon: 'heart' as IconProp },
                       ].map((option) => (
                         <button

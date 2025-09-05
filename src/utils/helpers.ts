@@ -44,23 +44,91 @@ export const timeAgo = (date: Date): string => {
 };
 
 export const getAssessmentTitle = (type: AssessmentType): string => {
-  const titles = {
+  const titles: Record<AssessmentType, string> = {
+    // CBT Family
     anxiety: 'Anxiety Assessment',
     ocd: 'OCD Assessment',
+    'behavioral-activation': 'Behavioral Activation Assessment',
+    'habit-reversal': 'Habit Reversal Assessment',
+    'problem-solving': 'Problem Solving Assessment',
+    
+    // Mindfulness & Acceptance
+    mindfulness: 'Mindfulness Assessment',
+    'acceptance-commitment': 'Acceptance & Commitment Assessment',
+    'mindful-cognitive': 'Mindful Cognitive Assessment',
+    
+    // Emotion Regulation & Interpersonal
     anger: 'Anger Management Assessment',
+    'emotion-regulation': 'Emotion Regulation Assessment',
+    interpersonal: 'Interpersonal Skills Assessment',
+    
+    // Compassion & Self-Kindness
+    'self-compassion': 'Self-Compassion Assessment',
+    'positive-psychology': 'Positive Psychology Assessment',
+    strengths: 'Personal Strengths Assessment',
+    
+    // Lifestyle & Holistic
+    sleep: 'Sleep Health Assessment',
+    relaxation: 'Relaxation & Stress Relief Assessment',
+    breathing: 'Breathing & Mindfulness Assessment',
+    exercise: 'Exercise & Movement Assessment',
+    nutrition: 'Nutrition & Wellness Assessment',
+    
+    // Specialized Therapies
+    trauma: 'Trauma Recovery Assessment',
+    schema: 'Schema Therapy Assessment',
+    narrative: 'Narrative Therapy Assessment',
+    motivation: 'Motivational Assessment',
+    'solution-focused': 'Solution-Focused Assessment',
+    
+    // General
     general: 'General Wellbeing Assessment'
   };
-  return titles[type];
+  return titles[type] || 'Unknown Assessment';
 };
 
 export const getAssessmentDescription = (type: AssessmentType): string => {
-  const descriptions = {
+  const descriptions: Record<AssessmentType, string> = {
+    // CBT Family
     anxiety: 'Explore your anxiety patterns and discover personalized coping strategies',
     ocd: 'Understand your thoughts and behaviors to find effective management techniques',
+    'behavioral-activation': 'Overcome avoidance patterns and engage in meaningful activities',
+    'habit-reversal': 'Identify and replace unwanted habits with healthier alternatives',
+    'problem-solving': 'Develop structured approaches to life challenges and decision-making',
+    
+    // Mindfulness & Acceptance
+    mindfulness: 'Cultivate present-moment awareness and mindful living practices',
+    'acceptance-commitment': 'Accept difficult thoughts while committing to value-driven actions',
+    'mindful-cognitive': 'Blend mindfulness with cognitive strategies for emotional balance',
+    
+    // Emotion Regulation & Interpersonal
     anger: 'Learn about your anger triggers and develop healthier expression methods',
+    'emotion-regulation': 'Master skills for managing intense emotions and mood fluctuations',
+    interpersonal: 'Enhance communication and relationship skills for better connections',
+    
+    // Compassion & Self-Kindness
+    'self-compassion': 'Develop kindness toward yourself and reduce self-criticism',
+    'positive-psychology': 'Focus on strengths, gratitude, and optimistic thinking patterns',
+    strengths: 'Identify and leverage your personal strengths for greater resilience',
+    
+    // Lifestyle & Holistic
+    sleep: 'Improve sleep quality and establish healthy bedtime routines',
+    relaxation: 'Learn effective techniques for stress relief and deep relaxation',
+    breathing: 'Master breathing techniques for calm and anxiety management',
+    exercise: 'Integrate movement and physical activity for mental health benefits',
+    nutrition: 'Explore the connection between nutrition and emotional wellbeing',
+    
+    // Specialized Therapies
+    trauma: 'Process difficult experiences with specialized trauma-informed approaches',
+    schema: 'Identify and heal deep-rooted patterns that affect your relationships',
+    narrative: 'Reframe your life story to empower personal growth and healing',
+    motivation: 'Explore and enhance your motivation for positive life changes',
+    'solution-focused': 'Build on what works and create small wins toward your goals',
+    
+    // General
     general: 'Assess your overall mental wellbeing and identify areas for growth'
   };
-  return descriptions[type];
+  return descriptions[type] || 'Comprehensive assessment for personal growth and wellbeing';
 };
 
 export const getEnvironmentColors = (environment: EnvironmentTheme): { primary: string; secondary: string; accent: string } => {
@@ -143,13 +211,47 @@ export const calculateProgress = (currentStep: number, totalSteps: number): numb
 };
 
 export const getCompletionMessage = (type: AssessmentType): string => {
-  const messages = {
+  const messages: Record<AssessmentType, string> = {
+    // CBT Family
     anxiety: 'You\'ve completed your anxiety assessment journey. Your insights are being carefully crafted...',
     ocd: 'Your OCD assessment is complete. We\'re analyzing your responses to provide personalized guidance...',
+    'behavioral-activation': 'Great work completing your behavioral activation assessment. Your motivation insights are being prepared...',
+    'habit-reversal': 'Well done on your habit reversal assessment. Your personalized habit change strategies are being created...',
+    'problem-solving': 'Excellent! Your problem-solving assessment is complete. Your systematic approach insights are being generated...',
+    
+    // Mindfulness & Acceptance
+    mindfulness: 'Your mindfulness assessment journey is complete. Your awareness and presence insights are being crafted...',
+    'acceptance-commitment': 'Wonderful! Your acceptance & commitment assessment is done. Your values-based insights are being prepared...',
+    'mindful-cognitive': 'Great job completing your mindful cognitive assessment. Your balanced awareness insights are being created...',
+    
+    // Emotion Regulation & Interpersonal
     anger: 'Well done on completing your anger assessment. Your personalized report is being generated...',
+    'emotion-regulation': 'Excellent work on your emotion regulation assessment. Your emotional balance insights are being prepared...',
+    interpersonal: 'Your interpersonal skills assessment is complete. Your relationship insights are being carefully crafted...',
+    
+    // Compassion & Self-Kindness
+    'self-compassion': 'Beautiful work on your self-compassion assessment. Your kindness insights are being lovingly prepared...',
+    'positive-psychology': 'Wonderful! Your positive psychology assessment is complete. Your strengths insights are being generated...',
+    strengths: 'Excellent! Your personal strengths assessment is done. Your empowerment insights are being created...',
+    
+    // Lifestyle & Holistic
+    sleep: 'Your sleep health assessment is complete. Your restorative insights are being carefully prepared...',
+    relaxation: 'Great job on your relaxation assessment. Your stress relief insights are being peacefully crafted...',
+    breathing: 'Your breathing & mindfulness assessment is complete. Your calming insights are being generated...',
+    exercise: 'Excellent work on your exercise assessment. Your movement and wellness insights are being prepared...',
+    nutrition: 'Your nutrition & wellness assessment is complete. Your nourishing insights are being carefully crafted...',
+    
+    // Specialized Therapies
+    trauma: 'Your trauma recovery assessment is complete. Your healing insights are being compassionately prepared...',
+    schema: 'Well done on your schema therapy assessment. Your pattern insights are being carefully generated...',
+    narrative: 'Your narrative therapy assessment is complete. Your empowering story insights are being crafted...',
+    motivation: 'Excellent! Your motivational assessment is done. Your change readiness insights are being prepared...',
+    'solution-focused': 'Great work on your solution-focused assessment. Your strength-based insights are being generated...',
+    
+    // General
     general: 'Thank you for completing your wellbeing assessment. Your comprehensive report is being prepared...'
   };
-  return messages[type];
+  return messages[type] || 'Thank you for completing your assessment. Your personalized insights are being prepared...';
 };
 
 export const validateEmail = (email: string): boolean => {

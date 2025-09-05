@@ -5,7 +5,40 @@ export interface User {
   createdAt: Date;
 }
 
-export type AssessmentType = 'anxiety' | 'ocd' | 'anger' | 'general';
+// Expanded Assessment Types based on Therapy Catalog
+export type AssessmentType = 
+  // CBT Family
+  | 'anxiety'
+  | 'ocd' 
+  | 'behavioral-activation'
+  | 'habit-reversal'
+  | 'problem-solving'
+  // Mindfulness & Acceptance
+  | 'mindfulness'
+  | 'acceptance-commitment'
+  | 'mindful-cognitive'
+  // Emotion Regulation & Interpersonal
+  | 'anger'
+  | 'emotion-regulation'
+  | 'interpersonal'
+  // Compassion & Self-Kindness
+  | 'self-compassion'
+  | 'positive-psychology'
+  | 'strengths'
+  // Lifestyle & Holistic
+  | 'sleep'
+  | 'relaxation'
+  | 'breathing'
+  | 'exercise'
+  | 'nutrition'
+  // Specialized Therapies
+  | 'trauma'
+  | 'schema'
+  | 'narrative'
+  | 'motivation'
+  | 'solution-focused'
+  // General
+  | 'general';
 
 export type QuestionType = 'mcq' | 'open-ended' | 'scale' | 'mood';
 
