@@ -55,6 +55,42 @@ export default function HomePage() {
       icon: 'heart' as IconProp,
       color: 'text-green-600',
       gradient: 'from-green-500 to-emerald-600'
+    },
+    {
+      type: 'ocd',
+      icon: 'arrows-spin' as IconProp,
+      color: 'text-purple-600',
+      gradient: 'from-purple-500 to-violet-600'
+    },
+    {
+      type: 'anger',
+      icon: 'fire' as IconProp,
+      color: 'text-red-600',
+      gradient: 'from-red-500 to-rose-600'
+    },
+    {
+      type: 'trauma',
+      icon: 'shield-heart' as IconProp,
+      color: 'text-indigo-600',
+      gradient: 'from-indigo-500 to-blue-600'
+    },
+    {
+      type: 'emotion-regulation',
+      icon: 'scale-balanced' as IconProp,
+      color: 'text-emerald-600',
+      gradient: 'from-emerald-500 to-teal-600'
+    },
+    {
+      type: 'acceptance-commitment',
+      icon: 'check-circle' as IconProp,
+      color: 'text-cyan-600',
+      gradient: 'from-cyan-500 to-blue-600'
+    },
+    {
+      type: 'breathing',
+      icon: 'lungs' as IconProp,
+      color: 'text-sky-600',
+      gradient: 'from-sky-500 to-blue-600'
     }
   ];
 
@@ -186,7 +222,7 @@ export default function HomePage() {
             Select from our featured assessments below, or explore 25+ therapeutic assessments from the dashboard
           </p>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+          <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-6 mb-12">
             {assessmentTypes.map((assessment, index) => (
               <motion.div
                 key={assessment.type}

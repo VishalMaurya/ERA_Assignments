@@ -2,9 +2,13 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { IconProp } from '@fortawesome/fontawesome-svg-core';
 
 export default function TherapyPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('anxiety');
+  const router = useRouter();
 
   const therapyCategories = [
     { id: 'anxiety', name: 'Anxiety Management', color: 'blue', exercises: 5 },
@@ -36,6 +40,18 @@ export default function TherapyPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-nature-50">
+      {/* Dashboard Link */}
+      <motion.button
+        initial={{ opacity: 0, x: 50 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.5 }}
+        onClick={() => router.push('/dashboard')}
+        className="fixed top-4 right-4 z-30 bg-emerald-600 hover:bg-emerald-700 text-white p-3 rounded-full shadow-lg transition-colors"
+        title="Go to Dashboard"
+      >
+        <FontAwesomeIcon icon={'chart-line' as IconProp} className="w-5 h-5" />
+      </motion.button>
+
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         {/* Header */}
         <motion.div

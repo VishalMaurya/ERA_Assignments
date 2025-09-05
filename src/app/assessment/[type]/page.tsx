@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { AssessmentType, Assessment, Question, QuestionResponse, JourneyState } from '@/types';
 import { getQuestionsForAssessment } from '@/data/questions';
 import { generateId, getAssessmentTitle } from '@/utils/helpers';
@@ -310,6 +312,18 @@ export default function AssessmentPage() {
         assessmentTitle={getAssessmentTitle(assessmentType)}
         onExit={handleExitAssessment}
       />
+
+      {/* Dashboard Link */}
+      <motion.button
+        initial={{ opacity: 0, x: 50 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 1 }}
+        onClick={() => router.push('/dashboard')}
+        className="fixed top-4 right-4 z-30 bg-emerald-600 hover:bg-emerald-700 text-white p-3 rounded-full shadow-lg transition-colors"
+        title="Go to Dashboard"
+      >
+        <FontAwesomeIcon icon={'chart-line' as IconProp} className="w-5 h-5" />
+      </motion.button>
 
       {/* Question Content */}
       <div className="relative z-10 container mx-auto px-4 py-8">

@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { Assessment, AssessmentReport } from '@/types';
 import { StorageService } from '@/utils/storage';
 import { GeminiService } from '@/lib/gemini';
@@ -143,6 +145,18 @@ export default function ReportPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-calm-50 to-primary-50">
+      {/* Dashboard Link */}
+      <motion.button
+        initial={{ opacity: 0, x: 50 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.5 }}
+        onClick={() => router.push('/dashboard')}
+        className="fixed top-4 right-4 z-30 bg-emerald-600 hover:bg-emerald-700 text-white p-3 rounded-full shadow-lg transition-colors"
+        title="Go to Dashboard"
+      >
+        <FontAwesomeIcon icon={'chart-line' as IconProp} className="w-5 h-5" />
+      </motion.button>
+
       <AnimatePresence mode="wait">
         {isGenerating ? (
           <ReportGeneration
