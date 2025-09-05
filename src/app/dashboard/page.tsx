@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FontAwesomeIcon, IconProp } from '@/lib/fontawesome';
 import { Assessment, AssessmentReport, AssessmentType } from '@/types';
@@ -18,13 +18,138 @@ interface AssessmentCardData {
   report?: AssessmentReport;
 }
 
+interface AnalyticsData {
+  totalAssessments: number;
+  totalTimeSpent: number; // in minutes
+  averageSessionTime: number;
+  completionRate: number;
+  totalReports: number;
+  averageReportGenTime: number; // in milliseconds
+  thisMonthAssessments: number;
+  improvementTrend: 'improving' | 'stable' | 'declining';
+  typeDistribution: Record<AssessmentType, number>;
+  weeklyActivity: number[];
+}
+
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData>({ assessments: [], reports: [] });
   const [filteredData, setFilteredData] = useState<AssessmentCardData[]>([]);
   const [activeFilter, setActiveFilter] = useState<'all' | AssessmentType>('all');
   const [sortBy, setSortBy] = useState<'date' | 'type' | 'completion'>('date');
   const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState<'cards' | 'analytics'>('analytics');
   const router = useRouter();
+
+  // Calculate comprehensive analytics
+  const analytics = useMemo<AnalyticsData>(() => {
+    const assessments = data.assessments;
+    const reports = data.reports;
+
+    if (assessments.length === 0) {
+      return {
+        totalAssessments: 0,
+        totalTimeSpent: 0,
+        averageSessionTime: 0,
+        completionRate: 0,
+        totalReports: 0,
+        averageReportGenTime: 0,
+        thisMonthAssessments: 0,
+        improvementTrend: 'stable',
+        typeDistribution: { anxiety: 0, ocd: 0, anger: 0, general: 0 },
+        weeklyActivity: [0, 0, 0, 0, 0, 0, 0]
+      };
+    }
+
+    // Calculate total time spent (in minutes)
+    const totalTimeSpentMs = assessments.reduce((total, assessment) => {
+      if (assessment.completedAt && assessment.startedAt) {
+        return total + (new Date(assessment.completedAt).getTime() - new Date(assessment.startedAt).getTime());
+      }
+      return total;
+    }, 0);
+    const totalTimeSpent = Math.round(totalTimeSpentMs / (1000 * 60));
+
+    // Calculate average session time
+    const validSessions = assessments.filter(a => a.completedAt && a.startedAt);
+    const averageSessionTime = validSessions.length > 0 
+      ? Math.round(totalTimeSpent / validSessions.length) 
+      : 0;
+
+    // Calculate completion rate
+    const totalQuestions = assessments.reduce((total, a) => total + a.questions.length, 0);
+    const totalAnswered = assessments.reduce((total, a) => total + a.responses.length, 0);
+    const completionRate = totalQuestions > 0 ? Math.round((totalAnswered / totalQuestions) * 100) : 0;
+
+    // Calculate average report generation time
+    const reportsWithTime = reports.filter(r => r.generationTimeMs);
+    const averageReportGenTime = reportsWithTime.length > 0
+      ? Math.round(reportsWithTime.reduce((total, r) => total + (r.generationTimeMs || 0), 0) / reportsWithTime.length)
+      : 0;
+
+    // Calculate this month's assessments
+    const thisMonth = new Date();
+    const thisMonthAssessments = assessments.filter(a => {
+      const completedAt = new Date(a.completedAt || 0);
+      return completedAt.getMonth() === thisMonth.getMonth() && 
+             completedAt.getFullYear() === thisMonth.getFullYear();
+    }).length;
+
+    // Calculate type distribution
+    const typeDistribution = assessments.reduce((dist, assessment) => {
+      dist[assessment.type] = (dist[assessment.type] || 0) + 1;
+      return dist;
+    }, {} as Record<AssessmentType, number>);
+
+    // Ensure all types are represented
+    const completeTypeDistribution: Record<AssessmentType, number> = {
+      anxiety: typeDistribution.anxiety || 0,
+      ocd: typeDistribution.ocd || 0,
+      anger: typeDistribution.anger || 0,
+      general: typeDistribution.general || 0
+    };
+
+    // Calculate weekly activity (last 7 days)
+    const weeklyActivity = Array(7).fill(0);
+    const today = new Date();
+    assessments.forEach(assessment => {
+      if (assessment.completedAt) {
+        const completedDate = new Date(assessment.completedAt);
+        const daysAgo = Math.floor((today.getTime() - completedDate.getTime()) / (1000 * 60 * 60 * 24));
+        if (daysAgo >= 0 && daysAgo < 7) {
+          weeklyActivity[6 - daysAgo]++;
+        }
+      }
+    });
+
+    // Calculate improvement trend (simplified)
+    const recentAssessments = assessments.filter(a => {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      return new Date(a.completedAt || 0) >= thirtyDaysAgo;
+    });
+
+    let improvementTrend: 'improving' | 'stable' | 'declining' = 'stable';
+    if (recentAssessments.length >= 2) {
+      const recentAvgCompletion = recentAssessments.reduce((total, a) => 
+        total + (a.responses.length / a.questions.length), 0) / recentAssessments.length;
+      
+      if (recentAvgCompletion > 0.8) improvementTrend = 'improving';
+      else if (recentAvgCompletion < 0.6) improvementTrend = 'declining';
+    }
+
+    return {
+      totalAssessments: assessments.length,
+      totalTimeSpent,
+      averageSessionTime,
+      completionRate,
+      totalReports: reports.length,
+      averageReportGenTime,
+      thisMonthAssessments,
+      improvementTrend,
+      typeDistribution: completeTypeDistribution,
+      weeklyActivity
+    };
+  }, [data]);
 
   useEffect(() => {
     loadDashboardData();
@@ -117,52 +242,25 @@ export default function DashboardPage() {
     }
   };
 
-  const getCompletionLevel = (assessment: Assessment) => {
-    const completion = (assessment.responses.length / assessment.questions.length) * 100;
-    if (completion === 100) return { level: 'Complete', color: 'text-green-600', bg: 'bg-green-100' };
-    if (completion >= 80) return { level: 'Almost Done', color: 'text-yellow-600', bg: 'bg-yellow-100' };
-    return { level: 'Partial', color: 'text-orange-600', bg: 'bg-orange-100' };
+  const formatTime = (minutes: number) => {
+    if (minutes < 60) return `${minutes}m`;
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`;
   };
 
-  const getTimeSpent = (assessment: Assessment) => {
-    if (!assessment.completedAt || !assessment.startedAt) return 'N/A';
-    const diffMs = new Date(assessment.completedAt).getTime() - new Date(assessment.startedAt).getTime();
-    const minutes = Math.round(diffMs / (1000 * 60));
-    if (minutes >= 60) {
-      const hours = Math.floor(minutes / 60);
-      const remainingMinutes = minutes % 60;
-      return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`;
-    }
-    return `${minutes}m`;
+  const formatGenTime = (ms: number) => {
+    if (ms < 1000) return `${ms}ms`;
+    const seconds = Math.round(ms / 1000 * 10) / 10;
+    return `${seconds}s`;
   };
 
-  const getEmotionalInsight = (assessment: Assessment, report?: AssessmentReport) => {
-    if (report) {
-      // Use AI-generated severity if available
-      const severityLevel = report.severityLevel || 'moderate';
-      switch (severityLevel) {
-        case 'mild':
-          return { text: 'Positive outlook', color: 'text-green-600', icon: 'smile' as IconProp };
-        case 'moderate':
-          return { text: 'Balanced state', color: 'text-yellow-600', icon: 'meh' as IconProp };
-        case 'high':
-          return { text: 'Needs attention', color: 'text-red-600', icon: 'frown' as IconProp };
-        default:
-          return { text: 'Moderate level', color: 'text-blue-600', icon: 'meh' as IconProp };
-      }
+  const getTrendIcon = (trend: string) => {
+    switch (trend) {
+      case 'improving': return { icon: 'arrow-up' as IconProp, color: 'text-green-600', bg: 'bg-green-100' };
+      case 'declining': return { icon: 'arrow-down' as IconProp, color: 'text-red-600', bg: 'bg-red-100' };
+      default: return { icon: 'minus' as IconProp, color: 'text-yellow-600', bg: 'bg-yellow-100' };
     }
-
-    // Fallback: analyze mood from responses
-    const moods = assessment.responses.map(r => r.mood).filter(Boolean);
-    const positiveMoods = moods.filter(m => ['happy', 'calm', 'hopeful'].includes(m || ''));
-    const negativeMoods = moods.filter(m => ['sad', 'anxious', 'frustrated'].includes(m || ''));
-
-    if (positiveMoods.length > negativeMoods.length) {
-      return { text: 'Positive journey', color: 'text-green-600', icon: 'smile' as IconProp };
-    } else if (negativeMoods.length > positiveMoods.length) {
-      return { text: 'Challenging path', color: 'text-red-600', icon: 'frown' as IconProp };
-    }
-    return { text: 'Mixed feelings', color: 'text-yellow-600', icon: 'meh' as IconProp };
   };
 
   const handleViewReport = (assessmentId: string) => {
@@ -173,14 +271,6 @@ export default function DashboardPage() {
     router.push('/');
   };
 
-  const filterOptions = [
-    { key: 'all', label: 'All Assessments', icon: 'chart-bar' as IconProp },
-    { key: 'anxiety', label: 'Anxiety', icon: 'brain' as IconProp },
-    { key: 'ocd', label: 'OCD', icon: 'bullseye' as IconProp },
-    { key: 'anger', label: 'Anger', icon: 'fire' as IconProp },
-    { key: 'general', label: 'General', icon: 'heart' as IconProp },
-  ];
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-calm-50 to-primary-50 flex items-center justify-center">
@@ -188,6 +278,9 @@ export default function DashboardPage() {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           className="text-center"
+          role="status"
+          aria-live="polite"
+          aria-label="Loading dashboard data"
         >
           <motion.div
             animate={{ rotate: 360 }}
@@ -196,8 +289,9 @@ export default function DashboardPage() {
             style={{
               background: 'conic-gradient(from 0deg, transparent, #3B82F6, transparent)'
             }}
+            aria-hidden="true"
           />
-          <p className="text-calm-600">Loading your journey...</p>
+          <p className="text-calm-600">Loading your analytics...</p>
         </motion.div>
       </div>
     );
@@ -206,16 +300,17 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-calm-50 to-primary-50">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-calm-200">
+      <header className="bg-white shadow-sm border-b border-calm-200">
         <div className="container mx-auto px-4 py-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
               <motion.h1 
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="text-3xl md:text-4xl font-bold text-calm-800 mb-2 flex items-center"
+                id="dashboard-title"
               >
-                <FontAwesomeIcon icon={'chart-line' as IconProp} className="w-8 h-8 mr-3 text-primary-600" />
+                <FontAwesomeIcon icon={'chart-line' as IconProp} className="w-8 h-8 mr-3 text-primary-600" aria-hidden="true" />
                 Mental Health Analytics
               </motion.h1>
               <motion.p 
@@ -223,231 +318,508 @@ export default function DashboardPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
                 className="text-calm-600"
+                aria-describedby="dashboard-title"
               >
-                Track your mental health progress and insights
+                Comprehensive insights into your mental health journey
               </motion.p>
             </div>
             
-            <motion.button
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleNewAssessment}
-              className="btn-primary flex items-center space-x-2 mt-4 md:mt-0"
-            >
-              <FontAwesomeIcon icon={'home' as IconProp} className="w-4 h-4" />
-              <span>New Assessment</span>
-            </motion.button>
+            <div className="flex flex-col sm:flex-row gap-3">
+              {/* View Mode Toggle */}
+              <div className="flex bg-calm-100 rounded-lg p-1" role="tablist" aria-label="Dashboard view modes">
+                <button
+                  onClick={() => setViewMode('analytics')}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                    viewMode === 'analytics'
+                      ? 'bg-white text-primary-700 shadow-sm'
+                      : 'text-calm-600 hover:text-calm-800'
+                  }`}
+                  role="tab"
+                  aria-selected={viewMode === 'analytics'}
+                  aria-controls="analytics-panel"
+                >
+                  <FontAwesomeIcon icon={'chart-bar' as IconProp} className="w-4 h-4 mr-2" aria-hidden="true" />
+                  Analytics
+                </button>
+                <button
+                  onClick={() => setViewMode('cards')}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                    viewMode === 'cards'
+                      ? 'bg-white text-primary-700 shadow-sm'
+                      : 'text-calm-600 hover:text-calm-800'
+                  }`}
+                  role="tab"
+                  aria-selected={viewMode === 'cards'}
+                  aria-controls="cards-panel"
+                >
+                  <FontAwesomeIcon icon={'table' as IconProp} className="w-4 h-4 mr-2" aria-hidden="true" />
+                  Assessments
+                </button>
+              </div>
+
+              <motion.button
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleNewAssessment}
+                className="btn-primary flex items-center space-x-2"
+                aria-label="Start a new mental health assessment"
+              >
+                <FontAwesomeIcon icon={'plus' as IconProp} className="w-4 h-4" aria-hidden="true" />
+                <span>New Assessment</span>
+              </motion.button>
+            </div>
           </div>
         </div>
-      </div>
+      </header>
 
-      <div className="container mx-auto px-4 py-8">
-        {/* Filters and Stats */}
-        <div className="grid lg:grid-cols-4 gap-6 mb-8">
-          {/* Quick Stats */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="lg:col-span-1"
-          >
-            <div className="card p-6">
-              <h3 className="font-semibold text-calm-800 mb-4 flex items-center">
-                <FontAwesomeIcon icon={'chart-line' as IconProp} className="w-5 h-5 mr-2 text-primary-600" />
-                Overview
-              </h3>
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-calm-600">Total Assessments</span>
-                  <span className="font-semibold text-calm-800">{data.assessments.length}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-calm-600">Reports Generated</span>
-                  <span className="font-semibold text-calm-800">{data.reports.length}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-calm-600">This Month</span>
-                  <span className="font-semibold text-calm-800">
-                    {data.assessments.filter(a => {
-                      const thisMonth = new Date();
-                      const completedAt = new Date(a.completedAt || 0);
-                      return completedAt.getMonth() === thisMonth.getMonth() && 
-                             completedAt.getFullYear() === thisMonth.getFullYear();
-                    }).length}
-                  </span>
-                </div>
+      <main className="container mx-auto px-4 py-8">
+        <AnimatePresence mode="wait">
+          {viewMode === 'analytics' ? (
+            <motion.div
+              key="analytics"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              id="analytics-panel"
+              role="tabpanel"
+              aria-labelledby="analytics-tab"
+            >
+              {/* Key Metrics */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="card p-6"
+                  role="region"
+                  aria-labelledby="total-assessments-heading"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <FontAwesomeIcon icon={'clipboard' as IconProp} className="w-6 h-6 text-blue-600" aria-hidden="true" />
+                    </div>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getTrendIcon(analytics.improvementTrend).bg} ${getTrendIcon(analytics.improvementTrend).color}`}>
+                      <FontAwesomeIcon icon={getTrendIcon(analytics.improvementTrend).icon} className="w-3 h-3 mr-1" aria-hidden="true" />
+                      {analytics.improvementTrend}
+                    </span>
+                  </div>
+                  <h3 id="total-assessments-heading" className="text-2xl font-bold text-calm-800 mb-1">{analytics.totalAssessments}</h3>
+                  <p className="text-calm-600 text-sm">Total Assessments</p>
+                  <p className="text-xs text-calm-500 mt-2">{analytics.thisMonthAssessments} this month</p>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="card p-6"
+                  role="region"
+                  aria-labelledby="time-invested-heading"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                      <FontAwesomeIcon icon={'clock' as IconProp} className="w-6 h-6 text-green-600" aria-hidden="true" />
+                    </div>
+                    <span className="text-xs text-calm-500">
+                      Avg: {formatTime(analytics.averageSessionTime)}
+                    </span>
+                  </div>
+                  <h3 id="time-invested-heading" className="text-2xl font-bold text-calm-800 mb-1">{formatTime(analytics.totalTimeSpent)}</h3>
+                  <p className="text-calm-600 text-sm">Time Invested</p>
+                  <div className="mt-2 w-full bg-calm-200 rounded-full h-2">
+                    <div 
+                      className="bg-green-500 h-2 rounded-full transition-all duration-500" 
+                      style={{ width: `${Math.min(100, (analytics.totalTimeSpent / 1000) * 100)}%` }}
+                      aria-label={`Progress: ${analytics.totalTimeSpent} minutes of total time invested`}
+                    ></div>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="card p-6"
+                  role="region"
+                  aria-labelledby="completion-rate-heading"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                      <FontAwesomeIcon icon={'check-circle' as IconProp} className="w-6 h-6 text-purple-600" aria-hidden="true" />
+                    </div>
+                    <span className={`text-xs font-medium ${analytics.completionRate >= 80 ? 'text-green-600' : analytics.completionRate >= 60 ? 'text-yellow-600' : 'text-red-600'}`}>
+                      {analytics.completionRate >= 80 ? 'Excellent' : analytics.completionRate >= 60 ? 'Good' : 'Needs Focus'}
+                    </span>
+                  </div>
+                  <h3 id="completion-rate-heading" className="text-2xl font-bold text-calm-800 mb-1">{analytics.completionRate}%</h3>
+                  <p className="text-calm-600 text-sm">Completion Rate</p>
+                  <div className="mt-2 w-full bg-calm-200 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full transition-all duration-500 ${
+                        analytics.completionRate >= 80 ? 'bg-green-500' : 
+                        analytics.completionRate >= 60 ? 'bg-yellow-500' : 'bg-red-500'
+                      }`}
+                      style={{ width: `${analytics.completionRate}%` }}
+                      aria-label={`Completion rate: ${analytics.completionRate} percent`}
+                    ></div>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="card p-6"
+                  role="region"
+                  aria-labelledby="ai-performance-heading"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
+                      <FontAwesomeIcon icon={'wand-sparkles' as IconProp} className="w-6 h-6 text-indigo-600" aria-hidden="true" />
+                    </div>
+                    <span className="text-xs text-calm-500">
+                      {analytics.totalReports} reports
+                    </span>
+                  </div>
+                  <h3 id="ai-performance-heading" className="text-2xl font-bold text-calm-800 mb-1">
+                    {analytics.averageReportGenTime > 0 ? formatGenTime(analytics.averageReportGenTime) : 'N/A'}
+                  </h3>
+                  <p className="text-calm-600 text-sm">AI Generation Time</p>
+                  <p className="text-xs text-calm-500 mt-2">Powered by Gemini 2.0</p>
+                </motion.div>
               </div>
-            </div>
-          </motion.div>
 
-          {/* Filters */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="lg:col-span-3"
-          >
-            <div className="card p-6">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
-                  <h3 className="font-semibold text-calm-800 mb-2">Filter & Sort</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {filterOptions.map((option) => (
-                      <button
-                        key={option.key}
-                        onClick={() => setActiveFilter(option.key as any)}
-                        className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm transition-all ${
-                          activeFilter === option.key
-                            ? 'bg-primary-100 text-primary-700 border border-primary-200'
-                            : 'bg-calm-100 text-calm-600 hover:bg-calm-200'
-                        }`}
-                      >
-                        <FontAwesomeIcon icon={option.icon} className="w-3 h-3" />
-                        <span>{option.label}</span>
-                      </button>
-                    ))}
+              {/* Charts and Detailed Analytics */}
+              <div className="grid lg:grid-cols-3 gap-6 mb-8">
+                {/* Assessment Type Distribution */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  className="lg:col-span-1 card p-6"
+                  role="region"
+                  aria-labelledby="type-distribution-heading"
+                >
+                  <h3 id="type-distribution-heading" className="text-lg font-semibold text-calm-800 mb-4 flex items-center">
+                    <FontAwesomeIcon icon={'chart-pie' as IconProp} className="w-5 h-5 mr-2 text-primary-600" aria-hidden="true" />
+                    Assessment Types
+                  </h3>
+                  <div className="space-y-3">
+                    {Object.entries(analytics.typeDistribution).map(([type, count]) => {
+                      const typeInfo = getAssessmentTypeColor(type as AssessmentType);
+                      const percentage = analytics.totalAssessments > 0 ? Math.round((count / analytics.totalAssessments) * 100) : 0;
+                      return (
+                        <div key={type} className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <div className={`w-3 h-3 rounded-full bg-gradient-to-r ${typeInfo.bg}`} aria-hidden="true"></div>
+                            <span className="text-sm font-medium text-calm-700 capitalize">{type}</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <span className="text-sm text-calm-600">{count}</span>
+                            <span className="text-xs text-calm-500">({percentage}%)</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+
+                {/* Weekly Activity */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 }}
+                  className="lg:col-span-2 card p-6"
+                  role="region"
+                  aria-labelledby="weekly-activity-heading"
+                >
+                  <h3 id="weekly-activity-heading" className="text-lg font-semibold text-calm-800 mb-4 flex items-center">
+                    <FontAwesomeIcon icon={'calendar' as IconProp} className="w-5 h-5 mr-2 text-primary-600" aria-hidden="true" />
+                    Weekly Activity
+                  </h3>
+                  <div className="flex items-end justify-between h-32 space-x-2">
+                    {analytics.weeklyActivity.map((activity, index) => {
+                      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                      const maxActivity = Math.max(...analytics.weeklyActivity, 1);
+                      const height = (activity / maxActivity) * 100;
+                      
+                      return (
+                        <div key={index} className="flex flex-col items-center flex-1">
+                          <div 
+                            className="w-full bg-primary-500 rounded-t-md transition-all duration-500 hover:bg-primary-600"
+                            style={{ height: `${height}%` }}
+                            title={`${dayNames[index]}: ${activity} assessments`}
+                            role="img"
+                            aria-label={`${dayNames[index]}: ${activity} assessments completed`}
+                          ></div>
+                          <span className="text-xs text-calm-500 mt-2">{dayNames[index]}</span>
+                          <span className="text-xs font-medium text-calm-700">{activity}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* Recent Activity Summary */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 }}
+                className="card p-6"
+                role="region"
+                aria-labelledby="recent-activity-heading"
+              >
+                <h3 id="recent-activity-heading" className="text-lg font-semibold text-calm-800 mb-4 flex items-center">
+                  <FontAwesomeIcon icon={'activity' as IconProp} className="w-5 h-5 mr-2 text-primary-600" aria-hidden="true" />
+                  Recent Activity
+                </h3>
+                {data.assessments.length === 0 ? (
+                  <div className="text-center py-8">
+                    <FontAwesomeIcon icon={'chart-bar' as IconProp} className="w-12 h-12 text-calm-300 mx-auto mb-4" aria-hidden="true" />
+                    <p className="text-calm-500 mb-4">No assessments completed yet</p>
+                    <button
+                      onClick={handleNewAssessment}
+                      className="btn-primary"
+                      aria-label="Start your first mental health assessment"
+                    >
+                      Start Your First Assessment
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {data.assessments.slice(0, 5).map((assessment, index) => {
+                      const typeInfo = getAssessmentTypeColor(assessment.type);
+                      const report = data.reports.find(r => r.assessmentId === assessment.id);
+                      
+                      return (
+                        <div key={assessment.id} className="flex items-center justify-between p-3 bg-calm-50 rounded-lg hover:bg-calm-100 transition-colors">
+                          <div className="flex items-center space-x-3">
+                            <div className={`w-10 h-10 rounded-full bg-gradient-to-r ${typeInfo.bg} flex items-center justify-center text-white`}>
+                              <FontAwesomeIcon icon={typeInfo.icon} className="w-4 h-4" aria-hidden="true" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-calm-800">{getAssessmentTitle(assessment.type)}</p>
+                              <p className="text-sm text-calm-600">
+                                {formatDate(new Date(assessment.completedAt || 0))}
+                                {report?.generationTimeMs && (
+                                  <span className="ml-2 text-xs text-primary-600">
+                                    • AI: {formatGenTime(report.generationTimeMs)}
+                                  </span>
+                                )}
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => handleViewReport(assessment.id)}
+                            className="text-primary-600 hover:text-primary-700 transition-colors"
+                            aria-label={`View report for ${getAssessmentTitle(assessment.type)} assessment`}
+                          >
+                            <FontAwesomeIcon icon={'chevron-right' as IconProp} className="w-4 h-4" />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </motion.div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="cards"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              id="cards-panel"
+              role="tabpanel"
+              aria-labelledby="cards-tab"
+            >
+              {/* Filters and Controls */}
+              <div className="card p-6 mb-6">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                  <div>
+                    <h3 className="font-semibold text-calm-800 mb-2">Filter & Sort Assessments</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { key: 'all', label: 'All Types', icon: 'chart-bar' as IconProp },
+                        { key: 'anxiety', label: 'Anxiety', icon: 'brain' as IconProp },
+                        { key: 'ocd', label: 'OCD', icon: 'bullseye' as IconProp },
+                        { key: 'anger', label: 'Anger', icon: 'fire' as IconProp },
+                        { key: 'general', label: 'General', icon: 'heart' as IconProp },
+                      ].map((option) => (
+                        <button
+                          key={option.key}
+                          onClick={() => setActiveFilter(option.key as any)}
+                          className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm transition-all ${
+                            activeFilter === option.key
+                              ? 'bg-primary-100 text-primary-700 border border-primary-200'
+                              : 'bg-calm-100 text-calm-600 hover:bg-calm-200'
+                          }`}
+                          aria-pressed={activeFilter === option.key}
+                          aria-label={`Filter by ${option.label} assessments`}
+                        >
+                          <FontAwesomeIcon icon={option.icon} className="w-3 h-3" aria-hidden="true" />
+                          <span>{option.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="sort-select" className="block text-sm font-medium text-calm-700 mb-1">Sort by</label>
+                    <select
+                      id="sort-select"
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value as any)}
+                      className="px-3 py-1.5 border border-calm-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      aria-label="Sort assessments by"
+                    >
+                      <option value="date">Latest First</option>
+                      <option value="type">Assessment Type</option>
+                      <option value="completion">Completion Rate</option>
+                    </select>
                   </div>
                 </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-calm-700 mb-1">Sort by</label>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as any)}
-                    className="px-3 py-1.5 border border-calm-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  >
-                    <option value="date">Latest First</option>
-                    <option value="type">Assessment Type</option>
-                    <option value="completion">Completion Rate</option>
-                  </select>
-                </div>
               </div>
-            </div>
-          </motion.div>
-        </div>
 
-        {/* Assessment Cards */}
-        {filteredData.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center py-16"
-          >
-            <div className="w-24 h-24 bg-calm-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <FontAwesomeIcon icon={'chart-bar' as IconProp} className="w-8 h-8 text-calm-400" />
-            </div>
-            <h3 className="text-xl font-semibold text-calm-700 mb-2">No assessments found</h3>
-            <p className="text-calm-500 mb-6">
-              {activeFilter === 'all' 
-                ? "You haven't completed any assessments yet." 
-                : `No ${activeFilter} assessments found.`}
-            </p>
-            <button
-              onClick={handleNewAssessment}
-              className="btn-primary"
-            >
-              Start Your First Assessment
-            </button>
-          </motion.div>
-        ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <AnimatePresence>
-              {filteredData.map((item, index) => {
-                const typeColor = getAssessmentTypeColor(item.assessment.type);
-                const completion = getCompletionLevel(item.assessment);
-                const timeSpent = getTimeSpent(item.assessment);
-                const insight = getEmotionalInsight(item.assessment, item.report);
-
-                return (
-                  <motion.div
-                    key={item.assessment.id}
-                    initial={{ opacity: 0, y: 20, scale: 0.9 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -20, scale: 0.9 }}
-                    transition={{ duration: 0.3, delay: index * 0.1 }}
-                    whileHover={{ y: -4, scale: 1.02 }}
-                    className="group cursor-pointer"
-                    onClick={() => handleViewReport(item.assessment.id)}
+              {/* Assessment Cards */}
+              {filteredData.length === 0 ? (
+                <div className="text-center py-16">
+                  <div className="w-24 h-24 bg-calm-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <FontAwesomeIcon icon={'chart-bar' as IconProp} className="w-8 h-8 text-calm-400" aria-hidden="true" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-calm-700 mb-2">No assessments found</h3>
+                  <p className="text-calm-500 mb-6">
+                    {activeFilter === 'all' 
+                      ? "You haven't completed any assessments yet." 
+                      : `No ${activeFilter} assessments found.`}
+                  </p>
+                  <button
+                    onClick={handleNewAssessment}
+                    className="btn-primary"
+                    aria-label="Start your first mental health assessment"
                   >
-                    <div className={`card overflow-hidden border-2 ${typeColor.border} hover:shadow-xl transition-all duration-300`}>
-                      {/* Header with gradient */}
-                      <div className={`bg-gradient-to-r ${typeColor.bg} p-4 text-white`}>
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center space-x-2">
-                            <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-                              <FontAwesomeIcon icon={typeColor.icon} className="w-4 h-4" />
+                    Start Your First Assessment
+                  </button>
+                </div>
+              ) : (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6" role="list" aria-label="Assessment cards">
+                  <AnimatePresence>
+                    {filteredData.map((item, index) => {
+                      const typeColor = getAssessmentTypeColor(item.assessment.type);
+                      const completion = (item.assessment.responses.length / item.assessment.questions.length) * 100;
+                      const timeSpent = item.assessment.completedAt && item.assessment.startedAt
+                        ? Math.round((new Date(item.assessment.completedAt).getTime() - new Date(item.assessment.startedAt).getTime()) / (1000 * 60))
+                        : 0;
+
+                      return (
+                        <motion.div
+                          key={item.assessment.id}
+                          initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: -20, scale: 0.9 }}
+                          transition={{ duration: 0.3, delay: index * 0.05 }}
+                          whileHover={{ y: -4, scale: 1.02 }}
+                          className="group cursor-pointer"
+                          onClick={() => handleViewReport(item.assessment.id)}
+                          role="listitem"
+                        >
+                          <div className={`card overflow-hidden border-2 ${typeColor.border} hover:shadow-xl transition-all duration-300`}>
+                            {/* Header */}
+                            <div className={`bg-gradient-to-r ${typeColor.bg} p-4 text-white`}>
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center space-x-2">
+                                  <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                                    <FontAwesomeIcon icon={typeColor.icon} className="w-4 h-4" aria-hidden="true" />
+                                  </div>
+                                  <span className="font-semibold">{getAssessmentTitle(item.assessment.type)}</span>
+                                </div>
+                                <span className="text-2xl" aria-hidden="true">{typeColor.emoji}</span>
+                              </div>
+                              <p className="text-white/80 text-sm">
+                                {formatDate(new Date(item.assessment.completedAt || 0))}
+                              </p>
                             </div>
-                            <span className="font-semibold">{getAssessmentTitle(item.assessment.type)}</span>
-                          </div>
-                          <span className="text-2xl">{typeColor.emoji}</span>
-                        </div>
-                        <p className="text-white/80 text-sm">
-                          {formatDate(new Date(item.assessment.completedAt || 0))}
-                        </p>
-                      </div>
 
-                      {/* Content */}
-                      <div className="p-4 space-y-4">
-                        {/* Status and Completion */}
-                        <div className="flex items-center justify-between">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${completion.bg} ${completion.color}`}>
-                            {completion.level}
-                          </span>
-                          <span className="text-sm text-calm-600">
-                            {Math.round((item.assessment.responses.length / item.assessment.questions.length) * 100)}% complete
-                          </span>
-                        </div>
+                            {/* Content */}
+                            <div className="p-4 space-y-4">
+                              {/* Completion Status */}
+                              <div className="flex items-center justify-between">
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                  completion === 100 ? 'bg-green-100 text-green-700' :
+                                  completion >= 80 ? 'bg-yellow-100 text-yellow-700' :
+                                  'bg-orange-100 text-orange-700'
+                                }`}>
+                                  {completion === 100 ? 'Complete' : completion >= 80 ? 'Almost Done' : 'Partial'}
+                                </span>
+                                <span className="text-sm text-calm-600">{Math.round(completion)}%</span>
+                              </div>
 
-                        {/* Emotional Insight */}
-                        <div className="flex items-center space-x-2">
-                          <FontAwesomeIcon icon={insight.icon} className={`w-4 h-4 ${insight.color}`} />
-                          <span className={`text-sm font-medium ${insight.color}`}>{insight.text}</span>
-                        </div>
+                              {/* Stats */}
+                              <div className="grid grid-cols-2 gap-4 pt-3 border-t border-calm-100">
+                                <div>
+                                  <p className="text-xs text-calm-500">Time Spent</p>
+                                  <p className="font-semibold text-calm-700">{timeSpent > 0 ? formatTime(timeSpent) : 'N/A'}</p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-calm-500">Questions</p>
+                                  <p className="font-semibold text-calm-700">
+                                    {item.assessment.responses.length}/{item.assessment.questions.length}
+                                  </p>
+                                </div>
+                              </div>
 
-                        {/* Stats */}
-                        <div className="grid grid-cols-2 gap-4 pt-3 border-t border-calm-100">
-                          <div>
-                            <p className="text-xs text-calm-500">Time Spent</p>
-                            <p className="font-semibold text-calm-700">{timeSpent}</p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-calm-500">Questions</p>
-                            <p className="font-semibold text-calm-700">
-                              {item.assessment.responses.length}/{item.assessment.questions.length}
-                            </p>
-                          </div>
-                        </div>
+                              {/* AI Generation Time */}
+                              {item.report?.generationTimeMs && (
+                                <div className="pt-3 border-t border-calm-100">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-2">
+                                      <FontAwesomeIcon icon={'wand-sparkles' as IconProp} className="w-3 h-3 text-indigo-500" aria-hidden="true" />
+                                      <span className="text-xs text-calm-500">AI Generation</span>
+                                    </div>
+                                    <span className="text-xs font-medium text-indigo-600">
+                                      {formatGenTime(item.report.generationTimeMs)}
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
 
-                        {/* Report Status */}
-                        <div className="flex items-center justify-between pt-3 border-t border-calm-100">
-                          {item.report ? (
-                            <div className="flex items-center space-x-2 text-green-600">
-                              <FontAwesomeIcon icon={'check-circle' as IconProp} className="w-4 h-4" />
-                              <span className="text-sm font-medium">Report Available</span>
+                              {/* Report Status */}
+                              <div className="flex items-center justify-between pt-3 border-t border-calm-100">
+                                {item.report ? (
+                                  <div className="flex items-center space-x-2 text-green-600">
+                                    <FontAwesomeIcon icon={'check-circle' as IconProp} className="w-4 h-4" aria-hidden="true" />
+                                    <span className="text-sm font-medium">Report Available</span>
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center space-x-2 text-amber-600">
+                                    <FontAwesomeIcon icon={'clock' as IconProp} className="w-4 h-4" aria-hidden="true" />
+                                    <span className="text-sm font-medium">Generate Report</span>
+                                  </div>
+                                )}
+                                <FontAwesomeIcon 
+                                  icon={'chevron-right' as IconProp} 
+                                  className="w-4 h-4 text-calm-400 group-hover:text-primary-500 transition-colors" 
+                                  aria-hidden="true"
+                                />
+                              </div>
                             </div>
-                          ) : (
-                            <div className="flex items-center space-x-2 text-amber-600">
-                              <FontAwesomeIcon icon={'clock' as IconProp} className="w-4 h-4" />
-                              <span className="text-sm font-medium">Generate Report</span>
-                            </div>
-                          )}
-                          <FontAwesomeIcon 
-                            icon={'chevron-right' as IconProp} 
-                            className="w-4 h-4 text-calm-400 group-hover:text-primary-500 transition-colors" 
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </AnimatePresence>
-          </div>
-        )}
-      </div>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </AnimatePresence>
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
     </div>
   );
 }

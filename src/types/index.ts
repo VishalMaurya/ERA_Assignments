@@ -68,6 +68,9 @@ export interface AssessmentReport {
   nextSteps: string[];
   generatedAt: Date;
   rawAIResponse?: string;
+  generationTimeMs?: number; // Time taken by Gemini AI to generate report
+  processingStartedAt?: Date;
+  processingCompletedAt?: Date;
 }
 
 export interface DashboardData {

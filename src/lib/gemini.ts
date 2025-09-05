@@ -34,15 +34,31 @@ export class GeminiService {
     }
 
     const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-
     const prompt = this.buildPrompt(assessment);
+    
+    // Track processing time
+    const processingStartedAt = new Date();
+    const startTime = performance.now();
     
     try {
       const result = await model.generateContent(prompt);
       const response = await result.response;
       const text = response.text();
       
-      return this.parseAIResponse(text, assessment);
+      // Calculate processing time
+      const endTime = performance.now();
+      const processingCompletedAt = new Date();
+      const generationTimeMs = Math.round(endTime - startTime);
+      
+      const report = this.parseAIResponse(text, assessment);
+      
+      // Add timing information to the report
+      return {
+        ...report,
+        generationTimeMs,
+        processingStartedAt,
+        processingCompletedAt
+      };
     } catch (error) {
       console.error('Error generating report:', error);
       
