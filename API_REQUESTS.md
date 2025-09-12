@@ -19,7 +19,16 @@ curl -X GET "https://c7dicrh73vqm7bu3d2nzvdbgou0voyri.lambda-url.ap-south-1.on.a
 curl -X GET "https://c7dicrh73vqm7bu3d2nzvdbgou0voyri.lambda-url.ap-south-1.on.aws/assessment"
 ```
 
-### **3. POST /assessment** - Submit Assessment
+### **3. GET /UI** - Web Interface
+```bash
+# Open in browser or use curl to get HTML
+curl -X GET "https://c7dicrh73vqm7bu3d2nzvdbgou0voyri.lambda-url.ap-south-1.on.aws/UI"
+
+# Or just visit in browser:
+# https://c7dicrh73vqm7bu3d2nzvdbgou0voyri.lambda-url.ap-south-1.on.aws/UI
+```
+
+### **4. POST /assessment** - Submit Assessment
 ```bash
 curl -X POST "https://c7dicrh73vqm7bu3d2nzvdbgou0voyri.lambda-url.ap-south-1.on.aws/assessment" \
   -H "Content-Type: application/json" \
