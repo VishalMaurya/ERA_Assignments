@@ -95,7 +95,7 @@ def get_home_page():
     return {
         'success': True,
         'api_title': '🧠 Therapy Assessment Demo API',
-        'description': 'Simple Python Lambda for therapy assessment with AI recommendations',
+        'description': 'Simple Python Lambda for therapy assessment with AI recommendations using Google Gemini',
         'version': '1.0.0',
         'endpoints': {
             'get_assessment': {
@@ -131,6 +131,10 @@ def get_home_page():
             '2. Modify any values as needed',
             '3. POST /assessment - to submit and get AI recommendations'
         ],
+        'environment_variables': {
+            'GEMINI_API_KEY': 'Required - Your Google Gemini API key',
+            'GEMINI_MODEL': f'Optional - Gemini model to use (default: {os.environ.get("GEMINI_MODEL", "gemini-2.0-flash")})'
+        },
         'timestamp': time.time()
     }
 
@@ -239,7 +243,7 @@ def generate_ai_recommendations(assessment_data):
             'ai_analysis': ai_recommendations,
             'metadata': {
                 'processing_time_ms': ai_recommendations.get('processing_time_ms', 0),
-                'ai_model': 'google-gemini-2.0-flash',
+                'ai_model': os.environ.get('GEMINI_MODEL', 'gemini-2.0-flash'),
                 'generated_at': time.time()
             }
         }
@@ -276,8 +280,11 @@ def get_gemini_recommendations(personal_info, responses):
     if not api_key:
         raise Exception('GEMINI_API_KEY environment variable not set')
     
+    # Get model name from environment or use default
+    model_name = os.environ.get('GEMINI_MODEL', 'gemini-2.0-flash')
+    
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-2.0-flash')
+    model = genai.GenerativeModel(model_name)
     
     # Build prompt for AI
     prompt = build_therapy_prompt(personal_info, responses)

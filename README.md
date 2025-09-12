@@ -74,20 +74,28 @@ Returns structured AI recommendations including:
 
 ## 🔧 Environment Variables
 
-Set `GEMINI_API_KEY` for AI recommendations:
+Required environment variables for AI recommendations:
 
 ```bash
 export GEMINI_API_KEY="your_gemini_api_key_here"
+export GEMINI_MODEL="gemini-2.0-flash"  # Optional, defaults to gemini-2.0-flash
 ```
 
-If not set, fallback recommendations are provided.
+Available Gemini models:
+- `gemini-2.0-flash` (default - fast and efficient)
+- `gemini-1.5-pro` (more comprehensive analysis)
+- `gemini-1.5-flash` (balanced performance)
+
+If `GEMINI_API_KEY` is not set, fallback recommendations are provided.
 
 ## 🏗️ Deployment
 
 ### AWS Lambda:
 1. Zip the files: `zip -r therapy-lambda.zip lambda_function.py requirements.txt`
 2. Upload to Lambda console
-3. Set environment variable `GEMINI_API_KEY`
+3. Set environment variables:
+   - `GEMINI_API_KEY=your_api_key`
+   - `GEMINI_MODEL=gemini-2.0-flash` (optional)
 4. Configure API Gateway triggers
 
 ### Local Development:
