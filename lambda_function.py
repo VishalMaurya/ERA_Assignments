@@ -21,9 +21,17 @@ def lambda_handler(event, context):
     3. POST /assessment - Processes assessment and returns AI recommendations
     """
     
-    # Extract HTTP method and path
-    http_method = event.get('httpMethod', '')
-    path = event.get('path', '/')
+    # Extract HTTP method and path (support both API Gateway and Lambda Function URL)
+    if 'requestContext' in event and 'http' in event['requestContext']:
+        # Lambda Function URL format
+        http_method = event['requestContext']['http']['method']
+        path = event.get('rawPath', '/')
+        print(f"🔗 Lambda Function URL detected: {http_method} {path}")
+    else:
+        # API Gateway format
+        http_method = event.get('httpMethod', '')
+        path = event.get('path', '/')
+        print(f"🌐 API Gateway detected: {http_method} {path}")
     
     # CORS headers
     headers = {
@@ -52,7 +60,12 @@ def lambda_handler(event, context):
             
         # Route 3: POST assessment for AI recommendations
         elif http_method == 'POST' and path == '/assessment':
-            body = json.loads(event.get('body', '{}'))
+            # Handle body for both API Gateway and Function URL
+            raw_body = event.get('body', '{}')
+            if event.get('isBase64Encoded', False):
+                import base64
+                raw_body = base64.b64decode(raw_body).decode('utf-8')
+            body = json.loads(raw_body)
             response_data = generate_ai_recommendations(body)
             
         else:
