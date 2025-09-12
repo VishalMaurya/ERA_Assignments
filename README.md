@@ -2,11 +2,16 @@
 
 Single Python file Lambda function for therapy assessment with AI recommendations.
 
+## ✨ **Zero Dependencies!**
+
+**🎉 No external libraries needed!** Uses Python built-ins (`urllib`, `json`) and direct HTTP requests to Gemini API.
+
 ## 📋 Features
 
 - **GET /** - API documentation and usage examples
 - **GET /assessment** - Returns therapy assessment form with prefilled sample data  
 - **POST /assessment** - Processes assessment and returns AI recommendations using Google Gemini
+- **🚀 Zero Dependencies** - No `pip install` required, no Lambda layers needed!
 
 ## 🚀 Quick Test
 
@@ -90,52 +95,45 @@ If `GEMINI_API_KEY` is not set, fallback recommendations are provided.
 
 ## 🏗️ Deployment
 
-### Option 1: Simple Upload (for testing)
-1. Install dependencies: `pip install -r requirements.txt`
-2. Zip everything: `zip -r therapy-lambda.zip lambda_function.py requirements.txt site-packages/`
-3. Upload to Lambda console
-4. Set environment variables and configure API Gateway
+### ✨ **Zero Dependencies Deployment (Recommended)**
 
-### Option 2: Production with Lambda Layer (Recommended)
-See detailed guide: **[LAMBDA_LAYER_SETUP.md](./LAMBDA_LAYER_SETUP.md)**
+**🎉 No external libraries needed! Uses direct HTTP requests to Gemini API.**
+
+```bash
+# Simple deployment - just zip the single Python file
+zip therapy-function.zip lambda_function.py
+
+# Deploy to Lambda
+aws lambda create-function \
+    --function-name therapy-assessment-app \
+    --runtime python3.12 \
+    --role arn:aws:iam::ACCOUNT_ID:role/lambda-execution-role \
+    --handler lambda_function.lambda_handler \
+    --zip-file fileb://therapy-function.zip \
+    --environment Variables='{"GEMINI_API_KEY":"your_api_key","GEMINI_MODEL":"gemini-2.0-flash"}'
+```
+
+### Option 2: Lambda Layer Setup (Legacy)
+**⚠️ No longer needed!** See: **[LAMBDA_LAYER_SETUP.md](./LAMBDA_LAYER_SETUP.md)** (for reference only)
 
 **Step-by-Step Deployment:**
 
-#### 🔄 Pull Code to AWS CloudShell
+#### 🔄 **Simple Deployment Process**
 ```bash
-# Access AWS CloudShell from AWS Console
-git clone https://github.com/VishalMaurya/ERA_Assignments.git
-cd ERA_Assignments/Session2_Assignment
-git checkout simple-demo-app
+# Pull code to AWS CloudShell (or local machine)
+git clone -b simple-demo-app --single-branch --depth 1 https://github.com/VishalMaurya/ERA_Assignments.git
+cd ERA_Assignments
+
+# Package function (single file!)
+zip therapy-function.zip lambda_function.py
+
+# Get your AWS account ID
+ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 ```
 
-#### 📦 Create Lambda Layer
+#### 🚀 **Deploy Lambda Function (No Layer Needed!)**
 ```bash
-# Create layer structure
-mkdir -p lambda-layer/python/lib/python3.12/site-packages
-
-# Install dependencies
-pip install google-generativeai -t lambda-layer/python/lib/python3.12/site-packages/
-
-# Package layer
-cd lambda-layer
-zip -r9 therapy-app-dependencies.zip python/
-
-# Deploy layer to AWS
-aws lambda publish-layer-version \
-    --layer-name therapy-app-dependencies \
-    --description "Google Generative AI dependencies" \
-    --zip-file fileb://therapy-app-dependencies.zip \
-    --compatible-runtimes python3.12 \
-    --region us-east-1
-```
-
-#### 🚀 Deploy Lambda Function
-```bash
-# Go back to main directory
-cd ..
-
-# Create IAM role for Lambda
+# Create IAM role for Lambda (if not exists)
 aws iam create-role \
     --role-name therapy-app-lambda-role \
     --assume-role-policy-document '{
@@ -154,27 +152,20 @@ aws iam attach-role-policy \
     --role-name therapy-app-lambda-role \
     --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
 
-# Package function code
-zip therapy-function.zip lambda_function.py
-
-# Get account ID
-ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-
-# Create Lambda function with layer
+# Create Lambda function (NO LAYERS NEEDED! 🎉)
 aws lambda create-function \
     --function-name therapy-assessment-app \
     --runtime python3.12 \
     --role arn:aws:iam::$ACCOUNT_ID:role/therapy-app-lambda-role \
     --handler lambda_function.lambda_handler \
     --zip-file fileb://therapy-function.zip \
-    --description "Therapy assessment app with AI recommendations" \
+    --description "Therapy assessment app with AI recommendations - Zero Dependencies!" \
     --timeout 60 \
-    --memory-size 512 \
+    --memory-size 256 \
     --environment Variables='{
         "GEMINI_API_KEY":"YOUR_API_KEY_HERE",
         "GEMINI_MODEL":"gemini-2.0-flash"
     }' \
-    --layers arn:aws:lambda:us-east-1:$ACCOUNT_ID:layer:therapy-app-dependencies:1 \
     --region us-east-1
 ```
 
@@ -256,12 +247,13 @@ curl -X POST "$API_URL/assessment" \       # AI recommendations
     }'
 ```
 
-**Benefits of Layer Approach:**
-- ✅ Faster deployments (dependencies separate from code)
-- ✅ Smaller function packages (under 1MB vs 50MB+)
-- ✅ Reusable across functions
-- ✅ Better version management
-- ✅ Production-grade setup
+**🎯 Benefits of Zero Dependencies Approach:**
+- ✅ **Instant deployments** (no dependency installation)
+- ✅ **Tiny packages** (~5KB vs 50MB+)
+- ✅ **No layer management** (eliminates complexity)
+- ✅ **Zero import errors** (uses only Python built-ins)
+- ✅ **Lightning fast cold starts** (no library loading)
+- ✅ **Maximum compatibility** (works on any Python 3.x Lambda)
 
 ### 🔄 Function Updates (After Initial Deployment)
 ```bash
@@ -293,7 +285,12 @@ aws iam delete-role --role-name therapy-app-lambda-role
 
 ### Local Development:
 ```bash
-pip install -r requirements.txt
+# No dependencies to install! Just run:
+python lambda_function.py
+
+# Or set environment variables for real Gemini API testing:
+export GEMINI_API_KEY="your_api_key"
+export GEMINI_MODEL="gemini-2.0-flash"
 python lambda_function.py
 ```
 
