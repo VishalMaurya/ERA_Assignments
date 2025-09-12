@@ -1,1 +1,2 @@
-google-generativeai>=0.3.2
+# No external dependencies needed!
+# Using built-in urllib for HTTP requests to Gemini API

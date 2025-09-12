@@ -2,13 +2,9 @@ import json
 import os
 import time
 
-# Try to import google.generativeai, handle gracefully if not available
-try:
-    import google.generativeai as genai
-    GENAI_AVAILABLE = True
-except ImportError:
-    GENAI_AVAILABLE = False
-    print("Warning: google.generativeai not available. Using fallback mode for local testing.")
+# Using direct HTTP requests to Gemini API - no library dependencies needed!
+import urllib.request
+import urllib.parse
 
 
 def lambda_handler(event, context):
@@ -282,13 +278,9 @@ def generate_ai_recommendations(assessment_data):
 
 
 def get_gemini_recommendations(personal_info, responses):
-    """Generate recommendations using Google Gemini AI"""
+    """Generate recommendations using Google Gemini AI via direct REST API"""
     
-    # Check if Gemini is available
-    if not GENAI_AVAILABLE:
-        raise Exception('Google Generative AI library not available')
-    
-    # Configure Gemini API
+    # Get API key from environment
     api_key = os.environ.get('GEMINI_API_KEY')
     if not api_key:
         raise Exception('GEMINI_API_KEY environment variable not set')
@@ -296,37 +288,75 @@ def get_gemini_recommendations(personal_info, responses):
     # Get model name from environment or use default
     model_name = os.environ.get('GEMINI_MODEL', 'gemini-2.0-flash')
     
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel(model_name)
-    
     # Build prompt for AI
     prompt = build_therapy_prompt(personal_info, responses)
     
-    # Generate content
-    start_time = time.time()
-    response = model.generate_content(prompt)
-    processing_time = int((time.time() - start_time) * 1000)
+    # Prepare request data
+    request_data = {
+        "contents": [
+            {
+                "parts": [
+                    {
+                        "text": prompt
+                    }
+                ]
+            }
+        ]
+    }
     
-    # Parse AI response
+    # Make HTTP request to Gemini API
+    start_time = time.time()
+    
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent"
+    
+    headers = {
+        'Content-Type': 'application/json',
+        'X-goog-api-key': api_key
+    }
+    
+    req = urllib.request.Request(
+        url,
+        data=json.dumps(request_data).encode('utf-8'),
+        headers=headers,
+        method='POST'
+    )
+    
     try:
-        # Try to extract JSON from response
-        ai_text = response.text
-        json_start = ai_text.find('{')
-        json_end = ai_text.rfind('}') + 1
-        
-        if json_start != -1 and json_end != 0:
-            json_str = ai_text[json_start:json_end]
-            recommendations = json.loads(json_str)
-            recommendations['processing_time_ms'] = processing_time
-            recommendations['raw_ai_response'] = ai_text
-            return recommendations
-        else:
-            # If no JSON found, create structured response from text
-            return parse_text_response(ai_text, processing_time)
+        with urllib.request.urlopen(req) as response:
+            response_data = json.loads(response.read().decode('utf-8'))
+            processing_time = int((time.time() - start_time) * 1000)
             
-    except json.JSONDecodeError:
-        # Fallback if JSON parsing fails
-        return parse_text_response(response.text, processing_time)
+            # Extract text from response
+            if 'candidates' in response_data and len(response_data['candidates']) > 0:
+                ai_text = response_data['candidates'][0]['content']['parts'][0]['text']
+                
+                # Parse AI response
+                try:
+                    # Try to extract JSON from response
+                    json_start = ai_text.find('{')
+                    json_end = ai_text.rfind('}') + 1
+                    
+                    if json_start != -1 and json_end != 0:
+                        json_str = ai_text[json_start:json_end]
+                        recommendations = json.loads(json_str)
+                        recommendations['processing_time_ms'] = processing_time
+                        recommendations['raw_ai_response'] = ai_text
+                        return recommendations
+                    else:
+                        # If no JSON found, create structured response from text
+                        return parse_text_response(ai_text, processing_time)
+                        
+                except json.JSONDecodeError:
+                    # Fallback if JSON parsing fails
+                    return parse_text_response(ai_text, processing_time)
+            else:
+                raise Exception('No response from Gemini API')
+                
+    except urllib.error.HTTPError as e:
+        error_details = e.read().decode('utf-8')
+        raise Exception(f'Gemini API error: {e.code} - {error_details}')
+    except Exception as e:
+        raise Exception(f'Failed to call Gemini API: {str(e)}')
 
 
 def build_therapy_prompt(personal_info, responses):
