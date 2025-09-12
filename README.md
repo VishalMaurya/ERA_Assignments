@@ -5,25 +5,24 @@ Serverless psychological therapy assessment application built with AWS Lambda, A
 ## 🚀 **Quick Deploy**
 
 ```bash
-cd aws-lambda-migration/deployment
 ./deploy.sh prod
 ```
 
 ## 📁 **Project Structure**
 
 ```
-aws-lambda-migration/
-├── backend/                          # Lambda Functions & Infrastructure
-│   ├── src/functions/               # 4 Lambda Functions
-│   │   ├── auth/                    # User authentication & management
-│   │   ├── assessment/              # Assessment CRUD operations
-│   │   ├── report/                  # AI report generation
-│   │   └── analytics/               # Dashboard analytics
-│   ├── src/shared/                  # Shared utilities & types
-│   ├── package.json                 # Dependencies
-│   └── template.yaml                # AWS SAM infrastructure
-└── deployment/
-    └── deploy.sh                    # One-command deployment
+Session2_Assignment/                  # AWS Lambda Therapy App
+├── src/functions/                   # 4 Lambda Functions
+│   ├── auth/                        # User authentication & management
+│   ├── assessment/                  # Assessment CRUD operations
+│   ├── report/                      # AI report generation
+│   └── analytics/                   # Dashboard analytics
+├── src/shared/                      # Shared utilities & types
+├── package.json                     # Dependencies
+├── template.yaml                    # AWS SAM infrastructure
+├── deploy.sh                        # One-command deployment
+├── tsconfig.json                    # TypeScript configuration
+└── README.md                        # This file
 ```
 
 ## 🔧 **API Endpoints**
@@ -58,7 +57,6 @@ aws-lambda-migration/
 
 2. **Deploy to AWS**
    ```bash
-   cd aws-lambda-migration/deployment
    chmod +x deploy.sh
    ./deploy.sh prod
    ```
@@ -95,7 +93,6 @@ React Frontend → API Gateway → Lambda Functions → DynamoDB
 
 ```bash
 # Local testing
-cd aws-lambda-migration/backend
 sam local start-api
 
 # Test endpoints
