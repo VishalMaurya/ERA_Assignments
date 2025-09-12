@@ -938,33 +938,56 @@ def get_web_ui():
                 // Collect form data
                 const formData = new FormData(e.target);
                 
+                // Validate required fields
+                const name = formData.get('name');
+                const age = formData.get('age');
+                const anxietyLevel = formData.get('anxiety_level');
+                const moodDescription = formData.get('mood_description');
+                const socialSupport = formData.get('social_support');
+                const exerciseFreq = formData.get('exercise_frequency');
+                
+                if (!name || !age || !anxietyLevel || !moodDescription || !socialSupport || !exerciseFreq) {
+                    throw new Error('Please fill in all required fields');
+                }
+                
+                if (isNaN(age) || age < 18 || age > 100) {
+                    throw new Error('Please enter a valid age between 18 and 100');
+                }
+                
                 // Get stress sources
                 const stressSources = [];
                 document.querySelectorAll('input[name="stress_sources"]:checked').forEach(checkbox => {
                     stressSources.push(checkbox.value);
                 });
                 
+                // Add occupation if provided
+                const occupation = formData.get('occupation');
+                const personalInfo = {
+                    name: name,
+                    age: parseInt(age)
+                };
+                if (occupation && occupation.trim()) {
+                    personalInfo.occupation = occupation.trim();
+                }
+                
                 // Build request data
                 const requestData = {
-                    personal_info: {
-                        name: formData.get('name'),
-                        age: parseInt(formData.get('age')),
-                        occupation: formData.get('occupation') || undefined
-                    },
+                    personal_info: personalInfo,
                     responses: {
-                        anxiety_level: formData.get('anxiety_level'),
+                        anxiety_level: anxietyLevel,
                         sleep_quality: parseInt(formData.get('sleep_quality')),
                         stress_sources: stressSources,
-                        mood_description: formData.get('mood_description'),
-                        social_support: formData.get('social_support'),
-                        exercise_frequency: formData.get('exercise_frequency'),
-                        therapy_experience: formData.get('therapy_experience'),
-                        primary_concerns: stressSources // Use stress sources as primary concerns for now
+                        mood_description: moodDescription,
+                        social_support: socialSupport,
+                        exercise_frequency: exerciseFreq,
+                        therapy_experience: formData.get('therapy_experience') || '',
+                        primary_concerns: stressSources.length > 0 ? stressSources : ['General wellness']
                     }
                 };
                 
-                // Make API call
-                const response = await fetch('/assessment', {
+                // Make API call - use current domain + /assessment
+                const apiUrl = window.location.origin + '/assessment';
+                const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -982,7 +1005,16 @@ def get_web_ui():
                 
             } catch (err) {
                 console.error('Error:', err);
-                error.textContent = 'Error: ' + err.message;
+                console.error('Request data was:', requestData);
+                
+                let errorMessage = 'Error: ' + err.message;
+                if (err.message.includes('fetch')) {
+                    errorMessage += ' (Check if API endpoint is accessible)';
+                } else if (err.message.includes('pattern')) {
+                    errorMessage += ' (Invalid data format - check form inputs)';
+                }
+                
+                error.textContent = errorMessage;
                 error.style.display = 'block';
             } finally {
                 loading.style.display = 'none';
