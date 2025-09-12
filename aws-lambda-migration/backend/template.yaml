@@ -1,0 +1,143 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Therapy App Serverless Backend
+
+Globals:
+  Function:
+    Timeout: 30
+    Runtime: nodejs18.x
+    Environment:
+      Variables:
+        DYNAMODB_TABLE: !Ref TherapyAppTable
+        S3_BUCKET: !Ref TherapyAppBucket
+        GEMINI_API_KEY: !Ref GeminiApiKey
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, staging, prod]
+  GeminiApiKey:
+    Type: String
+    NoEcho: true
+    Description: Google Gemini API Key
+
+Resources:
+  # DynamoDB Table
+  TherapyAppTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub therapy-app-${Environment}
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+        - AttributeName: GSI1PK
+          AttributeType: S
+        - AttributeName: GSI1SK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: GSI1
+          KeySchema:
+            - AttributeName: GSI1PK
+              KeyType: HASH
+            - AttributeName: GSI1SK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
+  # S3 Bucket
+  TherapyAppBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub therapy-app-${Environment}-${AWS::AccountId}
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  # API Gateway
+  TherapyAppApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref Environment
+      Cors:
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+        AllowOrigin: "'*'"
+
+  # Lambda Functions
+  AuthFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/functions/auth/
+      Handler: index.handler
+      Events:
+        AuthApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TherapyAppApi
+            Path: /auth/{proxy+}
+            Method: ANY
+
+  AssessmentFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/functions/assessment/
+      Handler: index.handler
+      Events:
+        AssessmentApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TherapyAppApi
+            Path: /assessment/{proxy+}
+            Method: ANY
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TherapyAppTable
+
+  ReportFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/functions/report/
+      Handler: index.handler
+      Timeout: 60
+      Events:
+        ReportApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TherapyAppApi
+            Path: /report/{proxy+}
+            Method: ANY
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TherapyAppTable
+
+  AnalyticsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/functions/analytics/
+      Handler: index.handler
+      Events:
+        AnalyticsApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TherapyAppApi
+            Path: /analytics/{proxy+}
+            Method: ANY
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref TherapyAppTable
+
+Outputs:
+  TherapyAppApiUrl:
+    Description: API Gateway endpoint URL
+    Value: !Sub "https://${TherapyAppApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/"
