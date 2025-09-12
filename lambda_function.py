@@ -47,10 +47,11 @@ def validate_personal_info(data: Dict[str, Any]) -> Dict[str, Any]:
     # Validate age
     try:
         age = int(data['age'])
-        if age < 18 or age > 100:
-            raise ValueError("age must be between 18 and 100")
     except (ValueError, TypeError):
         raise ValueError("age must be a valid integer")
+    
+    if age < 18 or age > 100:
+        raise ValueError("age must be between 18 and 100")
     
     # Clean and validate
     validated = {
@@ -150,7 +151,7 @@ def lambda_handler(event, context):
     3. POST /assessment - Processes assessment and returns AI recommendations
     """
     
-    logger.info(f"🚀 Lambda invocation started - Request ID: {context.request_id if context else 'unknown'}")
+    logger.info(f"🚀 Lambda invocation started - Request ID: {context.aws_request_id if context else 'unknown'}")
     logger.info(f"📋 Event keys: {list(event.keys())}")
     
     # Extract HTTP method and path (support both API Gateway and Lambda Function URL)
@@ -273,7 +274,7 @@ def lambda_handler(event, context):
             'error': str(e),
             'error_type': 'ValidationError',
             'timestamp': time.time(),
-            'request_id': context.request_id if context else 'unknown'
+            'request_id': context.aws_request_id if context else 'unknown'
         }
         
         logger.error(f"🚨 Returning 400 validation error: {error_response}")
@@ -293,7 +294,7 @@ def lambda_handler(event, context):
             'error': str(e),
             'error_type': type(e).__name__,
             'timestamp': time.time(),
-            'request_id': context.request_id if context else 'unknown'
+            'request_id': context.aws_request_id if context else 'unknown'
         }
         
         logger.error(f"🚨 Returning 500 server error: {error_response}")
