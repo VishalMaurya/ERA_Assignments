@@ -99,17 +99,197 @@ If `GEMINI_API_KEY` is not set, fallback recommendations are provided.
 ### Option 2: Production with Lambda Layer (Recommended)
 See detailed guide: **[LAMBDA_LAYER_SETUP.md](./LAMBDA_LAYER_SETUP.md)**
 
-**Quick Layer Setup:**
-1. Pull code to AWS CloudShell
-2. Create layer with dependencies
-3. Deploy function with layer
-4. Configure API Gateway
+**Step-by-Step Deployment:**
 
-Benefits of using layers:
+#### 🔄 Pull Code to AWS CloudShell
+```bash
+# Access AWS CloudShell from AWS Console
+git clone https://github.com/VishalMaurya/ERA_Assignments.git
+cd ERA_Assignments/Session2_Assignment
+git checkout simple-demo-app
+```
+
+#### 📦 Create Lambda Layer
+```bash
+# Create layer structure
+mkdir -p lambda-layer/python/lib/python3.9/site-packages
+
+# Install dependencies
+pip install google-generativeai -t lambda-layer/python/lib/python3.9/site-packages/
+
+# Package layer
+cd lambda-layer
+zip -r9 therapy-app-dependencies.zip python/
+
+# Deploy layer to AWS
+aws lambda publish-layer-version \
+    --layer-name therapy-app-dependencies \
+    --description "Google Generative AI dependencies" \
+    --zip-file fileb://therapy-app-dependencies.zip \
+    --compatible-runtimes python3.9 python3.10 python3.11 \
+    --region us-east-1
+```
+
+#### 🚀 Deploy Lambda Function
+```bash
+# Go back to main directory
+cd ..
+
+# Create IAM role for Lambda
+aws iam create-role \
+    --role-name therapy-app-lambda-role \
+    --assume-role-policy-document '{
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Principal": {"Service": "lambda.amazonaws.com"},
+                "Action": "sts:AssumeRole"
+            }
+        ]
+    }'
+
+# Attach execution policy
+aws iam attach-role-policy \
+    --role-name therapy-app-lambda-role \
+    --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+# Package function code
+zip therapy-function.zip lambda_function.py
+
+# Get account ID
+ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+
+# Create Lambda function with layer
+aws lambda create-function \
+    --function-name therapy-assessment-app \
+    --runtime python3.9 \
+    --role arn:aws:iam::$ACCOUNT_ID:role/therapy-app-lambda-role \
+    --handler lambda_function.lambda_handler \
+    --zip-file fileb://therapy-function.zip \
+    --description "Therapy assessment app with AI recommendations" \
+    --timeout 60 \
+    --memory-size 512 \
+    --environment Variables='{
+        "GEMINI_API_KEY":"YOUR_API_KEY_HERE",
+        "GEMINI_MODEL":"gemini-2.0-flash"
+    }' \
+    --layers arn:aws:lambda:us-east-1:$ACCOUNT_ID:layer:therapy-app-dependencies:1 \
+    --region us-east-1
+```
+
+#### 🌐 Configure API Gateway
+```bash
+# Create REST API
+API_ID=$(aws apigateway create-rest-api \
+    --name therapy-assessment-api \
+    --description "API for therapy assessment app" \
+    --query 'id' --output text)
+
+# Get root resource ID
+ROOT_ID=$(aws apigateway get-resources \
+    --rest-api-id $API_ID \
+    --query 'items[0].id' --output text)
+
+# Create /assessment resource
+ASSESSMENT_ID=$(aws apigateway create-resource \
+    --rest-api-id $API_ID \
+    --parent-id $ROOT_ID \
+    --path-part assessment \
+    --query 'id' --output text)
+
+# Create methods (GET /, GET /assessment, POST /assessment)
+aws apigateway put-method --rest-api-id $API_ID --resource-id $ROOT_ID --http-method GET --authorization-type NONE
+aws apigateway put-method --rest-api-id $API_ID --resource-id $ASSESSMENT_ID --http-method GET --authorization-type NONE
+aws apigateway put-method --rest-api-id $API_ID --resource-id $ASSESSMENT_ID --http-method POST --authorization-type NONE
+
+# Configure Lambda integration
+LAMBDA_ARN="arn:aws:lambda:us-east-1:$ACCOUNT_ID:function:therapy-assessment-app"
+
+aws apigateway put-integration \
+    --rest-api-id $API_ID --resource-id $ROOT_ID --http-method GET \
+    --type AWS_PROXY --integration-http-method POST \
+    --uri arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/$LAMBDA_ARN/invocations
+
+aws apigateway put-integration \
+    --rest-api-id $API_ID --resource-id $ASSESSMENT_ID --http-method GET \
+    --type AWS_PROXY --integration-http-method POST \
+    --uri arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/$LAMBDA_ARN/invocations
+
+aws apigateway put-integration \
+    --rest-api-id $API_ID --resource-id $ASSESSMENT_ID --http-method POST \
+    --type AWS_PROXY --integration-http-method POST \
+    --uri arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/$LAMBDA_ARN/invocations
+
+# Grant API Gateway permission to invoke Lambda
+aws lambda add-permission \
+    --function-name therapy-assessment-app \
+    --statement-id apigateway-access \
+    --action lambda:InvokeFunction \
+    --principal apigateway.amazonaws.com \
+    --source-arn "arn:aws:execute-api:us-east-1:$ACCOUNT_ID:$API_ID/*/*"
+
+# Deploy API
+aws apigateway create-deployment \
+    --rest-api-id $API_ID \
+    --stage-name prod \
+    --description "Production deployment"
+
+# Get API URL
+API_URL="https://$API_ID.execute-api.us-east-1.amazonaws.com/prod"
+echo "🎉 API URL: $API_URL"
+```
+
+#### 🧪 Test Your Deployment
+```bash
+# Test all endpoints
+curl -X GET "$API_URL/"                    # Home page
+curl -X GET "$API_URL/assessment"          # Assessment form
+curl -X POST "$API_URL/assessment" \       # AI recommendations
+    -H "Content-Type: application/json" \
+    -d '{
+        "personal_info": {"name": "Test User", "age": 30},
+        "responses": {
+            "anxiety_level": "Often",
+            "mood_description": "Feeling stressed lately"
+        }
+    }'
+```
+
+**Benefits of Layer Approach:**
 - ✅ Faster deployments (dependencies separate from code)
-- ✅ Smaller function packages  
+- ✅ Smaller function packages (under 1MB vs 50MB+)
 - ✅ Reusable across functions
 - ✅ Better version management
+- ✅ Production-grade setup
+
+### 🔄 Function Updates (After Initial Deployment)
+```bash
+# Update function code only (fast!)
+zip therapy-function.zip lambda_function.py
+aws lambda update-function-code \
+    --function-name therapy-assessment-app \
+    --zip-file fileb://therapy-function.zip
+
+# Update environment variables
+aws lambda update-function-configuration \
+    --function-name therapy-assessment-app \
+    --environment Variables='{
+        "GEMINI_API_KEY":"your_updated_key",
+        "GEMINI_MODEL":"gemini-1.5-pro"
+    }'
+```
+
+### 🧹 Cleanup (Optional)
+```bash
+# Delete all resources to avoid charges
+aws lambda delete-function --function-name therapy-assessment-app
+aws apigateway delete-rest-api --rest-api-id $API_ID
+aws lambda delete-layer-version --layer-name therapy-app-dependencies --version-number 1
+aws iam detach-role-policy --role-name therapy-app-lambda-role \
+    --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+aws iam delete-role --role-name therapy-app-lambda-role
+```
 
 ### Local Development:
 ```bash
