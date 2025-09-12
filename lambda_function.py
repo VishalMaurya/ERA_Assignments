@@ -2,6 +2,8 @@ import json
 import os
 import time
 import logging
+from typing import List, Optional, Dict, Any
+from enum import Enum
 
 # Using direct HTTP requests to Gemini API - no library dependencies needed!
 import urllib.request
@@ -10,6 +12,132 @@ import urllib.parse
 # Configure logging
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
+
+# Pydantic-like validation classes (using built-in types to avoid dependencies)
+class AnxietyLevel(Enum):
+    NEVER = "Never"
+    RARELY = "Rarely"
+    SOMETIMES = "Sometimes"
+    OFTEN = "Often"
+    ALWAYS = "Always"
+
+class SocialSupport(Enum):
+    NONE = "None"
+    LIMITED = "Limited"
+    MODERATE = "Moderate"
+    STRONG = "Strong"
+
+class ExerciseFrequency(Enum):
+    DAILY = "Daily"
+    WEEKLY = "Weekly"
+    RARELY = "Rarely"
+    NEVER = "Never"
+
+def validate_personal_info(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Validate personal info schema"""
+    if not isinstance(data, dict):
+        raise ValueError("personal_info must be a dictionary")
+    
+    # Required fields
+    if 'name' not in data or not data['name']:
+        raise ValueError("name is required and cannot be empty")
+    if 'age' not in data:
+        raise ValueError("age is required")
+    
+    # Validate age
+    try:
+        age = int(data['age'])
+        if age < 18 or age > 100:
+            raise ValueError("age must be between 18 and 100")
+    except (ValueError, TypeError):
+        raise ValueError("age must be a valid integer")
+    
+    # Clean and validate
+    validated = {
+        'name': str(data['name']).strip(),
+        'age': age
+    }
+    
+    # Optional occupation
+    if 'occupation' in data and data['occupation']:
+        validated['occupation'] = str(data['occupation']).strip()
+    
+    return validated
+
+def validate_responses(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Validate responses schema"""
+    if not isinstance(data, dict):
+        raise ValueError("responses must be a dictionary")
+    
+    # Required fields
+    if 'anxiety_level' not in data:
+        raise ValueError("anxiety_level is required")
+    if 'mood_description' not in data or not data['mood_description']:
+        raise ValueError("mood_description is required and cannot be empty")
+    
+    # Validate anxiety_level
+    anxiety_values = [e.value for e in AnxietyLevel]
+    if data['anxiety_level'] not in anxiety_values:
+        raise ValueError(f"anxiety_level must be one of: {', '.join(anxiety_values)}")
+    
+    validated = {
+        'anxiety_level': data['anxiety_level'],
+        'mood_description': str(data['mood_description']).strip()
+    }
+    
+    # Optional fields with validation
+    if 'sleep_quality' in data:
+        try:
+            sleep_quality = int(data['sleep_quality'])
+            if sleep_quality < 1 or sleep_quality > 10:
+                raise ValueError("sleep_quality must be between 1 and 10")
+            validated['sleep_quality'] = sleep_quality
+        except (ValueError, TypeError):
+            raise ValueError("sleep_quality must be a valid integer between 1 and 10")
+    
+    if 'stress_sources' in data and data['stress_sources']:
+        if isinstance(data['stress_sources'], list):
+            validated['stress_sources'] = [str(s).strip() for s in data['stress_sources'] if s]
+        else:
+            validated['stress_sources'] = [str(data['stress_sources']).strip()]
+    
+    if 'social_support' in data and data['social_support']:
+        support_values = [e.value for e in SocialSupport]
+        if data['social_support'] not in support_values:
+            raise ValueError(f"social_support must be one of: {', '.join(support_values)}")
+        validated['social_support'] = data['social_support']
+    
+    if 'exercise_frequency' in data and data['exercise_frequency']:
+        exercise_values = [e.value for e in ExerciseFrequency]
+        if data['exercise_frequency'] not in exercise_values:
+            raise ValueError(f"exercise_frequency must be one of: {', '.join(exercise_values)}")
+        validated['exercise_frequency'] = data['exercise_frequency']
+    
+    if 'therapy_experience' in data and data['therapy_experience']:
+        validated['therapy_experience'] = str(data['therapy_experience']).strip()
+    
+    if 'primary_concerns' in data and data['primary_concerns']:
+        if isinstance(data['primary_concerns'], list):
+            validated['primary_concerns'] = [str(c).strip() for c in data['primary_concerns'] if c]
+        else:
+            validated['primary_concerns'] = [str(data['primary_concerns']).strip()]
+    
+    return validated
+
+def validate_assessment_request(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Validate complete assessment request"""
+    if not isinstance(data, dict):
+        raise ValueError("Request body must be a JSON object")
+    
+    if 'personal_info' not in data:
+        raise ValueError("personal_info is required")
+    if 'responses' not in data:
+        raise ValueError("responses is required")
+    
+    return {
+        'personal_info': validate_personal_info(data['personal_info']),
+        'responses': validate_responses(data['responses'])
+    }
 
 
 def lambda_handler(event, context):
@@ -87,10 +215,19 @@ def lambda_handler(event, context):
                 logger.info(f"✅ JSON parsing successful. Keys: {list(body.keys())}")
             except json.JSONDecodeError as e:
                 logger.error(f"❌ JSON parsing failed: {str(e)}")
-                raise Exception(f"Invalid JSON in request body: {str(e)}")
+                raise ValueError(f"Invalid JSON in request body: {str(e)}")
+            
+            # Validate request schema
+            try:
+                logger.info("🔍 Validating request schema...")
+                validated_data = validate_assessment_request(body)
+                logger.info("✅ Schema validation successful")
+            except ValueError as e:
+                logger.error(f"❌ Schema validation failed: {str(e)}")
+                raise ValueError(f"Schema validation error: {str(e)}")
             
             logger.info("🤖 Calling generate_ai_recommendations...")
-            response_data = generate_ai_recommendations(body)
+            response_data = generate_ai_recommendations(validated_data)
             logger.info("✅ AI recommendations generated successfully")
             
         # Route 4: Web UI - Interactive HTML interface
@@ -128,8 +265,27 @@ def lambda_handler(event, context):
             'body': json.dumps(response_data, indent=2)
         }
         
+    except ValueError as e:
+        # Schema validation errors - return 400
+        logger.error(f"❌ Validation error: {str(e)}")
+        error_response = {
+            'success': False,
+            'error': str(e),
+            'error_type': 'ValidationError',
+            'timestamp': time.time(),
+            'request_id': context.request_id if context else 'unknown'
+        }
+        
+        logger.error(f"🚨 Returning 400 validation error: {error_response}")
+        return {
+            'statusCode': 400,
+            'headers': headers,
+            'body': json.dumps(error_response)
+        }
+        
     except Exception as e:
-        logger.error(f"❌ Exception in lambda_handler: {str(e)}")
+        # Server errors - return 500
+        logger.error(f"❌ Server exception: {str(e)}")
         logger.error(f"🔍 Exception type: {type(e).__name__}")
         
         error_response = {
@@ -140,7 +296,7 @@ def lambda_handler(event, context):
             'request_id': context.request_id if context else 'unknown'
         }
         
-        logger.error(f"🚨 Returning 500 error: {error_response}")
+        logger.error(f"🚨 Returning 500 server error: {error_response}")
         return {
             'statusCode': 500,
             'headers': headers,
@@ -1171,33 +1327,180 @@ def get_web_ui():
 </html>'''
 
 
-# For local testing
-if __name__ == "__main__":
-    # Test the function locally
+# Comprehensive testing functions
+def test_all_endpoints():
+    """Test all endpoints with schema validation"""
+    import logging
+    logging.basicConfig(level=logging.INFO, format='%(levelname)s:%(name)s:%(message)s')
     
-    # Test 1: Home page
-    print("=== Testing Home Page ===")
-    event1 = {"httpMethod": "GET", "path": "/"}
-    result1 = lambda_handler(event1, {})
-    print(json.dumps(json.loads(result1['body']), indent=2))
+    print("🧪 COMPREHENSIVE API TESTING WITH SCHEMA VALIDATION")
+    print("=" * 60)
     
-    print("\n=== Testing Assessment Form ===")
-    event2 = {"httpMethod": "GET", "path": "/assessment"}
-    result2 = lambda_handler(event2, {})
-    print(json.dumps(json.loads(result2['body']), indent=2))
+    # Mock context
+    class MockContext:
+        request_id = 'test-123'
     
-    print("\n=== Testing Assessment Submission ===")
-    test_data = {
-        "personal_info": {"name": "Test User", "age": 30},
+    context = MockContext()
+    test_results = {'passed': 0, 'failed': 0}
+    
+    # Test 1: GET / (Home page)
+    print("📋 TEST 1: GET / (Home page)")
+    event1 = {
+        "requestContext": {"http": {"method": "GET"}},
+        "rawPath": "/"
+    }
+    result1 = lambda_handler(event1, context)
+    print(f"   Status: {result1['statusCode']}")
+    if result1['statusCode'] == 200:
+        response1 = json.loads(result1['body'])
+        print(f"   Success: {response1.get('success')}")
+        print(f"   API Title: {response1.get('api_title')}")
+        print("   ✅ PASS")
+        test_results['passed'] += 1
+    else:
+        print("   ❌ FAIL")
+        test_results['failed'] += 1
+    print()
+    
+    # Test 2: GET /assessment (Assessment form)
+    print("📋 TEST 2: GET /assessment (Assessment form)")
+    event2 = {
+        "requestContext": {"http": {"method": "GET"}},
+        "rawPath": "/assessment"
+    }
+    result2 = lambda_handler(event2, context)
+    print(f"   Status: {result2['statusCode']}")
+    if result2['statusCode'] == 200:
+        response2 = json.loads(result2['body'])
+        print(f"   Success: {response2.get('success')}")
+        print(f"   Form Title: {response2.get('form_title')}")
+        print("   ✅ PASS")
+        test_results['passed'] += 1
+    else:
+        print("   ❌ FAIL")
+        test_results['failed'] += 1
+    print()
+    
+    # Test 3: GET /UI (Web interface)
+    print("📋 TEST 3: GET /UI (Web interface)")
+    event3 = {
+        "requestContext": {"http": {"method": "GET"}},
+        "rawPath": "/UI"
+    }
+    result3 = lambda_handler(event3, context)
+    print(f"   Status: {result3['statusCode']}")
+    if result3['statusCode'] == 200:
+        print(f"   Content-Type: {result3['headers'].get('Content-Type')}")
+        print(f"   HTML Length: {len(result3['body'])} characters")
+        print("   ✅ PASS")
+        test_results['passed'] += 1
+    else:
+        print("   ❌ FAIL")
+        test_results['failed'] += 1
+    print()
+    
+    # Test 4: POST /assessment - Valid minimal schema
+    print("📋 TEST 4: POST /assessment (Valid minimal schema)")
+    valid_minimal = {
+        "personal_info": {
+            "name": "John Doe",
+            "age": 28
+        },
         "responses": {
             "anxiety_level": "Often",
-            "mood_description": "Feeling stressed about work"
+            "mood_description": "Feeling stressed about work deadlines"
         }
     }
-    event3 = {
-        "httpMethod": "POST", 
-        "path": "/assessment",
-        "body": json.dumps(test_data)
+    event4 = {
+        "requestContext": {"http": {"method": "POST"}},
+        "rawPath": "/assessment",
+        "body": json.dumps(valid_minimal)
     }
-    result3 = lambda_handler(event3, {})
-    print(json.dumps(json.loads(result3['body']), indent=2))
+    result4 = lambda_handler(event4, context)
+    print(f"   Status: {result4['statusCode']}")
+    response4 = json.loads(result4['body'])
+    print(f"   Success: {response4.get('success')}")
+    if result4['statusCode'] == 200 and response4.get('success'):
+        print(f"   Patient: {response4.get('patient_info', {}).get('name')}")
+        print(f"   AI Model: {response4.get('metadata', {}).get('ai_model')}")
+        print("   ✅ PASS")
+        test_results['passed'] += 1
+    else:
+        print(f"   Error: {response4.get('error')}")
+        print("   ❌ FAIL")
+        test_results['failed'] += 1
+    print()
+    
+    # Test 5: POST /assessment - Invalid schema (missing required fields)
+    print("📋 TEST 5: POST /assessment (Invalid - missing age)")
+    invalid_missing = {
+        "personal_info": {
+            "name": "Bob"
+            # Missing age
+        },
+        "responses": {
+            "anxiety_level": "Often",
+            "mood_description": "Test"
+        }
+    }
+    event5 = {
+        "requestContext": {"http": {"method": "POST"}},
+        "rawPath": "/assessment",
+        "body": json.dumps(invalid_missing)
+    }
+    result5 = lambda_handler(event5, context)
+    print(f"   Status: {result5['statusCode']}")
+    response5 = json.loads(result5['body'])
+    if result5['statusCode'] == 400 and response5.get('error_type') == 'ValidationError':
+        print(f"   Validation Error: {response5.get('error')}")
+        print("   ✅ PASS (correctly rejected invalid data)")
+        test_results['passed'] += 1
+    else:
+        print("   ❌ FAIL (should have returned 400 validation error)")
+        test_results['failed'] += 1
+    print()
+    
+    # Test 6: POST /assessment - Invalid enum values
+    print("📋 TEST 6: POST /assessment (Invalid enum values)")
+    invalid_enum = {
+        "personal_info": {
+            "name": "Charlie",
+            "age": 25
+        },
+        "responses": {
+            "anxiety_level": "Very High",  # Invalid enum value
+            "mood_description": "Not feeling great"
+        }
+    }
+    event6 = {
+        "requestContext": {"http": {"method": "POST"}},
+        "rawPath": "/assessment",
+        "body": json.dumps(invalid_enum)
+    }
+    result6 = lambda_handler(event6, context)
+    print(f"   Status: {result6['statusCode']}")
+    response6 = json.loads(result6['body'])
+    if result6['statusCode'] == 400 and response6.get('error_type') == 'ValidationError':
+        print(f"   Validation Error: {response6.get('error')}")
+        print("   ✅ PASS (correctly rejected invalid enum)")
+        test_results['passed'] += 1
+    else:
+        print("   ❌ FAIL (should have returned 400 validation error)")
+        test_results['failed'] += 1
+    print()
+    
+    print("🎯 TEST SUMMARY:")
+    print(f"   ✅ Passed: {test_results['passed']}")
+    print(f"   ❌ Failed: {test_results['failed']}")
+    print(f"   📊 Success Rate: {test_results['passed']/(test_results['passed']+test_results['failed'])*100:.1f}%")
+    
+    if test_results['failed'] == 0:
+        print("   🚀 ALL TESTS PASSED! Ready for deployment!")
+    else:
+        print("   ⚠️ Some tests failed. Check errors above.")
+    
+    return test_results['failed'] == 0
+
+# For local testing
+if __name__ == "__main__":
+    test_all_endpoints()
