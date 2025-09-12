@@ -1,104 +1,125 @@
-# 🧠 **Therapy App - AWS Lambda Serverless**
+# 🧠 Simple Therapy Assessment Lambda
 
-Serverless psychological therapy assessment application built with AWS Lambda, API Gateway, and DynamoDB.
+Single Python file Lambda function for therapy assessment with AI recommendations.
 
-## 🚀 **Quick Deploy**
+## 📋 Features
 
-```bash
-./deploy.sh prod
-```
+- **GET /** - API documentation and usage examples
+- **GET /assessment** - Returns therapy assessment form with prefilled sample data  
+- **POST /assessment** - Processes assessment and returns AI recommendations using Google Gemini
 
-## 📁 **Project Structure**
-
-```
-Session2_Assignment/                  # AWS Lambda Therapy App
-├── src/functions/                   # 4 Lambda Functions
-│   ├── auth/                        # User authentication & management
-│   ├── assessment/                  # Assessment CRUD operations
-│   ├── report/                      # AI report generation
-│   └── analytics/                   # Dashboard analytics
-├── src/shared/                      # Shared utilities & types
-├── package.json                     # Dependencies
-├── template.yaml                    # AWS SAM infrastructure
-├── deploy.sh                        # One-command deployment
-├── tsconfig.json                    # TypeScript configuration
-└── README.md                        # This file
-```
-
-## 🔧 **API Endpoints**
-
-| **Function** | **Endpoints** | **Purpose** |
-|--------------|---------------|-------------|
-| **Auth** | `/auth/*` | User registration, login, profile |
-| **Assessment** | `/assessment/*` | Start, update, complete assessments |
-| **Report** | `/report/*` | Generate AI reports with Gemini |
-| **Analytics** | `/analytics/*` | Dashboard metrics & insights |
-
-## 🛠️ **Prerequisites**
-
-- AWS CLI configured
-- SAM CLI installed
-- Google Gemini API key
-
-## 📋 **Deployment Steps**
-
-1. **Install AWS CLI & SAM**
-   ```bash
-   # Install AWS CLI
-   curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-   unzip awscliv2.zip && sudo ./aws/install
-   
-   # Install SAM CLI
-   pip install aws-sam-cli
-   
-   # Configure AWS
-   aws configure
-   ```
-
-2. **Deploy to AWS**
-   ```bash
-   chmod +x deploy.sh
-   ./deploy.sh prod
-   ```
-
-3. **Test API**
-   ```bash
-   # The deployment script will output your API URL
-   curl https://[YOUR-API-URL]/prod/auth/user?userId=test
-   ```
-
-## 🏗️ **Architecture**
-
-```
-React Frontend → API Gateway → Lambda Functions → DynamoDB
-                                      ↓
-                               Google Gemini AI
-```
-
-## 💰 **Cost Estimate**
-
-- **1K users/month**: ~$5
-- **10K users/month**: ~$25
-- **100K users/month**: ~$150
-
-## 📊 **Features**
-
-- ✅ **28 Assessment Types** (anxiety, OCD, mindfulness, etc.)
-- ✅ **AI-Powered Reports** with Google Gemini
-- ✅ **Real-time Analytics** dashboard
-- ✅ **Serverless Auto-scaling** 
-- ✅ **Pay-per-use Pricing**
-
-## 🔍 **Testing**
+## 🚀 Quick Test
 
 ```bash
-# Local testing
-sam local start-api
+# Test locally
+python lambda_function.py
 
-# Test endpoints
-curl http://localhost:3000/auth/register -d '{"email":"test@example.com"}'
+# Or test individual endpoints
+python -c "
+import lambda_function
+import json
+
+# Test home page
+event = {'httpMethod': 'GET', 'path': '/'}
+result = lambda_function.lambda_handler(event, {})
+print(json.dumps(json.loads(result['body']), indent=2))
+"
 ```
 
----
+## 📡 API Endpoints
 
-**🎉 Your serverless therapy app is ready to scale! 🌟**
+### 1. Home Page - GET /
+Returns API documentation with usage examples.
+
+### 2. Assessment Form - GET /assessment  
+Returns a JSON therapy assessment form with prefilled sample data:
+
+```json
+{
+  "personal_info": {
+    "name": "John Doe",
+    "age": 28,
+    "occupation": "Software Developer"
+  },
+  "responses": {
+    "anxiety_level": "Often",
+    "sleep_quality": 4,
+    "stress_sources": ["Work", "Financial"],
+    "mood_description": "Feeling overwhelmed lately..."
+  }
+}
+```
+
+### 3. AI Recommendations - POST /assessment
+Submit the assessment data and get AI-powered recommendations:
+
+```bash
+curl -X POST https://your-lambda-url/assessment \
+  -H "Content-Type: application/json" \
+  -d '{
+    "personal_info": {"name": "John", "age": 28},
+    "responses": {
+      "anxiety_level": "Often",
+      "mood_description": "Feeling stressed"
+    }
+  }'
+```
+
+Returns structured AI recommendations including:
+- Personal summary
+- Key insights  
+- Recommended therapies
+- Coping strategies
+- Progress tracking suggestions
+
+## 🔧 Environment Variables
+
+Set `GEMINI_API_KEY` for AI recommendations:
+
+```bash
+export GEMINI_API_KEY="your_gemini_api_key_here"
+```
+
+If not set, fallback recommendations are provided.
+
+## 🏗️ Deployment
+
+### AWS Lambda:
+1. Zip the files: `zip -r therapy-lambda.zip lambda_function.py requirements.txt`
+2. Upload to Lambda console
+3. Set environment variable `GEMINI_API_KEY`
+4. Configure API Gateway triggers
+
+### Local Development:
+```bash
+pip install -r requirements.txt
+python lambda_function.py
+```
+
+## 📝 Sample Response
+
+```json
+{
+  "success": true,
+  "patient_info": {
+    "name": "John Doe",
+    "assessment_date": "2024-01-01 12:00:00"
+  },
+  "ai_analysis": {
+    "summary": "Based on your responses, you're experiencing moderate anxiety...",
+    "recommended_therapies": [
+      {
+        "therapy_name": "Cognitive Behavioral Therapy",
+        "suitability_reason": "Effective for anxiety management",
+        "expected_outcomes": "Better coping skills"
+      }
+    ],
+    "immediate_coping_strategies": [
+      "Practice deep breathing exercises",
+      "Try progressive muscle relaxation"
+    ]
+  }
+}
+```
+
+**Simple, effective, and ready to deploy! 🌟**
