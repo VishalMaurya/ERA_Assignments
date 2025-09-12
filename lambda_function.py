@@ -64,6 +64,17 @@ def lambda_handler(event, context):
             body = json.loads(raw_body)
             response_data = generate_ai_recommendations(body)
             
+        # Route 4: Web UI - Interactive HTML interface
+        elif http_method == 'GET' and path == '/UI':
+            return {
+                'statusCode': 200,
+                'headers': {
+                    'Content-Type': 'text/html',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                'body': get_web_ui()
+            }
+            
         else:
             response_data = {
                 'success': False,
@@ -71,7 +82,8 @@ def lambda_handler(event, context):
                 'available_endpoints': [
                     'GET / - API documentation',
                     'GET /assessment - Get assessment form',
-                    'POST /assessment - Submit assessment for AI analysis'
+                    'POST /assessment - Submit assessment for AI analysis',
+                    'GET /UI - Interactive web interface'
                 ]
             }
             return {
@@ -564,6 +576,481 @@ def get_fallback_recommendations(personal_info, responses):
         ],
         "processing_time_ms": 50
     }
+
+
+def get_web_ui():
+    """Returns HTML web interface for therapy assessment"""
+    return '''<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧠 Therapy Assessment</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        
+        .form-section {
+            padding: 30px;
+        }
+        
+        .section-title {
+            color: #2c3e50;
+            font-size: 1.4em;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ecf0f1;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .form-group textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .checkbox-item input[type="checkbox"] {
+            width: auto;
+        }
+        
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+            font-size: 18px;
+        }
+        
+        .results {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .results h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .insight-item {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border-left: 3px solid #27ae60;
+        }
+        
+        .therapy-item {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border-left: 3px solid #3498db;
+        }
+        
+        .strategy-item {
+            background: white;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 6px;
+            border-left: 3px solid #e74c3c;
+        }
+        
+        .error {
+            background: #ffe6e6;
+            color: #c0392b;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #e74c3c;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .form-section {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧠 Therapy Assessment</h1>
+            <p>AI-Powered Mental Health Recommendations</p>
+        </div>
+        
+        <div class="form-section">
+            <form id="assessmentForm">
+                <div class="section-title">Personal Information</div>
+                
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="age">Age</label>
+                    <input type="number" id="age" name="age" min="18" max="100" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="occupation">Occupation (Optional)</label>
+                    <input type="text" id="occupation" name="occupation">
+                </div>
+                
+                <div class="section-title">Assessment Questions</div>
+                
+                <div class="form-group">
+                    <label for="anxiety_level">How often do you experience anxiety?</label>
+                    <select id="anxiety_level" name="anxiety_level" required>
+                        <option value="">Select...</option>
+                        <option value="Never">Never</option>
+                        <option value="Rarely">Rarely</option>
+                        <option value="Sometimes">Sometimes</option>
+                        <option value="Often">Often</option>
+                        <option value="Always">Always</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="sleep_quality">Sleep Quality (1-10, where 10 is excellent)</label>
+                    <input type="range" id="sleep_quality" name="sleep_quality" min="1" max="10" value="5">
+                    <span id="sleep_value">5</span>
+                </div>
+                
+                <div class="form-group">
+                    <label>What are your main sources of stress? (Check all that apply)</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="stress_work" name="stress_sources" value="Work">
+                            <label for="stress_work">Work</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="stress_family" name="stress_sources" value="Family">
+                            <label for="stress_family">Family</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="stress_financial" name="stress_sources" value="Financial">
+                            <label for="stress_financial">Financial</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="stress_health" name="stress_sources" value="Health">
+                            <label for="stress_health">Health</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="stress_relationships" name="stress_sources" value="Relationships">
+                            <label for="stress_relationships">Relationships</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="stress_other" name="stress_sources" value="Other">
+                            <label for="stress_other">Other</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="mood_description">How would you describe your current mood and mental state?</label>
+                    <textarea id="mood_description" name="mood_description" placeholder="Please describe how you've been feeling lately..." required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="social_support">How would you rate your social support system?</label>
+                    <select id="social_support" name="social_support" required>
+                        <option value="">Select...</option>
+                        <option value="None">None</option>
+                        <option value="Limited">Limited</option>
+                        <option value="Moderate">Moderate</option>
+                        <option value="Strong">Strong</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="exercise_frequency">How often do you exercise?</label>
+                    <select id="exercise_frequency" name="exercise_frequency" required>
+                        <option value="">Select...</option>
+                        <option value="Daily">Daily</option>
+                        <option value="Weekly">Weekly</option>
+                        <option value="Rarely">Rarely</option>
+                        <option value="Never">Never</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="therapy_experience">Previous therapy experience</label>
+                    <textarea id="therapy_experience" name="therapy_experience" placeholder="Have you tried therapy before? What was your experience?"></textarea>
+                </div>
+                
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    Get AI Recommendations
+                </button>
+            </form>
+            
+            <div id="loading" class="loading" style="display: none;">
+                🧠 Analyzing your responses with AI...
+            </div>
+            
+            <div id="results" class="results" style="display: none;"></div>
+            <div id="error" class="error" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        // Update sleep quality display
+        document.getElementById('sleep_quality').addEventListener('input', function() {
+            document.getElementById('sleep_value').textContent = this.value;
+        });
+
+        // Form submission
+        document.getElementById('assessmentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const loading = document.getElementById('loading');
+            const results = document.getElementById('results');
+            const error = document.getElementById('error');
+            
+            // Hide previous results/errors
+            results.style.display = 'none';
+            error.style.display = 'none';
+            
+            // Show loading
+            loading.style.display = 'block';
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Processing...';
+            
+            try {
+                // Collect form data
+                const formData = new FormData(e.target);
+                
+                // Get stress sources
+                const stressSources = [];
+                document.querySelectorAll('input[name="stress_sources"]:checked').forEach(checkbox => {
+                    stressSources.push(checkbox.value);
+                });
+                
+                // Build request data
+                const requestData = {
+                    personal_info: {
+                        name: formData.get('name'),
+                        age: parseInt(formData.get('age')),
+                        occupation: formData.get('occupation') || undefined
+                    },
+                    responses: {
+                        anxiety_level: formData.get('anxiety_level'),
+                        sleep_quality: parseInt(formData.get('sleep_quality')),
+                        stress_sources: stressSources,
+                        mood_description: formData.get('mood_description'),
+                        social_support: formData.get('social_support'),
+                        exercise_frequency: formData.get('exercise_frequency'),
+                        therapy_experience: formData.get('therapy_experience'),
+                        primary_concerns: stressSources // Use stress sources as primary concerns for now
+                    }
+                };
+                
+                // Make API call
+                const response = await fetch('/assessment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayResults(data);
+                } else {
+                    throw new Error(data.error || 'Unknown error occurred');
+                }
+                
+            } catch (err) {
+                console.error('Error:', err);
+                error.textContent = 'Error: ' + err.message;
+                error.style.display = 'block';
+            } finally {
+                loading.style.display = 'none';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Get AI Recommendations';
+            }
+        });
+        
+        function displayResults(data) {
+            const results = document.getElementById('results');
+            const analysis = data.ai_analysis;
+            
+            let html = `
+                <h3>🎯 Assessment Results for ${data.patient_info.name}</h3>
+                <p><strong>Assessment Date:</strong> ${data.patient_info.assessment_date}</p>
+                
+                <h4>📋 Summary</h4>
+                <p>${analysis.summary}</p>
+                
+                <h4>💡 Key Insights</h4>
+            `;
+            
+            analysis.key_insights.forEach(insight => {
+                html += `<div class="insight-item">${insight}</div>`;
+            });
+            
+            html += `<h4>🏥 Recommended Therapies</h4>`;
+            analysis.recommended_therapies.forEach(therapy => {
+                html += `
+                    <div class="therapy-item">
+                        <strong>${therapy.therapy_name}</strong><br>
+                        <em>Why it fits:</em> ${therapy.suitability_reason}<br>
+                        <em>Expected outcomes:</em> ${therapy.expected_outcomes}
+                    </div>
+                `;
+            });
+            
+            html += `<h4>⚡ Immediate Coping Strategies</h4>`;
+            analysis.immediate_coping_strategies.forEach(strategy => {
+                html += `<div class="strategy-item">${strategy}</div>`;
+            });
+            
+            if (analysis.progress_tracking) {
+                html += `
+                    <h4>📊 Progress Tracking</h4>
+                    <div class="insight-item">
+                        <strong>Metrics to monitor:</strong> ${analysis.progress_tracking.metrics_to_monitor.join(', ')}<br>
+                        <strong>Check-in frequency:</strong> ${analysis.progress_tracking.check_in_frequency}
+                    </div>
+                `;
+            }
+            
+            html += `
+                <p><small>
+                    <strong>AI Model:</strong> ${data.metadata.ai_model} | 
+                    <strong>Processing Time:</strong> ${data.metadata.processing_time_ms}ms
+                </small></p>
+            `;
+            
+            results.innerHTML = html;
+            results.style.display = 'block';
+            
+            // Scroll to results
+            results.scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>'''
 
 
 # For local testing
