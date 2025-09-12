@@ -987,6 +987,9 @@ def get_web_ui():
                 
                 // Make API call - use current domain + /assessment
                 const apiUrl = window.location.origin + '/assessment';
+                console.log('🚀 Sending request to:', apiUrl);
+                console.log('📋 Request data:', requestData);
+                
                 const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: {
@@ -995,11 +998,21 @@ def get_web_ui():
                     body: JSON.stringify(requestData)
                 });
                 
+                console.log('📡 Response status:', response.status);
+                console.log('📡 Response headers:', response.headers);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
                 const data = await response.json();
+                console.log('📊 Response data:', data);
                 
                 if (data.success) {
+                    console.log('✅ Success! Calling displayResults...');
                     displayResults(data);
                 } else {
+                    console.log('❌ API returned success=false');
                     throw new Error(data.error || 'Unknown error occurred');
                 }
                 
@@ -1024,8 +1037,23 @@ def get_web_ui():
         });
         
         function displayResults(data) {
+            console.log('🎯 displayResults called with data:', data);
+            
             const results = document.getElementById('results');
+            console.log('📋 Results element:', results);
+            
+            if (!results) {
+                console.error('❌ Results element not found!');
+                return;
+            }
+            
             const analysis = data.ai_analysis;
+            console.log('🧠 AI Analysis:', analysis);
+            
+            if (!analysis) {
+                console.error('❌ No ai_analysis in response data!');
+                return;
+            }
             
             let html = `
                 <h3>🎯 Assessment Results for ${data.patient_info.name}</h3>
@@ -1074,11 +1102,16 @@ def get_web_ui():
                 </small></p>
             `;
             
+            console.log('📝 Setting HTML content...');
             results.innerHTML = html;
             results.style.display = 'block';
             
+            console.log('✅ Results displayed successfully!');
+            console.log('📊 Results element after update:', results);
+            
             // Scroll to results
             results.scrollIntoView({ behavior: 'smooth' });
+            console.log('🎯 Scrolled to results section');
         }
     </script>
 </body>
