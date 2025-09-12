@@ -37,7 +37,7 @@ ls -la
 ### **2.1 Create Layer Directory Structure**
 ```bash
 # Create layer directory structure
-mkdir -p lambda-layer/python/lib/python3.9/site-packages
+mkdir -p lambda-layer/python/lib/python3.12/site-packages
 
 # Navigate to layer directory
 cd lambda-layer
@@ -46,17 +46,17 @@ cd lambda-layer
 ### **2.2 Install Dependencies**
 ```bash
 # Install dependencies into the layer structure
-pip install google-generativeai -t python/lib/python3.9/site-packages/
+pip install google-generativeai -t python/lib/python3.12/site-packages/
 
 # Verify installation
-ls python/lib/python3.9/site-packages/
+ls python/lib/python3.12/site-packages/
 # Should see: google, grpc, etc.
 ```
 
 ### **2.3 Clean Up Layer (Optional)**
 ```bash
 # Remove unnecessary files to reduce layer size
-cd python/lib/python3.9/site-packages/
+cd python/lib/python3.12/site-packages/
 
 # Remove test files and caches
 find . -type d -name "tests" -exec rm -rf {} +
@@ -92,7 +92,7 @@ aws lambda publish-layer-version \
     --layer-name therapy-app-dependencies \
     --description "Google Generative AI dependencies for therapy app" \
     --zip-file fileb://therapy-app-dependencies.zip \
-    --compatible-runtimes python3.9 python3.10 python3.11 \
+    --compatible-runtimes python3.12 \
     --region us-east-1
 
 # Note the LayerVersionArn from the output
@@ -160,7 +160,7 @@ ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 # Create Lambda function
 aws lambda create-function \
     --function-name therapy-assessment-app \
-    --runtime python3.9 \
+    --runtime python3.12 \
     --role arn:aws:iam::$ACCOUNT_ID:role/therapy-app-lambda-role \
     --handler lambda_function.lambda_handler \
     --zip-file fileb://therapy-function.zip \
@@ -349,14 +349,14 @@ aws lambda update-function-configuration \
 ### **7.3 Update Layer (If Dependencies Change)**
 ```bash
 # Recreate layer with new dependencies
-pip install -r requirements.txt -t python/lib/python3.9/site-packages/ --upgrade
+pip install -r requirements.txt -t python/lib/python3.12/site-packages/ --upgrade
 zip -r9 therapy-app-dependencies-v2.zip python/
 
 # Publish new layer version
 aws lambda publish-layer-version \
     --layer-name therapy-app-dependencies \
     --zip-file fileb://therapy-app-dependencies-v2.zip \
-    --compatible-runtimes python3.9 python3.10 python3.11
+    --compatible-runtimes python3.12
 
 # Update function to use new layer version
 aws lambda update-function-configuration \
@@ -431,21 +431,21 @@ git clone https://github.com/VishalMaurya/ERA_Assignments.git
 cd ERA_Assignments/Session2_Assignment && git checkout simple-demo-app
 
 # Create layer
-mkdir -p lambda-layer/python/lib/python3.9/site-packages
-pip install google-generativeai -t lambda-layer/python/lib/python3.9/site-packages/
+mkdir -p lambda-layer/python/lib/python3.12/site-packages
+pip install google-generativeai -t lambda-layer/python/lib/python3.12/site-packages/
 cd lambda-layer && zip -r9 therapy-app-dependencies.zip python/
 
 # Deploy layer
 aws lambda publish-layer-version \
     --layer-name therapy-app-dependencies \
     --zip-file fileb://therapy-app-dependencies.zip \
-    --compatible-runtimes python3.9
+    --compatible-runtimes python3.12
 
 # Deploy function
 zip therapy-function.zip lambda_function.py
 aws lambda create-function \
     --function-name therapy-assessment-app \
-    --runtime python3.9 \
+    --runtime python3.12 \
     --role arn:aws:iam::ACCOUNT_ID:role/therapy-app-lambda-role \
     --handler lambda_function.lambda_handler \
     --zip-file fileb://therapy-function.zip \

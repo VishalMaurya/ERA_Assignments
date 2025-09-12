@@ -112,10 +112,10 @@ git checkout simple-demo-app
 #### 📦 Create Lambda Layer
 ```bash
 # Create layer structure
-mkdir -p lambda-layer/python/lib/python3.9/site-packages
+mkdir -p lambda-layer/python/lib/python3.12/site-packages
 
 # Install dependencies
-pip install google-generativeai -t lambda-layer/python/lib/python3.9/site-packages/
+pip install google-generativeai -t lambda-layer/python/lib/python3.12/site-packages/
 
 # Package layer
 cd lambda-layer
@@ -126,7 +126,7 @@ aws lambda publish-layer-version \
     --layer-name therapy-app-dependencies \
     --description "Google Generative AI dependencies" \
     --zip-file fileb://therapy-app-dependencies.zip \
-    --compatible-runtimes python3.9 python3.10 python3.11 \
+    --compatible-runtimes python3.12 \
     --region us-east-1
 ```
 
@@ -163,7 +163,7 @@ ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 # Create Lambda function with layer
 aws lambda create-function \
     --function-name therapy-assessment-app \
-    --runtime python3.9 \
+    --runtime python3.12 \
     --role arn:aws:iam::$ACCOUNT_ID:role/therapy-app-lambda-role \
     --handler lambda_function.lambda_handler \
     --zip-file fileb://therapy-function.zip \
