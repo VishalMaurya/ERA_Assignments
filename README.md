@@ -90,13 +90,26 @@ If `GEMINI_API_KEY` is not set, fallback recommendations are provided.
 
 ## 🏗️ Deployment
 
-### AWS Lambda:
-1. Zip the files: `zip -r therapy-lambda.zip lambda_function.py requirements.txt`
-2. Upload to Lambda console
-3. Set environment variables:
-   - `GEMINI_API_KEY=your_api_key`
-   - `GEMINI_MODEL=gemini-2.0-flash` (optional)
-4. Configure API Gateway triggers
+### Option 1: Simple Upload (for testing)
+1. Install dependencies: `pip install -r requirements.txt`
+2. Zip everything: `zip -r therapy-lambda.zip lambda_function.py requirements.txt site-packages/`
+3. Upload to Lambda console
+4. Set environment variables and configure API Gateway
+
+### Option 2: Production with Lambda Layer (Recommended)
+See detailed guide: **[LAMBDA_LAYER_SETUP.md](./LAMBDA_LAYER_SETUP.md)**
+
+**Quick Layer Setup:**
+1. Pull code to AWS CloudShell
+2. Create layer with dependencies
+3. Deploy function with layer
+4. Configure API Gateway
+
+Benefits of using layers:
+- ✅ Faster deployments (dependencies separate from code)
+- ✅ Smaller function packages  
+- ✅ Reusable across functions
+- ✅ Better version management
 
 ### Local Development:
 ```bash
