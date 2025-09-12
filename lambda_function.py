@@ -1,10 +1,15 @@
 import json
 import os
 import time
+import logging
 
 # Using direct HTTP requests to Gemini API - no library dependencies needed!
 import urllib.request
 import urllib.parse
+
+# Configure logging
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 
 def lambda_handler(event, context):
@@ -17,17 +22,27 @@ def lambda_handler(event, context):
     3. POST /assessment - Processes assessment and returns AI recommendations
     """
     
+    logger.info(f"🚀 Lambda invocation started - Request ID: {context.request_id if context else 'unknown'}")
+    logger.info(f"📋 Event keys: {list(event.keys())}")
+    
     # Extract HTTP method and path (support both API Gateway and Lambda Function URL)
     if 'requestContext' in event and 'http' in event['requestContext']:
         # Lambda Function URL format
         http_method = event['requestContext']['http']['method']
         path = event.get('rawPath', '/')
+        logger.info(f"🔗 Lambda Function URL detected: {http_method} {path}")
         print(f"🔗 Lambda Function URL detected: {http_method} {path}")
     else:
         # API Gateway format
         http_method = event.get('httpMethod', '')
         path = event.get('path', '/')
+        logger.info(f"🌐 API Gateway detected: {http_method} {path}")
         print(f"🌐 API Gateway detected: {http_method} {path}")
+    
+    # Log environment variables status
+    has_gemini_key = 'GEMINI_API_KEY' in os.environ
+    gemini_model = os.environ.get('GEMINI_MODEL', 'not_set')
+    logger.info(f"🔑 Environment: GEMINI_API_KEY={'SET' if has_gemini_key else 'MISSING'}, GEMINI_MODEL={gemini_model}")
     
     # CORS headers
     headers = {
@@ -56,13 +71,27 @@ def lambda_handler(event, context):
             
         # Route 3: POST assessment for AI recommendations
         elif http_method == 'POST' and path == '/assessment':
+            logger.info("📝 Processing POST /assessment request")
+            
             # Handle body for both API Gateway and Function URL
             raw_body = event.get('body', '{}')
+            logger.info(f"📦 Raw body length: {len(raw_body)} characters")
+            
             if event.get('isBase64Encoded', False):
+                logger.info("🔄 Decoding base64 encoded body")
                 import base64
                 raw_body = base64.b64decode(raw_body).decode('utf-8')
-            body = json.loads(raw_body)
+            
+            try:
+                body = json.loads(raw_body)
+                logger.info(f"✅ JSON parsing successful. Keys: {list(body.keys())}")
+            except json.JSONDecodeError as e:
+                logger.error(f"❌ JSON parsing failed: {str(e)}")
+                raise Exception(f"Invalid JSON in request body: {str(e)}")
+            
+            logger.info("🤖 Calling generate_ai_recommendations...")
             response_data = generate_ai_recommendations(body)
+            logger.info("✅ AI recommendations generated successfully")
             
         # Route 4: Web UI - Interactive HTML interface
         elif http_method == 'GET' and path == '/UI':
@@ -92,6 +121,7 @@ def lambda_handler(event, context):
                 'body': json.dumps(response_data)
             }
         
+        logger.info("✅ Request processed successfully")
         return {
             'statusCode': 200,
             'headers': headers,
@@ -99,11 +129,18 @@ def lambda_handler(event, context):
         }
         
     except Exception as e:
+        logger.error(f"❌ Exception in lambda_handler: {str(e)}")
+        logger.error(f"🔍 Exception type: {type(e).__name__}")
+        
         error_response = {
             'success': False,
             'error': str(e),
-            'timestamp': time.time()
+            'error_type': type(e).__name__,
+            'timestamp': time.time(),
+            'request_id': context.request_id if context else 'unknown'
         }
+        
+        logger.error(f"🚨 Returning 500 error: {error_response}")
         return {
             'statusCode': 500,
             'headers': headers,
@@ -292,16 +329,24 @@ def generate_ai_recommendations(assessment_data):
 def get_gemini_recommendations(personal_info, responses):
     """Generate recommendations using Google Gemini AI via direct REST API"""
     
+    logger.info("🧠 Starting Gemini AI recommendation generation")
+    
     # Get API key from environment
     api_key = os.environ.get('GEMINI_API_KEY')
     if not api_key:
+        logger.error("❌ GEMINI_API_KEY environment variable not set")
         raise Exception('GEMINI_API_KEY environment variable not set')
+    
+    logger.info(f"🔑 API key found (length: {len(api_key)})")
     
     # Get model name from environment or use default
     model_name = os.environ.get('GEMINI_MODEL', 'gemini-2.0-flash')
+    logger.info(f"🤖 Using Gemini model: {model_name}")
     
     # Build prompt for AI
+    logger.info("📝 Building therapy prompt...")
     prompt = build_therapy_prompt(personal_info, responses)
+    logger.info(f"📝 Prompt built (length: {len(prompt)} characters)")
     
     # Prepare request data
     request_data = {
@@ -320,6 +365,7 @@ def get_gemini_recommendations(personal_info, responses):
     start_time = time.time()
     
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent"
+    logger.info(f"🌐 Making HTTP request to: {url}")
     
     headers = {
         'Content-Type': 'application/json',
@@ -334,9 +380,12 @@ def get_gemini_recommendations(personal_info, responses):
     )
     
     try:
+        logger.info("📡 Sending request to Gemini API...")
         with urllib.request.urlopen(req) as response:
+            logger.info(f"✅ HTTP response received (status: {response.status})")
             response_data = json.loads(response.read().decode('utf-8'))
             processing_time = int((time.time() - start_time) * 1000)
+            logger.info(f"⏱️ Processing time: {processing_time}ms")
             
             # Extract text from response
             if 'candidates' in response_data and len(response_data['candidates']) > 0:
@@ -366,8 +415,12 @@ def get_gemini_recommendations(personal_info, responses):
                 
     except urllib.error.HTTPError as e:
         error_details = e.read().decode('utf-8')
+        logger.error(f"❌ Gemini API HTTP error: {e.code}")
+        logger.error(f"❌ Error details: {error_details}")
         raise Exception(f'Gemini API error: {e.code} - {error_details}')
     except Exception as e:
+        logger.error(f"❌ Failed to call Gemini API: {str(e)}")
+        logger.error(f"❌ Exception type: {type(e).__name__}")
         raise Exception(f'Failed to call Gemini API: {str(e)}')
 
 
