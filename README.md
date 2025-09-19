@@ -39,48 +39,235 @@ Design optimized CNN architectures for MNIST classification achieving:
 
 ## 🧠 Model Architectures
 
-> **📊 See `assignment.ipynb` for detailed ASCII block diagrams, parameter breakdowns, and visual analysis charts!**
-
 ### 1. TinyNet (~1.4k Parameters) - Baseline
+
+#### Architecture Flow
 ```
-Input(28×28×1) → Conv(3×3,1→8) → BN → ReLU → 
-Conv(3×3,8→16) → BN → ReLU → MaxPool(2×2) → 
-Dropout(0.1) → GAP → FC(16→10)
+Input (28×28×1)
+      ↓
+┌─────────────────┐
+│  Conv 3×3×8     │ ← 1→8 channels
+│  BatchNorm2d    │
+│  ReLU           │
+└─────────────────┘
+      ↓
+┌─────────────────┐
+│  Conv 3×3×16    │ ← 8→16 channels  
+│  BatchNorm2d    │
+│  ReLU           │
+└─────────────────┘
+      ↓
+┌─────────────────┐
+│  MaxPool 2×2    │ ← 28×28 → 14×14
+└─────────────────┘
+      ↓
+┌─────────────────┐
+│  Dropout(0.1)   │
+└─────────────────┘
+      ↓
+┌─────────────────┐
+│  GAP (1×1×16)   │ ← Global Avg Pool
+└─────────────────┘
+      ↓
+┌─────────────────┐
+│  FC (16→10)     │ ← Final classifier
+└─────────────────┘
+      ↓
+   Output (10)
 ```
 
 **Features:**
-- Ultra-lightweight baseline model
-- Minimal parameter footprint
+- Ultra-lightweight baseline model (1,466 parameters)
+- Minimal parameter footprint for proof-of-concept
 - Single pooling operation
-- **Result: 92.65% accuracy** - Good for proof-of-concept
+- **Result: 92.65% accuracy** - Good baseline but insufficient for target
 
 ### 2. BetterTinyNet (~18.9k Parameters) - ⭐ TARGET MODEL
+
+#### Architecture Flow
 ```
-Block 1: Conv(1→8→16) → MaxPool → 1×1(16→12) → Dropout(0.1)
-Block 2: Conv(12→16→20) → MaxPool → 1×1(20→16) → Dropout(0.1)  
-Block 3: Conv(16→20→24) → Dropout(0.15) → Conv(24→16→10) → GAP
+Input (28×28×1)
+      ↓
+╔═════════════════╗
+║     BLOCK 1     ║
+╠─────────────────╢
+║ Conv 3×3×8      ║ ← 1→8 channels
+║ BN + ReLU       ║
+║ Conv 3×3×16     ║ ← 8→16 channels
+║ BN + ReLU       ║
+║ MaxPool 2×2     ║ ← 28×28 → 14×14
+║ Conv 1×1×12     ║ ← 16→12 reduction
+║ BN + ReLU       ║
+║ Dropout(0.1)    ║
+╚═════════════════╝
+      ↓ (14×14×12)
+╔═════════════════╗
+║     BLOCK 2     ║
+╠─────────────────╢
+║ Conv 3×3×16     ║ ← 12→16 channels
+║ BN + ReLU       ║
+║ Conv 3×3×20     ║ ← 16→20 channels
+║ BN + ReLU       ║
+║ MaxPool 2×2     ║ ← 14×14 → 7×7
+║ Conv 1×1×16     ║ ← 20→16 reduction
+║ BN + ReLU       ║
+║ Dropout(0.1)    ║
+╚═════════════════╝
+      ↓ (7×7×16)
+╔═════════════════╗
+║     BLOCK 3     ║
+╠─────────────────╢
+║ Conv 3×3×20     ║ ← 16→20 channels
+║ BN + ReLU       ║
+║ Conv 3×3×24     ║ ← 20→24 channels
+║ BN + ReLU       ║
+║ Dropout(0.15)   ║ ← Higher dropout
+║ Conv 3×3×16     ║ ← 24→16, no padding
+║ BN + ReLU       ║     (7×7 → 5×5)
+║ Conv 3×3×10     ║ ← 16→10, no padding
+║                 ║     (5×5 → 3×3)
+╚═════════════════╝
+      ↓ (3×3×10)
+┌─────────────────┐
+│  GAP (1×1×10)   │ ← Global Avg Pool
+└─────────────────┘
+      ↓
+   Output (10)
 ```
 
+#### Parameter Breakdown
+| Layer Type | Input → Output | Kernel | Parameters | Percentage |
+|------------|---------------|---------|------------|------------|
+| **Block 1** | | | **1,296** | **6.9%** |
+| Conv2d | 1 → 8 | 3×3 | 80 | 0.4% |
+| BatchNorm2d | 8 | - | 16 | 0.1% |
+| Conv2d | 8 → 16 | 3×3 | 1,168 | 6.2% |
+| BatchNorm2d | 16 | - | 32 | 0.2% |
+| **Block 2** | | | **8,584** | **45.4%** |
+| Conv2d (1×1) | 16 → 12 | 1×1 | 204 | 1.1% |
+| BatchNorm2d | 12 | - | 24 | 0.1% |
+| Conv2d | 12 → 16 | 3×3 | 1,744 | 9.2% |
+| BatchNorm2d | 16 | - | 32 | 0.2% |
+| Conv2d | 16 → 20 | 3×3 | 2,900 | 15.4% |
+| BatchNorm2d | 20 | - | 40 | 0.2% |
+| Conv2d (1×1) | 20 → 16 | 1×1 | 336 | 1.8% |
+| BatchNorm2d | 16 | - | 32 | 0.2% |
+| **Block 3** | | | **9,014** | **47.7%** |
+| Conv2d | 16 → 20 | 3×3 | 2,900 | 15.4% |
+| BatchNorm2d | 20 | - | 40 | 0.2% |
+| Conv2d | 20 → 24 | 3×3 | 4,344 | 23.0% |
+| BatchNorm2d | 24 | - | 48 | 0.3% |
+| Conv2d | 24 → 16 | 3×3 | 3,472 | 18.4% |
+| BatchNorm2d | 16 | - | 32 | 0.2% |
+| Conv2d | 16 → 10 | 3×3 | 1,450 | 7.7% |
+| **TOTAL** | | | **18,894** | **100%** |
+
 **Key Design Decisions:**
-- **Three Progressive Blocks**: Hierarchical feature learning
-- **1×1 Channel Reduction**: Strategic parameter reduction after each block
-- **No Final FC Layer**: GAP directly to 10 classes reduces parameters
+- **Three Progressive Blocks**: Hierarchical feature learning with optimal depth
+- **1×1 Channel Reduction**: Only 540 parameters (2.9%) but crucial for efficiency
+- **No Final FC Layer**: GAP eliminates ~10k+ parameters vs traditional approaches
 - **Progressive Dropout**: 0.1 → 0.15 prevents overfitting at deeper layers
-- **Optimal Channel Flow**: Expansion for feature learning, reduction for efficiency
+- **Strategic Channel Flow**: Expansion (1→8→16→20→24) then reduction (→16→10)
 
 **Result: 99.41% accuracy with 18,894 parameters** ✅
 
 ### 3. ElegantOptimizedNet (~20k Parameters) - Advanced
+
+#### Architecture Flow
 ```
-ResBlock(1→8) → MaxPool → ResBlock(8→16) → MaxPool → 
-ResBlock(16→24) → ResBlock(24→16) → GAP → FC(16→10)
+Input (28×28×1)
+      ↓
+╔═════════════════╗
+║  RESIDUAL       ║
+║  BLOCK 1        ║ 
+╠─────────────────╢
+║ Conv 3×3×8  ────╫──┐
+║ BN + ReLU       ║  │
+║ Conv 3×3×8      ║  │ Residual
+║ BN              ║  │ Connection
+║      + ←────────╫──┘ (with 1×1 conv)
+║ ReLU            ║
+║ Dropout(0.1)    ║
+╚═════════════════╝
+      ↓ (28×28×8)
+┌─────────────────┐
+│  MaxPool 2×2    │ ← 28×28 → 14×14
+└─────────────────┘
+      ↓ (14×14×8)
+╔═════════════════╗
+║  RESIDUAL       ║
+║  BLOCK 2        ║
+╠─────────────────╢
+║ Conv 3×3×16 ────╫──┐
+║ BN + ReLU       ║  │
+║ Conv 3×3×16     ║  │ Residual
+║ BN              ║  │ Connection
+║      + ←────────╫──┘ (with 1×1 conv)
+║ ReLU            ║
+║ Dropout(0.1)    ║
+╚═════════════════╝
+      ↓ (14×14×16)
+┌─────────────────┐
+│  MaxPool 2×2    │ ← 14×14 → 7×7
+└─────────────────┘
+      ↓ (7×7×16)
+╔═════════════════╗
+║  RESIDUAL       ║
+║  BLOCK 3        ║
+╠─────────────────╢
+║ Conv 3×3×24 ────╫──┐
+║ BN + ReLU       ║  │
+║ Conv 3×3×24     ║  │ Residual
+║ BN              ║  │ Connection
+║      + ←────────╫──┘ (with 1×1 conv)
+║ ReLU            ║
+║ Dropout(0.15)   ║
+╚═════════════════╝
+      ↓ (7×7×24)
+╔═════════════════╗
+║  RESIDUAL       ║
+║  BLOCK 4        ║
+╠─────────────────╢
+║ Conv 3×3×16 ────╫──┐
+║ BN + ReLU       ║  │
+║ Conv 3×3×16     ║  │ Residual
+║ BN              ║  │ Connection
+║      + ←────────╫──┘ (with 1×1 conv)
+║ ReLU            ║
+║ Dropout(0.15)   ║
+╚═════════════════╝
+      ↓ (7×7×16)
+┌─────────────────┐
+│  GAP (1×1×16)   │ ← Global Avg Pool
+└─────────────────┘
+      ↓
+┌─────────────────┐
+│  FC (16→10)     │ ← Final classifier
+└─────────────────┘
+      ↓
+   Output (10)
 ```
 
 **Features:**
 - **Residual Connections**: Better gradient flow and training stability
-- **Skip Connections**: Enables deeper networks without degradation
-- **Progressive Channel Strategy**: Expansion then reduction
-- **Result: 99.44% accuracy** but slightly exceeds 20k parameter limit
+- **Skip Connections**: Enables deeper networks without degradation  
+- **Progressive Channel Strategy**: Expansion (1→8→16→24) then reduction (→16)
+- **Advanced Architecture**: 20,026 parameters - slightly exceeds limit
+- **Result: 99.44% accuracy** but >20k parameter constraint
+
+## 🔍 Receptive Field Analysis
+
+| Model | Layer | Output Size | Receptive Field | Coverage |
+|-------|-------|-------------|-----------------|----------|
+| **BetterTinyNet** | Input | 28×28 | 1×1 | 0.1% |
+| | Block 1 Output | 14×14 | 5×5 | 3.2% |
+| | Block 2 Output | 7×7 | 13×13 | 21.5% |
+| | Block 3 Conv1 | 7×7 | 17×17 | 36.7% |
+| | Block 3 Conv2 | 7×7 | 21×21 | 56.1% |
+| | Block 3 Conv3 | 5×5 | 25×25 | 79.5% |
+| | **Block 3 Final** | 3×3 | **29×29** | **107.6%** ✅ |
+
+**Result**: 29×29 receptive field fully covers 28×28 MNIST images with optimal overlap!
 
 ## 📈 Training Methodology
 
