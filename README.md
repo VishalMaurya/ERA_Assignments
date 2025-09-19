@@ -39,6 +39,8 @@ Design optimized CNN architectures for MNIST classification achieving:
 
 ## 🧠 Model Architectures
 
+> **📊 See `assignment.ipynb` for detailed ASCII block diagrams, parameter breakdowns, and visual analysis charts!**
+
 ### 1. TinyNet (~1.4k Parameters) - Baseline
 ```
 Input(28×28×1) → Conv(3×3,1→8) → BN → ReLU → 
@@ -229,7 +231,7 @@ Session2_Assignment/
 ├── models.py              # CNN architecture definitions
 ├── utils.py               # Training/testing utilities
 ├── main.py                # Main training script
-├── assignment.ipynb       # Clean notebook with results
+├── assignment.ipynb       # Clean notebook with results + block diagrams
 ├── requirements.txt       # Python dependencies
 ├── README.md             # This comprehensive guide
 ├── checkpoints/          # Saved model weights
