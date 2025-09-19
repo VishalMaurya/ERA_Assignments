@@ -269,6 +269,40 @@ Input (28×28×1)
 
 **Result**: 29×29 receptive field fully covers 28×28 MNIST images with optimal overlap!
 
+## 📊 Visual Analysis Charts
+
+![Model Analysis Charts](model_analysis_charts.png)
+
+> **📋 To generate this chart**: Run the `plot_model_analysis()` function in `assignment.ipynb` cell 4, or use the provided analysis image.
+
+The comprehensive analysis charts above demonstrate:
+
+### 1. **Parameter Count Comparison** (Top Left)
+- **TinyNet**: 1,466 parameters - Ultra-efficient but limited accuracy
+- **BetterTinyNet**: 18,894 parameters - Perfect balance under 20k limit ✅
+- **ElegantOptimizedNet**: 20,026 parameters - Slightly exceeds limit ❌
+- **Red line**: 20k parameter constraint for assignment
+
+### 2. **Receptive Field Growth** (Top Right)  
+- **BetterTinyNet**: Optimal growth reaching 29×29 (full MNIST coverage)
+- **TinyNet**: Limited to 5×5 (insufficient spatial coverage)
+- **ElegantOptimizedNet**: Moderate growth to 13×13
+- **Red line**: 28×28 MNIST image size reference
+
+### 3. **Channel vs Spatial Evolution** (Bottom Left)
+BetterTinyNet's strategic design:
+- **Blue line (Channels)**: Progressive expansion 1→12→16→10 
+- **Red line (Spatial)**: Systematic reduction 28→14→7→3→1
+- **Optimal trade-off**: More channels as spatial dims decrease
+
+### 4. **Parameter Efficiency** (Bottom Right)
+Accuracy per 1k parameters:
+- **TinyNet**: 63.2 (highest efficiency but low absolute accuracy)
+- **BetterTinyNet**: 5.3 (balanced efficiency with target accuracy) ✅
+- **ElegantOptimizedNet**: 5.0 (similar efficiency but exceeds param limit)
+
+**Key Insight**: BetterTinyNet achieves the optimal balance of parameter efficiency while meeting all assignment constraints.
+
 ## 📈 Training Methodology
 
 ### Data Preprocessing
@@ -415,14 +449,15 @@ jupyter notebook assignment.ipynb
 
 ```
 Session2_Assignment/
-├── models.py              # CNN architecture definitions
-├── utils.py               # Training/testing utilities
-├── main.py                # Main training script
-├── assignment.ipynb       # Clean notebook with results + block diagrams
-├── requirements.txt       # Python dependencies
-├── README.md             # This comprehensive guide
-├── checkpoints/          # Saved model weights
-└── data/                 # MNIST dataset (auto-downloaded)
+├── models.py                    # CNN architecture definitions
+├── utils.py                     # Training/testing utilities
+├── main.py                      # Main training script
+├── assignment.ipynb             # Clean notebook with results + block diagrams
+├── requirements.txt             # Python dependencies
+├── README.md                   # This comprehensive guide
+├── model_analysis_charts.png    # Visual analysis charts (generated/provided)
+├── checkpoints/                # Saved model weights
+└── data/                       # MNIST dataset (auto-downloaded)
 ```
 
 ## ⚙️ Key Implementation Details
