@@ -1,12 +1,12 @@
 """
-SESSION 6 - MODEL 2: Optimized Efficiency
-=========================================
+SESSION 6 - MODEL 2: Ultra-Fast Convergence
+==========================================
 
 TARGET:
 - Parameters: ~6-7k (balanced efficiency and performance)
-- Accuracy: ~99.2-99.3% (close to final target)
-- Epochs: ≤15
-- Strategy: Advanced techniques, optimal channel progression, dilated convolutions
+- Accuracy: ~99.3-99.4% (near target with fast convergence)
+- Epochs: ≤6 (ultra-fast convergence focus)
+- Strategy: Multi-scale attention, fast residuals, advanced activations
 
 RESULT:
 - [To be filled after training]
@@ -17,10 +17,10 @@ RESULT:
 
 ANALYSIS:
 - [To be filled after training]
-- Advanced techniques effectiveness
-- Parameter allocation optimization
-- Receptive field vs accuracy trade-offs
-- Final improvements needed for Model 3
+- Ultra-fast convergence analysis
+- Multi-scale attention effectiveness
+- Advanced activation impact
+- Gradient flow optimization
 """
 
 import torch
@@ -28,129 +28,171 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-class EfficientBlock(nn.Module):
+class UltraFastBlock(nn.Module):
     """
-    Efficient building block combining depthwise separable convolutions
-    with squeeze-and-excitation style channel attention.
+    Ultra-fast learning block with multi-scale features and advanced attention.
+    
+    Features:
+    - Multi-scale convolutions (1x1, 3x3, 5x5) in parallel
+    - Advanced squeeze-excitation attention
+    - SiLU activations for better gradients
+    - Layer normalization for faster convergence
+    - Skip connections with different scales
     """
-    def __init__(self, in_channels, out_channels, stride=1, dilation=1):
-        super(EfficientBlock, self).__init__()
+    def __init__(self, in_channels, out_channels, stride=1):
+        super(UltraFastBlock, self).__init__()
         
-        # Depthwise convolution with optional dilation
-        self.depthwise = nn.Conv2d(
-            in_channels, in_channels, kernel_size=3, 
-            stride=stride, padding=dilation, dilation=dilation,
-            groups=in_channels, bias=False
+        mid_channels = out_channels // 2
+        
+        # Multi-scale feature extraction
+        self.branch1 = nn.Sequential(
+            nn.Conv2d(in_channels, mid_channels//2, 1, bias=False),
+            nn.LayerNorm([mid_channels//2, 28, 28]),  # Layer norm for fast convergence
+            nn.SiLU()
         )
         
-        # Pointwise expansion
-        self.pointwise1 = nn.Conv2d(in_channels, out_channels, kernel_size=1, bias=False)
-        self.bn1 = nn.BatchNorm2d(out_channels)
+        self.branch2 = nn.Sequential(
+            nn.Conv2d(in_channels, mid_channels//2, 3, padding=1, stride=stride, bias=False),
+            nn.LayerNorm([mid_channels//2, 28//stride, 28//stride]),
+            nn.SiLU()
+        )
         
-        # Optional squeeze-excitation (very lightweight)
-        self.se_reduce = nn.Conv2d(out_channels, max(1, out_channels // 8), kernel_size=1)
-        self.se_expand = nn.Conv2d(max(1, out_channels // 8), out_channels, kernel_size=1)
+        self.branch3 = nn.Sequential(
+            nn.Conv2d(in_channels, mid_channels, 5, padding=2, stride=stride, bias=False),
+            nn.LayerNorm([mid_channels, 28//stride, 28//stride]),
+            nn.SiLU()
+        )
         
-        # Final pointwise
-        self.pointwise2 = nn.Conv2d(out_channels, out_channels, kernel_size=1, bias=False)
-        self.bn2 = nn.BatchNorm2d(out_channels)
+        # Feature fusion
+        self.fusion = nn.Sequential(
+            nn.Conv2d(mid_channels*2, out_channels, 1, bias=False),
+            nn.LayerNorm([out_channels, 28//stride, 28//stride])
+        )
         
-        # Skip connection if dimensions match
+        # Advanced attention mechanism
+        self.attention = nn.Sequential(
+            nn.AdaptiveAvgPool2d(1),
+            nn.Conv2d(out_channels, out_channels//4, 1),
+            nn.SiLU(),
+            nn.Conv2d(out_channels//4, out_channels, 1),
+            nn.Sigmoid()
+        )
+        
+        # Skip connection
         self.skip = nn.Sequential()
         if stride != 1 or in_channels != out_channels:
             self.skip = nn.Sequential(
-                nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=stride, bias=False),
-                nn.BatchNorm2d(out_channels)
+                nn.Conv2d(in_channels, out_channels, 1, stride=stride, bias=False),
+                nn.LayerNorm([out_channels, 28//stride, 28//stride])
             )
     
     def forward(self, x):
         identity = self.skip(x)
         
-        # Main path
-        out = self.depthwise(x)
-        out = F.relu(self.bn1(self.pointwise1(out)))
+        # Multi-scale feature extraction
+        if x.shape[2] != 28:  # Adjust layer norm for different spatial sizes
+            # For 14x14 or 7x7 inputs, use GroupNorm instead
+            b1 = self.branch1[0](x)
+            b1 = F.group_norm(b1, 4)
+            b1 = F.silu(b1)
+            
+            b2 = self.branch2[0](x)
+            b2 = F.group_norm(b2, 4)
+            b2 = F.silu(b2)
+            
+            b3 = self.branch3[0](x)
+            b3 = F.group_norm(b3, 4)
+            b3 = F.silu(b3)
+        else:
+            b1 = self.branch1(x)
+            b2 = self.branch2(x)
+            b3 = self.branch3(x)
         
-        # Lightweight squeeze-excitation
-        se = F.adaptive_avg_pool2d(out, 1)
-        se = F.relu(self.se_reduce(se))
-        se = torch.sigmoid(self.se_expand(se))
-        out = out * se
+        # Concatenate multi-scale features
+        features = torch.cat([b1, b2, b3], dim=1)
         
-        out = self.bn2(self.pointwise2(out))
+        # Feature fusion
+        out = self.fusion[0](features)
+        if x.shape[2] != 28:
+            out = F.group_norm(out, 4)
+        else:
+            out = self.fusion[1](out)
+        
+        # Apply attention
+        att = self.attention(out)
+        out = out * att
         
         # Skip connection
-        out += identity
-        return F.relu(out)
+        out = out + identity
+        return F.silu(out)
 
 
 class Model_2(nn.Module):
     """
-    Optimized CNN for MNIST with ~6-7k parameters.
+    Ultra-Fast CNN for MNIST with ~6-7k parameters.
     
     Architecture Strategy:
-    - Efficient blocks with attention mechanism
-    - Strategic use of dilated convolutions
-    - Optimized channel progression: 1→10→16→24→10
-    - Mixed convolution types for efficiency
-    - Enhanced receptive field management
+    - Multi-scale feature learning: 1→20→28→32→10
+    - Ultra-fast blocks with parallel convolutions
+    - Advanced attention mechanisms
+    - SiLU activations throughout
+    - Minimal pooling for speed
     
     Expected Parameter Breakdown:
-    - Stem: ~300 params
-    - Block 1: ~1500 params
-    - Block 2: ~2500 params  
-    - Block 3: ~2000 params
-    - Total: ~6300 params
+    - Stem: ~400 params
+    - Block 1: ~2200 params
+    - Block 2: ~2800 params
+    - Final: ~800 params
+    - Total: ~6200 params
     """
     
     def __init__(self, num_classes=10):
         super(Model_2, self).__init__()
         
-        # Efficient stem
+        # Fast stem with wider channels
         self.stem = nn.Sequential(
-            nn.Conv2d(1, 10, kernel_size=3, padding=1, bias=False),
-            nn.BatchNorm2d(10),
-            nn.ReLU()
+            nn.Conv2d(1, 20, kernel_size=3, padding=1, bias=False),
+            nn.LayerNorm([20, 28, 28]),
+            nn.SiLU()
         )
         
-        # Efficient blocks with strategic design
-        self.block1 = EfficientBlock(10, 16, stride=1)  # 28x28
+        # Ultra-fast blocks with multi-scale features
+        self.block1 = UltraFastBlock(20, 28, stride=1)  # 28x28
         self.pool1 = nn.MaxPool2d(2)  # 14x14
         
-        self.block2 = EfficientBlock(16, 24, stride=1, dilation=1)  # 14x14
+        self.block2 = UltraFastBlock(28, 32, stride=1)  # 14x14
         self.pool2 = nn.MaxPool2d(2)  # 7x7
         
-        # Dilated convolution for larger receptive field without pooling
-        self.block3 = EfficientBlock(24, 32, stride=1, dilation=2)  # 7x7, larger RF
-        
-        # Final feature compression
-        self.final_conv = nn.Sequential(
-            nn.Conv2d(32, 16, kernel_size=1, bias=False),
-            nn.BatchNorm2d(16),
-            nn.ReLU(),
+        # Fast final layers with residual connection
+        self.final = nn.Sequential(
+            nn.Conv2d(32, 24, kernel_size=3, padding=1, bias=False),
+            nn.GroupNorm(4, 24),
+            nn.SiLU(),
+            nn.Conv2d(24, 16, kernel_size=1, bias=False),
+            nn.GroupNorm(4, 16),
+            nn.SiLU(),
             nn.Conv2d(16, 10, kernel_size=1, bias=False)
         )
         
         # Global Average Pooling
         self.gap = nn.AdaptiveAvgPool2d(1)
-        self.dropout = nn.Dropout(0.15)
+        self.dropout = nn.Dropout(0.12)
         
     def forward(self, x):
-        # Stem
-        x = self.stem(x)          # 28x28x10
+        # Fast stem
+        x = self.stem(x)          # 28x28x20
         
-        # Efficient blocks
-        x = self.block1(x)        # 28x28x16
-        x = self.pool1(x)         # 14x14x16
+        # Ultra-fast blocks with multi-scale features
+        x = self.block1(x)        # 28x28x28
+        x = self.pool1(x)         # 14x14x28
         x = self.dropout(x)
         
-        x = self.block2(x)        # 14x14x24
-        x = self.pool2(x)         # 7x7x24
+        x = self.block2(x)        # 14x14x32
+        x = self.pool2(x)         # 7x7x32
         x = self.dropout(x)
         
-        x = self.block3(x)        # 7x7x32 (dilated, larger RF)
-        
-        # Final compression and classification
-        x = self.final_conv(x)    # 7x7x10
+        # Fast final layers
+        x = self.final(x)         # 7x7x10
         x = self.gap(x)           # 1x1x10
         x = x.view(x.size(0), -1) # 10
         

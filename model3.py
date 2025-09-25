@@ -1,27 +1,27 @@
 """
-SESSION 6 - MODEL 3: Final Precision Architecture
-===============================================
+SESSION 6 - MODEL 3: Lightning-Fast Precision
+============================================
 
 TARGET:
 - Parameters: <8k (maximum efficiency within constraint)
 - Accuracy: 99.4%+ consistently in final epochs
-- Epochs: ≤15
-- Strategy: Best techniques combined, advanced optimizations, consistent performance
+- Epochs: ≤4 (lightning-fast convergence)
+- Strategy: Revolutionary fast learning, all cutting-edge optimizations
 
 RESULT:
 - [To be filled after training]
 - Parameters: [Actual count]
 - Best Accuracy: [Best epoch accuracy]%
 - Consistent Accuracy: [Last 3 epochs average]%
-- Final 5 Epochs: [Epoch 11-15 accuracies]
+- Final 5 Epochs: [Epoch 1-4 accuracies]
 - Epochs to Convergence: [Number]
 
 ANALYSIS:
 - [To be filled after training]
-- Consistency analysis across final epochs
-- Architecture efficiency vs accuracy trade-offs
-- Parameter utilization effectiveness
-- Comparison with Models 1 & 2
+- Lightning-fast convergence analysis
+- Revolutionary optimization effectiveness
+- Multi-scale fusion and advanced attention impact
+- Breakthrough architecture insights vs Models 1 & 2
 """
 
 import torch
@@ -66,56 +66,99 @@ class MicroAttention(nn.Module):
         return x
 
 
-class OptimizedBlock(nn.Module):
+class LightningBlock(nn.Module):
     """
-    Highly optimized building block combining multiple efficiency techniques.
+    Revolutionary lightning-fast learning block for ultra-fast convergence.
+    
+    Features:
+    - Multi-scale parallel processing
+    - Advanced dual attention
+    - Mish/SiLU hybrid activations  
+    - Dense skip connections
+    - Ghost convolutions
     """
-    def __init__(self, in_channels, out_channels, stride=1, use_attention=False):
-        super(OptimizedBlock, self).__init__()
+    def __init__(self, in_channels, out_channels, stride=1, use_attention=True):
+        super(LightningBlock, self).__init__()
         
-        # Depthwise separable convolution
-        self.depthwise = nn.Conv2d(
-            in_channels, in_channels, kernel_size=3, 
-            stride=stride, padding=1, groups=in_channels, bias=False
+        # Multi-scale parallel paths
+        quarter = out_channels // 4
+        
+        # Path 1: 1x1 efficient features
+        self.path1 = nn.Sequential(
+            nn.Conv2d(in_channels, quarter, 1, bias=False),
+            nn.GroupNorm(2, quarter),
+            nn.Mish()
         )
-        self.bn1 = nn.BatchNorm2d(in_channels)
         
-        # Pointwise convolution with expansion
-        mid_channels = min(out_channels * 2, in_channels * 4)  # Controlled expansion
-        self.pointwise1 = nn.Conv2d(in_channels, mid_channels, kernel_size=1, bias=False)
-        self.bn2 = nn.BatchNorm2d(mid_channels)
+        # Path 2: 3x3 standard features  
+        self.path2 = nn.Sequential(
+            nn.Conv2d(in_channels, quarter, 3, padding=1, stride=stride, bias=False),
+            nn.GroupNorm(2, quarter),
+            nn.SiLU()
+        )
         
-        # Attention mechanism (optional)
-        self.attention = MicroAttention(mid_channels) if use_attention else None
+        # Path 3: Large receptive field
+        self.path3 = nn.Sequential(
+            nn.Conv2d(in_channels, quarter//2, 1, bias=False),
+            nn.Conv2d(quarter//2, quarter, 3, padding=2, dilation=2, bias=False),
+            nn.GroupNorm(2, quarter),
+            nn.SiLU()
+        )
         
-        # Compression back to output channels
-        self.pointwise2 = nn.Conv2d(mid_channels, out_channels, kernel_size=1, bias=False)
-        self.bn3 = nn.BatchNorm2d(out_channels)
+        # Path 4: Ghost convolution
+        self.path4 = nn.Sequential(
+            nn.Conv2d(in_channels, quarter//2, 1, bias=False),
+            nn.Conv2d(quarter//2, quarter, 3, padding=1, groups=quarter//2, bias=False),
+            nn.GroupNorm(2, quarter),
+            nn.Mish()
+        )
+        
+        # Feature fusion
+        self.fusion = nn.Sequential(
+            nn.Conv2d(quarter * 4, out_channels, 1, bias=False),
+            nn.GroupNorm(4, out_channels)
+        )
+        
+        # Advanced attention if enabled
+        self.attention = None
+        if use_attention:
+            self.attention = nn.Sequential(
+                nn.AdaptiveAvgPool2d(1),
+                nn.Conv2d(out_channels, out_channels//4, 1),
+                nn.Mish(),
+                nn.Conv2d(out_channels//4, out_channels, 1),
+                nn.Sigmoid()
+            )
         
         # Skip connection
         self.skip = nn.Sequential()
         if stride != 1 or in_channels != out_channels:
             self.skip = nn.Sequential(
-                nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=stride, bias=False),
-                nn.BatchNorm2d(out_channels)
+                nn.Conv2d(in_channels, out_channels, 1, stride=stride, bias=False),
+                nn.GroupNorm(4, out_channels)
             )
     
     def forward(self, x):
         identity = self.skip(x)
         
-        # Depthwise separable path
-        out = F.relu(self.bn1(self.depthwise(x)))
-        out = F.relu(self.bn2(self.pointwise1(out)))
+        # Multi-scale processing
+        p1 = self.path1(x)
+        p2 = self.path2(x)
+        p3 = self.path3(x)
+        p4 = self.path4(x)
         
-        # Optional attention
+        # Concatenate and fuse
+        features = torch.cat([p1, p2, p3, p4], dim=1)
+        out = self.fusion(features)
+        
+        # Apply attention
         if self.attention:
-            out = self.attention(out)
-        
-        out = self.bn3(self.pointwise2(out))
+            att = self.attention(out)
+            out = out * att
         
         # Skip connection
-        out += identity
-        return F.relu(out)
+        out = out + identity
+        return F.mish(out)
 
 
 class Model_3(nn.Module):
@@ -148,15 +191,15 @@ class Model_3(nn.Module):
             nn.ReLU()
         )
         
-        # Progressively complex blocks
-        self.block1 = OptimizedBlock(8, 16, stride=1, use_attention=False)
+        # Lightning-fast blocks with multi-scale features
+        self.block1 = LightningBlock(8, 20, stride=1, use_attention=False)  # Start simple
         self.pool1 = nn.MaxPool2d(2)  # 28x28 -> 14x14
         
-        self.block2 = OptimizedBlock(16, 24, stride=1, use_attention=True)  # Add attention
+        self.block2 = LightningBlock(20, 28, stride=1, use_attention=True)  # Add attention
         self.pool2 = nn.MaxPool2d(2)  # 14x14 -> 7x7
         
-        # High-level feature processing
-        self.block3 = OptimizedBlock(24, 32, stride=1, use_attention=True)
+        # Ultra-high-level feature processing
+        self.block3 = LightningBlock(28, 32, stride=1, use_attention=True)  # Full power
         
         # Multi-scale feature fusion
         self.fusion_conv = nn.Conv2d(32, 20, kernel_size=1, bias=False)
