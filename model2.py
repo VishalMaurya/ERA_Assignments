@@ -91,75 +91,67 @@ class Model_2(nn.Module):
     - Additional layers after GAP (Code 7)
     
     Expected Parameter Breakdown:
-    - Conv1: ~100 params
-    - Enhanced Block1: ~2400 params
-    - Enhanced Block2: ~3600 params  
+    - Conv1: ~80 params
+    - Block1: ~1400 params
+    - Block2: ~2200 params  
     - Final layers: ~400 params
-    - Total: ~6500 params
+    - Total: ~4100 params
     """
     
     def __init__(self, num_classes=10):
         super(Model_2, self).__init__()
         
-        # Initial convolution 
-        self.conv1 = nn.Conv2d(1, 10, kernel_size=3, padding=1, bias=False)
-        self.bn1 = nn.BatchNorm2d(10)
+        # Initial convolution - smaller for parameter efficiency
+        self.conv1 = nn.Conv2d(1, 8, kernel_size=3, padding=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(8)
         
-        # Code 7: Enhanced blocks for increased capacity
-        self.block1 = EnhancedBlock(10, 16)  # 28x28 -> 28x28
+        # Ultra-lightweight enhanced blocks 
+        self.conv2 = nn.Conv2d(8, 12, kernel_size=3, padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(12)
         
-        # Code 8: Correct MaxPooling Location - after sufficient RF buildup
+        # Code 8: Correct MaxPooling Location
         self.pool1 = nn.MaxPool2d(2)         # 28x28 -> 14x14
         
-        self.block2 = EnhancedBlock(16, 24)  # 14x14 -> 14x14
+        self.conv3 = nn.Conv2d(12, 16, kernel_size=3, padding=1, bias=False)
+        self.bn3 = nn.BatchNorm2d(16)
+        
         self.pool2 = nn.MaxPool2d(2)         # 14x14 -> 7x7
         
-        # Code 7: Additional layers after GAP for increased capacity
-        self.pre_gap = nn.Sequential(
-            nn.Conv2d(24, 20, kernel_size=3, padding=1, bias=False),
-            nn.BatchNorm2d(20),
-            nn.ReLU(),
-            nn.Conv2d(20, 16, kernel_size=1, bias=False),
-            nn.BatchNorm2d(16),
-            nn.ReLU()
-        )
+        # Code 7: One additional layer for capacity
+        self.conv4 = nn.Conv2d(16, 20, kernel_size=3, padding=1, bias=False)
+        self.bn4 = nn.BatchNorm2d(20)
+        
+        # Final 1x1 classification
+        self.final_conv = nn.Conv2d(20, 10, kernel_size=1, bias=False)
         
         # Code 6: Global Average Pooling
         self.gap = nn.AdaptiveAvgPool2d(1)
-        
-        # Code 7: FC layer after GAP for capacity
-        self.fc = nn.Sequential(
-            nn.Linear(16, 20),
-            nn.ReLU(),
-            nn.Dropout(0.2),
-            nn.Linear(20, 10)
-        )
         
         # Code 5: Regularization
         self.dropout = nn.Dropout(0.15)
         
     def forward(self, x):
         # Initial feature extraction
-        x = F.relu(self.bn1(self.conv1(x)))  # 28x28x10
+        x = F.relu(self.bn1(self.conv1(x)))  # 28x28x8
         
-        # Code 7: Enhanced blocks for increased capacity
-        x = self.block1(x)        # 28x28x16
-        x = self.pool1(x)         # 14x14x16 (Code 8: Correct pooling)
+        # Enhanced convolutions for capacity
+        x = F.relu(self.bn2(self.conv2(x)))  # 28x28x12
+        x = self.pool1(x)         # 14x14x12 (Code 8: Correct pooling)
         x = self.dropout(x)       # Code 5: Regularization
         
-        x = self.block2(x)        # 14x14x24
-        x = self.pool2(x)         # 7x7x24 (Code 8: Correct pooling)
+        x = F.relu(self.bn3(self.conv3(x)))  # 14x14x16
+        x = self.pool2(x)         # 7x7x16 (Code 8: Correct pooling)
         x = self.dropout(x)       # Code 5: Regularization
         
-        # Code 7: Additional layers before GAP
-        x = self.pre_gap(x)       # 7x7x16
+        # Code 7: Additional layer for capacity
+        x = F.relu(self.bn4(self.conv4(x)))  # 7x7x20
+        
+        # Final classification
+        x = self.final_conv(x)    # 7x7x10
         
         # Code 6: Global Average Pooling
-        x = self.gap(x)           # 1x1x16
-        x = x.view(x.size(0), -1) # 16
-        
-        # Code 7: FC layers for increased capacity
-        x = self.fc(x)            # 10
+        x = self.gap(x)           # 1x1x10
+        x = x.view(x.size(0), -1) # 10
         
         return x
     

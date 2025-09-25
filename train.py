@@ -26,6 +26,9 @@ import os
 from model1 import create_model_1, analyze_model_1
 from model2 import create_model_2, analyze_model_2
 from model3 import create_model_3, analyze_model_3
+from model4 import create_model_4, analyze_model_4
+from model5 import create_model_5, analyze_model_5
+from model6 import create_model_6, analyze_model_6
 
 
 class TrainingManager:
@@ -262,14 +265,17 @@ class TrainingManager:
         return results
     
     def train_all_models(self, epochs=15):
-        """Train all three models and compare results."""
+        """Train all models and compare results."""
         print("🚀 SESSION 6 - TRAINING ALL MODELS")
         print("="*60)
         
         models = {
             'Model_1': create_model_1(),
             'Model_2': create_model_2(),
-            'Model_3': create_model_3()
+            'Model_3': create_model_3(),
+            'Model_4': create_model_4(),
+            'Model_5': create_model_5(),
+            'Model_6': create_model_6()
         }
         
         all_results = {}
@@ -280,8 +286,14 @@ class TrainingManager:
                 analysis = analyze_model_1()
             elif model_name == 'Model_2':
                 analysis = analyze_model_2()
-            else:
+            elif model_name == 'Model_3':
                 analysis = analyze_model_3()
+            elif model_name == 'Model_4':
+                analysis = analyze_model_4()
+            elif model_name == 'Model_5':
+                analysis = analyze_model_5()
+            else:  # Model_6
+                analysis = analyze_model_6()
             
             print(f"\n📊 PRE-TRAINING ANALYSIS - {model_name}")
             print(f"Parameters: {analysis['total_parameters']:,}")
