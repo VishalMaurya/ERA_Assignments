@@ -71,6 +71,10 @@ def validate_single_model(model_name: str, parameter_limit: int = 8000) -> Dict[
             from model6 import create_model_6, analyze_model_6
             model = create_model_6()
             analysis = analyze_model_6()
+        elif model_name == 'Model_7':
+            from model7 import create_model_7, analyze_model_7
+            model = create_model_7()
+            analysis = analyze_model_7()
         else:
             raise ValueError(f"Unknown model: {model_name}")
         
@@ -127,7 +131,7 @@ def print_model_result(result: Dict[str, Any], parameter_limit: int = 8000) -> N
 
 def validate_all_models(parameter_limit: int = 8000) -> Dict[str, Dict[str, Any]]:
     """Validate all models and return results."""
-    models = ['Model_1', 'Model_2', 'Model_3', 'Model_4', 'Model_5', 'Model_6']
+    models = ['Model_1', 'Model_2', 'Model_3', 'Model_4', 'Model_5', 'Model_6', 'Model_7']
     results = {}
     
     print("🎯 SESSION 6 - MODEL PARAMETER VALIDATION")
@@ -210,7 +214,7 @@ Examples:
     
     parser.add_argument(
         '--model', 
-        choices=['Model_1', 'Model_2', 'Model_3', 'Model_4', 'Model_5', 'Model_6'],
+        choices=['Model_1', 'Model_2', 'Model_3', 'Model_4', 'Model_5', 'Model_6', 'Model_7'],
         help='Validate specific model only'
     )
     

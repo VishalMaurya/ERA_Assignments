@@ -18,7 +18,8 @@ def quick_test():
         ('Model_3', 'model3', 'create_model_3'),
         ('Model_4', 'model4', 'create_model_4'),
         ('Model_5', 'model5', 'create_model_5'),
-        ('Model_6', 'model6', 'create_model_6')
+        ('Model_6', 'model6', 'create_model_6'),
+        ('Model_7', 'model7', 'create_model_7')
     ]
     
     results = []
