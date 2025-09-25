@@ -104,41 +104,41 @@ class Model_5(nn.Module):
     - Optimized for ULTRA-FAST convergence (≤8 epochs)
     
     Architecture Strategy:
-    - Wide initial feature learning: 1→16→24→32→10
+    - Wide initial feature learning: 1→8→12→16→12→10
     - Aggressive early capacity for rapid learning
     - Optimized gradient flow for fast convergence
     - Strategic attention for precision
     
     Expected Parameter Breakdown:
-    - Initial: ~120 params
-    - Conv layers: ~2800 params
-    - Dual paths: ~400 params
-    - Total: ~3300 params
+    - Initial: ~80 params
+    - Conv layers: ~1800 params
+    - Dual paths: ~250 params
+    - Total: ~2130 params
     """
     
     def __init__(self, num_classes=10):
         super(Model_5, self).__init__()
         
-        # Efficient wide initial learning
-        self.initial_conv = nn.Conv2d(1, 12, kernel_size=3, padding=1, bias=False)
-        self.initial_bn = nn.BatchNorm2d(12)
+        # Efficient wide initial learning (reduced channels)
+        self.initial_conv = nn.Conv2d(1, 8, kernel_size=3, padding=1, bias=False)
+        self.initial_bn = nn.BatchNorm2d(8)
         
-        # Ultra-fast simplified layers
-        self.conv2 = nn.Conv2d(12, 18, kernel_size=3, padding=1, bias=False)
-        self.bn2 = nn.BatchNorm2d(18)
+        # Ultra-fast simplified layers (reduced channels)
+        self.conv2 = nn.Conv2d(8, 12, kernel_size=3, padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(12)
         self.pool1 = nn.MaxPool2d(2)  # 28x28 -> 14x14
         
-        self.conv3 = nn.Conv2d(18, 24, kernel_size=3, padding=1, bias=False)
-        self.bn3 = nn.BatchNorm2d(24)
+        self.conv3 = nn.Conv2d(12, 16, kernel_size=3, padding=1, bias=False)
+        self.bn3 = nn.BatchNorm2d(16)
         self.pool2 = nn.MaxPool2d(2)  # 14x14 -> 7x7
         
-        # Final processing with dual paths
-        self.conv4 = nn.Conv2d(24, 20, kernel_size=3, padding=1, bias=False)
-        self.bn4 = nn.BatchNorm2d(20)
+        # Final processing with dual paths (reduced channels)
+        self.conv4 = nn.Conv2d(16, 12, kernel_size=3, padding=1, bias=False)
+        self.bn4 = nn.BatchNorm2d(12)
         
-        # Simplified dual-path classification
-        self.path1 = nn.Conv2d(20, 10, kernel_size=1, bias=False)
-        self.path2 = nn.Conv2d(20, 10, kernel_size=3, padding=1, bias=False)
+        # Simplified dual-path classification (reduced channels)
+        self.path1 = nn.Conv2d(12, 10, kernel_size=1, bias=False)
+        self.path2 = nn.Conv2d(12, 10, kernel_size=3, padding=1, bias=False)
         
         # Global Average Pooling
         self.gap = nn.AdaptiveAvgPool2d(1)
@@ -146,19 +146,19 @@ class Model_5(nn.Module):
         
     def forward(self, x):
         # Efficient wide initial learning
-        x = F.relu(self.initial_bn(self.initial_conv(x)))  # 28x28x12
+        x = F.relu(self.initial_bn(self.initial_conv(x)))  # 28x28x8
         
         # Ultra-fast layers
-        x = F.relu(self.bn2(self.conv2(x)))    # 28x28x18
-        x = self.pool1(x)                      # 14x14x18
+        x = F.relu(self.bn2(self.conv2(x)))    # 28x28x12
+        x = self.pool1(x)                      # 14x14x12
         x = self.dropout(x)
         
-        x = F.relu(self.bn3(self.conv3(x)))    # 14x14x24
-        x = self.pool2(x)                      # 7x7x24
+        x = F.relu(self.bn3(self.conv3(x)))    # 14x14x16
+        x = self.pool2(x)                      # 7x7x16
         x = self.dropout(x)
         
         # Final processing
-        x = F.relu(self.bn4(self.conv4(x)))    # 7x7x20
+        x = F.relu(self.bn4(self.conv4(x)))    # 7x7x12
         
         # Simplified dual-path classification
         path1 = self.path1(x)  # 7x7x10 (1x1 conv)

@@ -104,9 +104,8 @@ class Model_4(nn.Module):
     Expected Parameter Breakdown:
     - Initial: ~100 params
     - Conv layers: ~3000 params
-    - Skip connection: ~100 params
     - Final: ~300 params
-    - Total: ~3500 params
+    - Total: ~3400 params
     """
     
     def __init__(self, num_classes=10):
@@ -132,16 +131,12 @@ class Model_4(nn.Module):
         # Simple final classification
         self.final_conv = nn.Conv2d(28, 10, kernel_size=1, bias=False)
         
-        # Skip connection for fast convergence
-        self.skip_conv = nn.Conv2d(10, 10, kernel_size=1, stride=16, bias=False)  # 28->7 with stride
-        
         # Global Average Pooling
         self.gap = nn.AdaptiveAvgPool2d(1)
         self.dropout = nn.Dropout(0.15)
         
     def forward(self, x):
         # Efficient initial feature extraction
-        identity = x  # Save for skip connection
         x = F.relu(self.initial_bn(self.initial_conv(x)))  # 28x28x10
         
         # Lightweight fast convergence layers
@@ -158,10 +153,6 @@ class Model_4(nn.Module):
         
         # Final classification
         x = self.final_conv(x)    # 7x7x10
-        
-        # Add skip connection for fast convergence
-        skip = self.skip_conv(identity)  # 7x7x10 
-        x = x + skip  # Element-wise addition
         
         # Global Average Pooling
         x = self.gap(x)           # 1x1x10
