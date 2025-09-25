@@ -101,8 +101,8 @@ class TrainingManager:
         
         return train_loader, test_loader
     
-    def train_epoch(self, model, train_loader, optimizer, criterion, epoch):
-        """Train model for one epoch."""
+    def train_epoch(self, model, train_loader, optimizer, criterion, epoch, scheduler=None):
+        """Train model for one epoch with optional per-batch scheduler."""
         model.train()
         running_loss = 0.0
         correct = 0
@@ -116,6 +116,10 @@ class TrainingManager:
             loss = criterion(output, target)
             loss.backward()
             optimizer.step()
+            
+            # Step scheduler per batch for OneCycleLR
+            if scheduler is not None:
+                scheduler.step()
             
             running_loss += loss.item()
             pred = output.argmax(dim=1)
@@ -149,7 +153,7 @@ class TrainingManager:
         
         return test_loss, accuracy
     
-    def train_model(self, model_name, model, epochs=15, lr=0.01):
+    def train_model(self, model_name, model, epochs=15, lr=0.005):
         """
         Complete training pipeline for a model.
         
@@ -170,14 +174,27 @@ class TrainingManager:
         model = model.to(self.device)
         train_loader, test_loader = self.get_data_loaders()
         
-        # Code 10 - Playing Naively with Learning Rates: Advanced LR scheduling
-        optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=1e-4)
+        # Code 10 - Ultra-Fast Learning Rates: Revolutionary fast convergence
+        optimizer = optim.AdamW(model.parameters(), lr=lr*2, weight_decay=1e-3, 
+                               betas=(0.9, 0.99), eps=1e-6)
         
-        # Multi-step scheduler for better convergence
-        scheduler = optim.lr_scheduler.MultiStepLR(
-            optimizer, milestones=[6, 10, 13], gamma=0.5
+        # Ultra-aggressive OneCycle scheduler for lightning-fast convergence
+        if model_name == 'Model_1':
+            max_epochs = min(epochs, 8)  # Target: 8 epochs
+            max_lr = lr * 3
+        elif model_name == 'Model_2':
+            max_epochs = min(epochs, 6)  # Target: 6 epochs  
+            max_lr = lr * 4
+        else:  # Model_3
+            max_epochs = min(epochs, 4)  # Target: 4 epochs
+            max_lr = lr * 5
+            
+        scheduler = optim.lr_scheduler.OneCycleLR(
+            optimizer, max_lr=max_lr, 
+            steps_per_epoch=len(train_loader), 
+            epochs=max_epochs
         )
-        print(f"📊 Using MultiStepLR scheduler: milestones=[6,10,13], gamma=0.5")
+        print(f"⚡ Using OneCycleLR: max_lr={max_lr:.4f}, target_epochs={max_epochs}")
         criterion = nn.CrossEntropyLoss()
         
         # Training tracking
@@ -191,16 +208,15 @@ class TrainingManager:
         for epoch in range(1, epochs + 1):
             epoch_start = time.time()
             
-            # Training
+            # Training with per-batch scheduler stepping
             train_loss, train_acc = self.train_epoch(
-                model, train_loader, optimizer, criterion, epoch
+                model, train_loader, optimizer, criterion, epoch, scheduler
             )
             
             # Testing
             test_loss, test_acc = self.test_model(model, test_loader, criterion)
             
-            # Scheduler step
-            scheduler.step()
+            # Get current learning rate (no additional scheduler step needed)
             current_lr = optimizer.param_groups[0]['lr']
             
             # Record metrics
@@ -287,6 +303,14 @@ class TrainingManager:
             print(f"Parameters: {analysis['total_parameters']:,}")
             print(f"Target Accuracy: {analysis['target_accuracy']}")
             print(f"Strategy: {analysis['architecture_efficiency']}")
+            
+            # Validate 8,000 parameter constraint before training
+            if analysis['total_parameters'] >= 8000:
+                print(f"❌ PARAMETER LIMIT EXCEEDED: {analysis['total_parameters']:,} >= 8,000")
+                print(f"   Skipping {model_name} - exceeds limit by {analysis['total_parameters'] - 8000:,} parameters")
+                continue
+            else:
+                print(f"✅ Parameter constraint satisfied: {8000 - analysis['total_parameters']:,} under limit")
             
             # Train model
             results = self.train_model(model_name, model, epochs)
