@@ -172,8 +172,8 @@ class Model_6(nn.Module):
             nn.Sigmoid()
         )
         
-        # Skip connection support (lightweight)
-        self.skip_conv = nn.Conv2d(8, 18, kernel_size=1, stride=4, bias=False)  # 28x28->7x7
+        # Skip connection support (lightweight) - fixed input channels
+        self.skip_conv = nn.Conv2d(1, 18, kernel_size=1, stride=4, bias=False)  # 28x28->7x7
         
         # Final classification
         self.final_conv = nn.Conv2d(18, 10, kernel_size=1, bias=False)
