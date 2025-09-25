@@ -22,14 +22,55 @@ from datetime import datetime
 import json
 import os
 
-# Import our models
-from model1 import create_model_1, analyze_model_1
-from model2 import create_model_2, analyze_model_2
-from model3 import create_model_3, analyze_model_3
-from model4 import create_model_4, analyze_model_4
-from model5 import create_model_5, analyze_model_5
-from model6 import create_model_6, analyze_model_6
-from model7 import create_model_7, analyze_model_7
+# Import our models with error handling
+try:
+    from model1 import create_model_1, analyze_model_1
+    print("✅ Model 1 imported successfully")
+except ImportError as e:
+    print(f"❌ Model 1 import failed: {e}")
+    
+try:
+    from model2 import create_model_2, analyze_model_2
+    print("✅ Model 2 imported successfully")
+except ImportError as e:
+    print(f"❌ Model 2 import failed: {e}")
+    
+try:
+    from model3 import create_model_3, analyze_model_3
+    print("✅ Model 3 imported successfully")
+except ImportError as e:
+    print(f"❌ Model 3 import failed: {e}")
+    # Fallback - check what's actually available
+    try:
+        import model3
+        available_funcs = [name for name in dir(model3) if name.startswith('create_') or name.startswith('analyze_')]
+        print(f"   Available functions in model3: {available_funcs}")
+    except:
+        print("   Cannot import model3 module at all")
+        
+try:
+    from model4 import create_model_4, analyze_model_4
+    print("✅ Model 4 imported successfully")
+except ImportError as e:
+    print(f"❌ Model 4 import failed: {e}")
+    
+try:
+    from model5 import create_model_5, analyze_model_5
+    print("✅ Model 5 imported successfully")
+except ImportError as e:
+    print(f"❌ Model 5 import failed: {e}")
+    
+try:
+    from model6 import create_model_6, analyze_model_6
+    print("✅ Model 6 imported successfully")
+except ImportError as e:
+    print(f"❌ Model 6 import failed: {e}")
+    
+try:
+    from model7 import create_model_7, analyze_model_7
+    print("✅ Model 7 imported successfully")
+except ImportError as e:
+    print(f"❌ Model 7 import failed: {e}")
 
 
 class TrainingManager:
@@ -270,34 +311,95 @@ class TrainingManager:
         print("🚀 SESSION 6 - TRAINING ALL MODELS")
         print("="*60)
         
-        models = {
-            'Model_1': create_model_1(),
-            'Model_2': create_model_2(),
-            'Model_3': create_model_3(),
-            'Model_4': create_model_4(),
-            'Model_5': create_model_5(),
-            'Model_6': create_model_6(),
-            'Model_7': create_model_7()
-        }
+        # Create models with error handling
+        models = {}
+        
+        # Model 1
+        try:
+            models['Model_1'] = create_model_1()
+            print("✅ Model_1 created successfully")
+        except Exception as e:
+            print(f"❌ Model_1 creation failed: {e}")
+            
+        # Model 2
+        try:
+            models['Model_2'] = create_model_2()
+            print("✅ Model_2 created successfully")
+        except Exception as e:
+            print(f"❌ Model_2 creation failed: {e}")
+            
+        # Model 3
+        try:
+            models['Model_3'] = create_model_3()
+            print("✅ Model_3 created successfully")
+        except Exception as e:
+            print(f"❌ Model_3 creation failed: {e}")
+            
+        # Model 4
+        try:
+            models['Model_4'] = create_model_4()
+            print("✅ Model_4 created successfully")
+        except Exception as e:
+            print(f"❌ Model_4 creation failed: {e}")
+            
+        # Model 5
+        try:
+            models['Model_5'] = create_model_5()
+            print("✅ Model_5 created successfully")
+        except Exception as e:
+            print(f"❌ Model_5 creation failed: {e}")
+            
+        # Model 6
+        try:
+            models['Model_6'] = create_model_6()
+            print("✅ Model_6 created successfully")
+        except Exception as e:
+            print(f"❌ Model_6 creation failed: {e}")
+            
+        # Model 7
+        try:
+            models['Model_7'] = create_model_7()
+            print("✅ Model_7 created successfully")
+        except Exception as e:
+            print(f"❌ Model_7 creation failed: {e}")
+        
+        print(f"\n📊 Successfully created {len(models)}/7 models")
         
         all_results = {}
         
         for model_name, model in models.items():
-            # Analyze model before training
-            if model_name == 'Model_1':
-                analysis = analyze_model_1()
-            elif model_name == 'Model_2':
-                analysis = analyze_model_2()
-            elif model_name == 'Model_3':
-                analysis = analyze_model_3()
-            elif model_name == 'Model_4':
-                analysis = analyze_model_4()
-            elif model_name == 'Model_5':
-                analysis = analyze_model_5()
-            elif model_name == 'Model_6':
-                analysis = analyze_model_6()
-            else:  # Model_7
-                analysis = analyze_model_7()
+            # Analyze model before training with error handling
+            analysis = None
+            try:
+                if model_name == 'Model_1':
+                    analysis = analyze_model_1()
+                elif model_name == 'Model_2':
+                    analysis = analyze_model_2()
+                elif model_name == 'Model_3':
+                    analysis = analyze_model_3()
+                elif model_name == 'Model_4':
+                    analysis = analyze_model_4()
+                elif model_name == 'Model_5':
+                    analysis = analyze_model_5()
+                elif model_name == 'Model_6':
+                    analysis = analyze_model_6()
+                elif model_name == 'Model_7':
+                    analysis = analyze_model_7()
+                    
+                print(f"✅ {model_name} analysis completed")
+                    
+            except Exception as e:
+                print(f"❌ {model_name} analysis failed: {e}")
+                # Create minimal analysis fallback
+                analysis = {
+                    'total_parameters': model.count_parameters() if hasattr(model, 'count_parameters') else 0,
+                    'target_accuracy': 'Unknown',
+                    'architecture_efficiency': 'Analysis failed'
+                }
+                
+            if analysis is None:
+                print(f"⚠️  Skipping {model_name} - no analysis available")
+                continue
             
             print(f"\n📊 PRE-TRAINING ANALYSIS - {model_name}")
             print(f"Parameters: {analysis['total_parameters']:,}")
