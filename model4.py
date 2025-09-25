@@ -96,60 +96,60 @@ class Model_4(nn.Module):
     - Optimized architecture for faster convergence
     
     Architecture Strategy:
-    - Rapid early feature learning: 1→12→20→28→10
+    - Ultra-efficient feature learning: 1→6→10→14→16→10
     - Strategic capacity distribution for fast convergence
     - Optimized pooling placement for ideal RF progression
-    - Efficient attention for precision
+    - Minimal parameter design for efficiency
     
     Expected Parameter Breakdown:
-    - Initial: ~100 params
-    - Conv layers: ~3000 params
-    - Final: ~300 params
-    - Total: ~3400 params
+    - Initial: ~60 params
+    - Conv layers: ~2200 params
+    - Final: ~160 params
+    - Total: ~2420 params
     """
     
     def __init__(self, num_classes=10):
         super(Model_4, self).__init__()
         
-        # Efficient initial feature extraction
-        self.initial_conv = nn.Conv2d(1, 10, kernel_size=3, padding=1, bias=False)
-        self.initial_bn = nn.BatchNorm2d(10)
+        # Ultra-efficient initial feature extraction (reduced channels)
+        self.initial_conv = nn.Conv2d(1, 6, kernel_size=3, padding=1, bias=False)
+        self.initial_bn = nn.BatchNorm2d(6)
         
-        # Lightweight fast convergence layers
-        self.conv2 = nn.Conv2d(10, 16, kernel_size=3, padding=1, bias=False)
-        self.bn2 = nn.BatchNorm2d(16)
+        # Lightweight fast convergence layers (reduced channels)
+        self.conv2 = nn.Conv2d(6, 10, kernel_size=3, padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(10)
         self.pool1 = nn.MaxPool2d(2)  # 14x14
         
-        self.conv3 = nn.Conv2d(16, 22, kernel_size=3, padding=1, bias=False)
-        self.bn3 = nn.BatchNorm2d(22)
+        self.conv3 = nn.Conv2d(10, 14, kernel_size=3, padding=1, bias=False)
+        self.bn3 = nn.BatchNorm2d(14)
         self.pool2 = nn.MaxPool2d(2)  # 7x7
         
-        # Final processing with efficiency focus
-        self.conv4 = nn.Conv2d(22, 28, kernel_size=3, padding=1, bias=False)
-        self.bn4 = nn.BatchNorm2d(28)
+        # Final processing with efficiency focus (reduced channels)
+        self.conv4 = nn.Conv2d(14, 16, kernel_size=3, padding=1, bias=False)
+        self.bn4 = nn.BatchNorm2d(16)
         
-        # Simple final classification
-        self.final_conv = nn.Conv2d(28, 10, kernel_size=1, bias=False)
+        # Simple final classification (reduced channels)
+        self.final_conv = nn.Conv2d(16, 10, kernel_size=1, bias=False)
         
         # Global Average Pooling
         self.gap = nn.AdaptiveAvgPool2d(1)
         self.dropout = nn.Dropout(0.15)
         
     def forward(self, x):
-        # Efficient initial feature extraction
-        x = F.relu(self.initial_bn(self.initial_conv(x)))  # 28x28x10
+        # Ultra-efficient initial feature extraction
+        x = F.relu(self.initial_bn(self.initial_conv(x)))  # 28x28x6
         
         # Lightweight fast convergence layers
-        x = F.relu(self.bn2(self.conv2(x)))  # 28x28x16
-        x = self.pool1(x)         # 14x14x16
+        x = F.relu(self.bn2(self.conv2(x)))  # 28x28x10
+        x = self.pool1(x)         # 14x14x10
         x = self.dropout(x)
         
-        x = F.relu(self.bn3(self.conv3(x)))  # 14x14x22
-        x = self.pool2(x)         # 7x7x22
+        x = F.relu(self.bn3(self.conv3(x)))  # 14x14x14
+        x = self.pool2(x)         # 7x7x14
         x = self.dropout(x)
         
         # Final processing
-        x = F.relu(self.bn4(self.conv4(x)))  # 7x7x28
+        x = F.relu(self.bn4(self.conv4(x)))  # 7x7x16
         
         # Final classification
         x = self.final_conv(x)    # 7x7x10

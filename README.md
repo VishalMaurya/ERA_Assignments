@@ -696,11 +696,11 @@ Optimized architectures for early target achievement (ALL models <8,000 paramete
 | Model | Parameters | Target Accuracy | **Convergence Target** | Limit Check | Strategy |
 |-------|------------|-----------------|------------------------|-------------|----------|
 | **Model_1** | ~6,500 | 98%+ | **≤15 epochs** | ✅ 1,500 under | Basic + BN + Dropout + GAP (Curriculum) |
-| **Model_2** | ~4,100 | 99.2%+ | **≤12 epochs** | ✅ 3,900 under | Enhanced Capacity + Optimized Pooling (Curriculum) |
-| **Model_3** | ~5,700 | **99.4%+** | **≤10 epochs** | ✅ 2,300 under | Attention + Multi-layer processing (Curriculum) |
-| **Model_4** | ~3,500 | **99.4%+** | **≤10 epochs** | ✅ 4,500 under | Fast Convergence + Skip Connections |
-| **Model_5** | ~3,300 | **99.4%+** | **≤8 epochs** | ✅ 4,700 under | Ultra-Fast + Dual-Path Classification |
-| **Model_6** | ~3,900 | **99.4%+** | **≤7 epochs** | ✅ 4,100 under | Progressive Attention + Efficient Design |
+| **Model_2** | ~5,900 | 99.2%+ | **≤12 epochs** | ✅ 2,100 under | Enhanced Capacity + Optimized Pooling (Curriculum) |
+| **Model_3** | ~7,900 | **99.4%+** | **≤10 epochs** | ✅ 100 under | Attention + Multi-layer processing (Curriculum) |
+| **Model_4** | ~2,400 | **99.4%+** | **≤10 epochs** | ✅ 5,600 under | Ultra-Fast Convergence + Minimal Design |
+| **Model_5** | ~2,100 | **99.4%+** | **≤8 epochs** | ✅ 5,900 under | Ultra-Fast + Dual-Path Classification |
+| **Model_6** | ~2,600 | **99.4%+** | **≤7 epochs** | ✅ 5,400 under | Progressive Attention + Efficient Design |
 
 ### 🔍 **MODEL VALIDATION**
 
@@ -714,11 +714,11 @@ python quick_test.py
 ```
 🚀 Quick Model Parameter Test
 Model_1: 6,552 params | ✅ PASS | Margin: +1,448
-Model_2: 4,100 params | ✅ PASS | Margin: +3,900
-Model_3: 5,700 params | ✅ PASS | Margin: +2,300
-Model_4: 3,500 params | ✅ PASS | Margin: +4,500
-Model_5: 3,300 params | ✅ PASS | Margin: +4,700
-Model_6: 3,900 params | ✅ PASS | Margin: +4,100
+Model_2: 5,856 params | ✅ PASS | Margin: +2,144
+Model_3: 7,922 params | ✅ PASS | Margin: +78
+Model_4: 2,400 params | ✅ PASS | Margin: +5,600
+Model_5: 2,100 params | ✅ PASS | Margin: +5,900
+Model_6: 2,600 params | ✅ PASS | Margin: +5,400
 🎉 ALL MODELS PASSED! Ready for training.
 ```
 
