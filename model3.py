@@ -1,27 +1,33 @@
 """
-SESSION 6 - MODEL 3: Lightning-Fast Precision
-============================================
+SESSION 6 - MODEL 3: Complete Curriculum Implementation
+======================================================
+
+CURRICULUM ALIGNMENT:
+- Code 2-8: All from Models 1 & 2 (Skeleton, Lighter, BN, Dropout, GAP, Capacity, Pooling)
+- Code 9: Image Augmentation - Handled in training pipeline (RandomRotation, RandomAffine)
+- Code 10: Learning Rate Scheduling - Handled in training pipeline (MultiStepLR)
+- Complete integration of all Session 6 concepts
 
 TARGET:
 - Parameters: <8k (maximum efficiency within constraint)
 - Accuracy: 99.4%+ consistently in final epochs
-- Epochs: ≤4 (lightning-fast convergence)
-- Strategy: Revolutionary fast learning, all cutting-edge optimizations
+- Epochs: ≤15 (with all curriculum optimizations)
+- Strategy: All curriculum techniques combined optimally
 
 RESULT:
 - [To be filled after training]
 - Parameters: [Actual count]
 - Best Accuracy: [Best epoch accuracy]%
 - Consistent Accuracy: [Last 3 epochs average]%
-- Final 5 Epochs: [Epoch 1-4 accuracies]
+- Final 5 Epochs: [Epoch 11-15 accuracies]
 - Epochs to Convergence: [Number]
 
 ANALYSIS:
 - [To be filled after training]
-- Lightning-fast convergence analysis
-- Revolutionary optimization effectiveness
-- Multi-scale fusion and advanced attention impact
-- Breakthrough architecture insights vs Models 1 & 2
+- Complete curriculum effectiveness
+- All 10 code iterations impact
+- Optimal technique combination
+- Final Session 6 insights vs Models 1 & 2
 """
 
 import torch
@@ -66,99 +72,75 @@ class MicroAttention(nn.Module):
         return x
 
 
-class LightningBlock(nn.Module):
+class OptimizedBlock(nn.Module):
     """
-    Revolutionary lightning-fast learning block for ultra-fast convergence.
+    Final optimized block combining all curriculum techniques.
     
-    Features:
-    - Multi-scale parallel processing
-    - Advanced dual attention
-    - Mish/SiLU hybrid activations  
-    - Dense skip connections
-    - Ghost convolutions
+    Curriculum alignment:
+    - Enhanced capacity (Code 7) with efficient design
+    - Proper BatchNorm + ReLU (Code 4)
+    - Strategic dropout (Code 5) 
+    - Simple attention for final precision
     """
     def __init__(self, in_channels, out_channels, stride=1, use_attention=True):
-        super(LightningBlock, self).__init__()
+        super(OptimizedBlock, self).__init__()
         
-        # Multi-scale parallel paths
-        quarter = out_channels // 4
+        # Enhanced multi-layer design for final precision
+        self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, 
+                              stride=stride, padding=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(out_channels)
         
-        # Path 1: 1x1 efficient features
-        self.path1 = nn.Sequential(
-            nn.Conv2d(in_channels, quarter, 1, bias=False),
-            nn.GroupNorm(2, quarter),
-            nn.Mish()
-        )
+        self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, 
+                              padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(out_channels)
         
-        # Path 2: 3x3 standard features  
-        self.path2 = nn.Sequential(
-            nn.Conv2d(in_channels, quarter, 3, padding=1, stride=stride, bias=False),
-            nn.GroupNorm(2, quarter),
-            nn.SiLU()
-        )
+        # Additional layer for maximum capacity (Code 7)
+        self.conv3 = nn.Conv2d(out_channels, out_channels, kernel_size=1, bias=False)
+        self.bn3 = nn.BatchNorm2d(out_channels)
         
-        # Path 3: Large receptive field
-        self.path3 = nn.Sequential(
-            nn.Conv2d(in_channels, quarter//2, 1, bias=False),
-            nn.Conv2d(quarter//2, quarter, 3, padding=2, dilation=2, bias=False),
-            nn.GroupNorm(2, quarter),
-            nn.SiLU()
-        )
-        
-        # Path 4: Ghost convolution
-        self.path4 = nn.Sequential(
-            nn.Conv2d(in_channels, quarter//2, 1, bias=False),
-            nn.Conv2d(quarter//2, quarter, 3, padding=1, groups=quarter//2, bias=False),
-            nn.GroupNorm(2, quarter),
-            nn.Mish()
-        )
-        
-        # Feature fusion
-        self.fusion = nn.Sequential(
-            nn.Conv2d(quarter * 4, out_channels, 1, bias=False),
-            nn.GroupNorm(4, out_channels)
-        )
-        
-        # Advanced attention if enabled
+        # Simple squeeze-excitation attention for final precision
         self.attention = None
         if use_attention:
             self.attention = nn.Sequential(
                 nn.AdaptiveAvgPool2d(1),
-                nn.Conv2d(out_channels, out_channels//4, 1),
-                nn.Mish(),
-                nn.Conv2d(out_channels//4, out_channels, 1),
+                nn.Conv2d(out_channels, max(1, out_channels//8), 1),
+                nn.ReLU(),
+                nn.Conv2d(max(1, out_channels//8), out_channels, 1),
                 nn.Sigmoid()
             )
         
-        # Skip connection
+        # Skip connection for gradient flow
         self.skip = nn.Sequential()
         if stride != 1 or in_channels != out_channels:
             self.skip = nn.Sequential(
                 nn.Conv2d(in_channels, out_channels, 1, stride=stride, bias=False),
-                nn.GroupNorm(4, out_channels)
+                nn.BatchNorm2d(out_channels)
             )
+        
+        # Dropout for regularization (Code 5)
+        self.dropout = nn.Dropout(0.1)
     
     def forward(self, x):
         identity = self.skip(x)
         
-        # Multi-scale processing
-        p1 = self.path1(x)
-        p2 = self.path2(x)
-        p3 = self.path3(x)
-        p4 = self.path4(x)
+        # Multi-layer processing with curriculum techniques
+        out = F.relu(self.bn1(self.conv1(x)))
+        out = self.dropout(out)
         
-        # Concatenate and fuse
-        features = torch.cat([p1, p2, p3, p4], dim=1)
-        out = self.fusion(features)
+        out = F.relu(self.bn2(self.conv2(out)))
+        out = self.dropout(out)
         
-        # Apply attention
+        # Final refinement layer
+        out = F.relu(self.bn3(self.conv3(out)))
+        
+        # Apply attention if enabled
         if self.attention:
             att = self.attention(out)
             out = out * att
         
-        # Skip connection
+        # Skip connection for gradient flow
         out = out + identity
-        return F.mish(out)
+        return F.relu(out)
 
 
 class Model_3(nn.Module):
@@ -191,15 +173,15 @@ class Model_3(nn.Module):
             nn.ReLU()
         )
         
-        # Lightning-fast blocks with multi-scale features
-        self.block1 = LightningBlock(8, 20, stride=1, use_attention=False)  # Start simple
-        self.pool1 = nn.MaxPool2d(2)  # 28x28 -> 14x14
+        # Optimized blocks combining all curriculum techniques
+        self.block1 = OptimizedBlock(8, 16, stride=1, use_attention=False)  # Start simple
+        self.pool1 = nn.MaxPool2d(2)  # 28x28 -> 14x14 (Code 8: Correct pooling)
         
-        self.block2 = LightningBlock(20, 28, stride=1, use_attention=True)  # Add attention
-        self.pool2 = nn.MaxPool2d(2)  # 14x14 -> 7x7
+        self.block2 = OptimizedBlock(16, 24, stride=1, use_attention=True)  # Add attention
+        self.pool2 = nn.MaxPool2d(2)  # 14x14 -> 7x7 (Code 8: Correct pooling)
         
-        # Ultra-high-level feature processing
-        self.block3 = LightningBlock(28, 32, stride=1, use_attention=True)  # Full power
+        # Final high-capacity processing (Code 7: Maximum capacity)
+        self.block3 = OptimizedBlock(24, 32, stride=1, use_attention=True)  # Full capacity
         
         # Multi-scale feature fusion
         self.fusion_conv = nn.Conv2d(32, 20, kernel_size=1, bias=False)

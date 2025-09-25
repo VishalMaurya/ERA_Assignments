@@ -101,8 +101,8 @@ class TrainingManager:
         
         return train_loader, test_loader
     
-    def train_epoch(self, model, train_loader, optimizer, criterion, epoch, scheduler=None):
-        """Train model for one epoch with optional per-batch scheduler."""
+    def train_epoch(self, model, train_loader, optimizer, criterion, epoch):
+        """Train model for one epoch following curriculum approach."""
         model.train()
         running_loss = 0.0
         correct = 0
@@ -116,10 +116,6 @@ class TrainingManager:
             loss = criterion(output, target)
             loss.backward()
             optimizer.step()
-            
-            # Step scheduler per batch for OneCycleLR
-            if scheduler is not None:
-                scheduler.step()
             
             running_loss += loss.item()
             pred = output.argmax(dim=1)
@@ -153,7 +149,7 @@ class TrainingManager:
         
         return test_loss, accuracy
     
-    def train_model(self, model_name, model, epochs=15, lr=0.005):
+    def train_model(self, model_name, model, epochs=15, lr=0.01):
         """
         Complete training pipeline for a model.
         
@@ -174,27 +170,14 @@ class TrainingManager:
         model = model.to(self.device)
         train_loader, test_loader = self.get_data_loaders()
         
-        # Code 10 - Ultra-Fast Learning Rates: Revolutionary fast convergence
-        optimizer = optim.AdamW(model.parameters(), lr=lr*2, weight_decay=1e-3, 
-                               betas=(0.9, 0.99), eps=1e-6)
+        # Code 10 - Learning Rate Scheduling: Curriculum-aligned approach
+        optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=1e-4)
         
-        # Ultra-aggressive OneCycle scheduler for lightning-fast convergence
-        if model_name == 'Model_1':
-            max_epochs = min(epochs, 8)  # Target: 8 epochs
-            max_lr = lr * 3
-        elif model_name == 'Model_2':
-            max_epochs = min(epochs, 6)  # Target: 6 epochs  
-            max_lr = lr * 4
-        else:  # Model_3
-            max_epochs = min(epochs, 4)  # Target: 4 epochs
-            max_lr = lr * 5
-            
-        scheduler = optim.lr_scheduler.OneCycleLR(
-            optimizer, max_lr=max_lr, 
-            steps_per_epoch=len(train_loader), 
-            epochs=max_epochs
+        # MultiStepLR scheduler following curriculum (Code 10)
+        scheduler = optim.lr_scheduler.MultiStepLR(
+            optimizer, milestones=[6, 10, 13], gamma=0.1
         )
-        print(f"⚡ Using OneCycleLR: max_lr={max_lr:.4f}, target_epochs={max_epochs}")
+        print(f"📊 Using MultiStepLR scheduler: milestones=[6,10,13], gamma=0.1 (Code 10)")
         criterion = nn.CrossEntropyLoss()
         
         # Training tracking
@@ -208,15 +191,16 @@ class TrainingManager:
         for epoch in range(1, epochs + 1):
             epoch_start = time.time()
             
-            # Training with per-batch scheduler stepping
+            # Training with curriculum approach
             train_loss, train_acc = self.train_epoch(
-                model, train_loader, optimizer, criterion, epoch, scheduler
+                model, train_loader, optimizer, criterion, epoch
             )
             
             # Testing
             test_loss, test_acc = self.test_model(model, test_loader, criterion)
             
-            # Get current learning rate (no additional scheduler step needed)
+            # Code 10: Scheduler step per epoch (MultiStepLR)
+            scheduler.step()
             current_lr = optimizer.param_groups[0]['lr']
             
             # Record metrics
