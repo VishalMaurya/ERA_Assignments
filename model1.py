@@ -101,27 +101,24 @@ class Model_1(nn.Module):
         self.conv1 = nn.Conv2d(1, 8, kernel_size=3, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(8)
         
-        # Code 3: Enhanced Model - More efficient blocks with better capacity
-        self.block1 = BasicBlock(8, 16)   # 28x28 -> 28x28 (enhanced)
+        # Code 3: Lighter Model - Ultra-efficient blocks  
+        self.block1 = BasicBlock(8, 10)   # 28x28 -> 28x28 (minimal)
         self.pool1 = nn.MaxPool2d(2)      # 28x28 -> 14x14
         
-        self.block2 = BasicBlock(16, 20)  # 14x14 -> 14x14 (enhanced)
+        self.block2 = BasicBlock(10, 12)  # 14x14 -> 14x14 (minimal)
         self.pool2 = nn.MaxPool2d(2)      # 14x14 -> 7x7
         
-        # Enhanced capacity block
-        self.block3 = BasicBlock(20, 24)  # 7x7 -> 7x7 (additional capacity)
-        
-        # Lightweight attention for precision improvement
+        # Lightweight attention for precision (minimal)
         self.attention = nn.Sequential(
             nn.AdaptiveAvgPool2d(1),
-            nn.Conv2d(24, 6, 1),
+            nn.Conv2d(12, 3, 1),
             nn.ReLU(),
-            nn.Conv2d(6, 24, 1),
+            nn.Conv2d(3, 12, 1),
             nn.Sigmoid()
         )
         
         # Final classification layer
-        self.conv_final = nn.Conv2d(24, 10, kernel_size=1, bias=False)
+        self.conv_final = nn.Conv2d(12, 10, kernel_size=1, bias=False)
         
         # Code 6: Global Average Pooling
         self.gap = nn.AdaptiveAvgPool2d(1)
@@ -134,20 +131,16 @@ class Model_1(nn.Module):
         # Initial feature extraction with Code 4: BatchNorm
         x = F.relu(self.bn1(self.conv1(x)))  # 28x28x8
         
-        # Enhanced blocks with strategic dropout
-        x = self.block1(x)                   # 28x28x16 (enhanced)
-        x = self.pool1(x)                    # 14x14x16
+        # Lightweight blocks with strategic dropout
+        x = self.block1(x)                   # 28x28x10 (minimal)
+        x = self.pool1(x)                    # 14x14x10
         x = self.dropout_light(x)            # Light early dropout
         
-        x = self.block2(x)                   # 14x14x20 (enhanced)
-        x = self.pool2(x)                    # 7x7x20
-        x = self.dropout_light(x)            # Light dropout
-        
-        # Additional capacity for precision
-        x = self.block3(x)                   # 7x7x24 (extra capacity)
+        x = self.block2(x)                   # 14x14x12 (minimal)
+        x = self.pool2(x)                    # 7x7x12
         x = self.dropout_heavy(x)            # Heavier late dropout
         
-        # Apply attention for precision improvement
+        # Apply lightweight attention for precision improvement
         att = self.attention(x)              # Channel attention
         x = x * att                          # Apply attention
         

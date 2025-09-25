@@ -179,71 +179,7 @@ class Model_2(nn.Module):
         return rf_info
 
 
-# AdvancedModel_2 removed for simplicity
-
-# Dummy class placeholder
-    """
-    Alternative Model_2 with different optimization strategy.
-    Uses group convolutions and channel shuffling.
-    """
-    
-    def __init__(self, num_classes=10):
-        super(AdvancedModel_2, self).__init__()
-        
-        # Initial feature extraction
-        self.conv1 = nn.Conv2d(1, 12, kernel_size=3, padding=1, bias=False)
-        self.bn1 = nn.BatchNorm2d(12)
-        
-        # Group convolutions for efficiency
-        self.group_conv1 = nn.Conv2d(12, 24, kernel_size=3, padding=1, groups=3, bias=False)
-        self.bn2 = nn.BatchNorm2d(24)
-        self.pool1 = nn.MaxPool2d(2)
-        
-        # Depthwise separable with channel attention
-        self.depthwise = nn.Conv2d(24, 24, kernel_size=3, padding=1, groups=24, bias=False)
-        self.pointwise = nn.Conv2d(24, 32, kernel_size=1, bias=False)
-        self.bn3 = nn.BatchNorm2d(32)
-        self.pool2 = nn.MaxPool2d(2)
-        
-        # Final layers
-        self.conv_final = nn.Conv2d(32, 10, kernel_size=3, padding=0, bias=False)  # 7x7 -> 5x5
-        self.gap = nn.AdaptiveAvgPool2d(1)
-        self.dropout = nn.Dropout(0.1)
-        
-    def channel_shuffle(self, x, groups):
-        """Channel shuffle operation for group convolutions."""
-        batch_size, channels, height, width = x.size()
-        channels_per_group = channels // groups
-        
-        # Reshape and transpose
-        x = x.view(batch_size, groups, channels_per_group, height, width)
-        x = x.transpose(1, 2).contiguous()
-        x = x.view(batch_size, channels, height, width)
-        
-        return x
-    
-    def forward(self, x):
-        x = F.relu(self.bn1(self.conv1(x)))      # 28x28x12
-        
-        x = F.relu(self.bn2(self.group_conv1(x))) # 28x28x24
-        x = self.channel_shuffle(x, 3)           # Shuffle channels
-        x = self.pool1(x)                        # 14x14x24
-        x = self.dropout(x)
-        
-        x = self.depthwise(x)                    # 14x14x24
-        x = F.relu(self.bn3(self.pointwise(x))) # 14x14x32
-        x = self.pool2(x)                        # 7x7x32
-        x = self.dropout(x)
-        
-        x = self.conv_final(x)                   # 5x5x10
-        x = self.gap(x)                          # 1x1x10
-        x = x.view(x.size(0), -1)               # 10
-        
-        return x
-    
-    def count_parameters(self):
-        """Count total trainable parameters."""
-        return sum(p.numel() for p in self.parameters() if p.requires_grad)
+# AdvancedModel_2 completely removed
 
 
 def create_model_2():
@@ -251,14 +187,14 @@ def create_model_2():
     return Model_2()
 
 
-def analyze_model_2(variant='default'):
+def analyze_model_2():
     """
     Analyze Model_2 architecture and parameters.
     
     Returns:
         dict: Analysis results
     """
-    model = create_model_2(variant)
+    model = create_model_2()
     
     # Parameter analysis
     total_params = model.count_parameters()
