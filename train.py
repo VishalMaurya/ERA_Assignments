@@ -29,6 +29,7 @@ from model3 import create_model_3, analyze_model_3
 from model4 import create_model_4, analyze_model_4
 from model5 import create_model_5, analyze_model_5
 from model6 import create_model_6, analyze_model_6
+from model7 import create_model_7, analyze_model_7
 
 
 class TrainingManager:
@@ -275,7 +276,8 @@ class TrainingManager:
             'Model_3': create_model_3(),
             'Model_4': create_model_4(),
             'Model_5': create_model_5(),
-            'Model_6': create_model_6()
+            'Model_6': create_model_6(),
+            'Model_7': create_model_7()
         }
         
         all_results = {}
@@ -292,8 +294,10 @@ class TrainingManager:
                 analysis = analyze_model_4()
             elif model_name == 'Model_5':
                 analysis = analyze_model_5()
-            else:  # Model_6
+            elif model_name == 'Model_6':
                 analysis = analyze_model_6()
+            else:  # Model_7
+                analysis = analyze_model_7()
             
             print(f"\n📊 PRE-TRAINING ANALYSIS - {model_name}")
             print(f"Parameters: {analysis['total_parameters']:,}")
