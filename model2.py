@@ -179,7 +179,9 @@ class Model_2(nn.Module):
         return rf_info
 
 
-class AdvancedModel_2(nn.Module):
+# AdvancedModel_2 removed for simplicity
+
+# Dummy class placeholder
     """
     Alternative Model_2 with different optimization strategy.
     Uses group convolutions and channel shuffling.
@@ -244,10 +246,8 @@ class AdvancedModel_2(nn.Module):
         return sum(p.numel() for p in self.parameters() if p.requires_grad)
 
 
-def create_model_2(variant='default'):
+def create_model_2():
     """Factory function to create Model_2 instance."""
-    if variant == 'advanced':
-        return AdvancedModel_2()
     return Model_2()
 
 
