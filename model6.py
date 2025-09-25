@@ -113,50 +113,50 @@ class Model_6(nn.Module):
     - Strategic attention for rapid convergence
     
     Architecture Strategy:
-    - Progressive attention: 1→14→22→30→10
+    - Progressive attention: 1→8→12→16→18→10
     - Strategic attention placement for rapid learning
     - Optimized receptive field progression
     - Efficient parameter utilization
     
     Expected Parameter Breakdown:
-    - Initial: ~100 params
-    - Conv layers: ~3200 params
-    - Attention: ~300 params
-    - Final: ~270 params
-    - Total: ~3870 params
+    - Initial: ~80 params
+    - Conv layers: ~2200 params
+    - Attention: ~150 params
+    - Final: ~180 params
+    - Total: ~2610 params
     """
     
     def __init__(self, num_classes=10):
         super(Model_6, self).__init__()
         
-        # Efficient initial feature extraction
-        self.initial_conv = nn.Conv2d(1, 10, kernel_size=3, padding=1, bias=False)
-        self.initial_bn = nn.BatchNorm2d(10)
+        # Efficient initial feature extraction (reduced channels)
+        self.initial_conv = nn.Conv2d(1, 8, kernel_size=3, padding=1, bias=False)
+        self.initial_bn = nn.BatchNorm2d(8)
         
-        # Progressive lightweight layers
-        self.conv2 = nn.Conv2d(10, 16, kernel_size=3, padding=1, bias=False)
-        self.bn2 = nn.BatchNorm2d(16)
+        # Progressive lightweight layers (reduced channels)
+        self.conv2 = nn.Conv2d(8, 12, kernel_size=3, padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(12)
         self.pool1 = nn.MaxPool2d(2)  # 28x28 -> 14x14
         
-        self.conv3 = nn.Conv2d(16, 22, kernel_size=3, padding=1, bias=False)
-        self.bn3 = nn.BatchNorm2d(22)
+        self.conv3 = nn.Conv2d(12, 16, kernel_size=3, padding=1, bias=False)
+        self.bn3 = nn.BatchNorm2d(16)
         self.pool2 = nn.MaxPool2d(2)  # 14x14 -> 7x7
         
-        # Final processing with attention
-        self.conv4 = nn.Conv2d(22, 26, kernel_size=3, padding=1, bias=False)
-        self.bn4 = nn.BatchNorm2d(26)
+        # Final processing with attention (reduced channels)
+        self.conv4 = nn.Conv2d(16, 18, kernel_size=3, padding=1, bias=False)
+        self.bn4 = nn.BatchNorm2d(18)
         
-        # Simple attention
+        # Simple attention (reduced channels)
         self.attention = nn.Sequential(
             nn.AdaptiveAvgPool2d(1),
-            nn.Conv2d(26, 6, 1),
+            nn.Conv2d(18, 4, 1),
             nn.ReLU(),
-            nn.Conv2d(6, 26, 1),
+            nn.Conv2d(4, 18, 1),
             nn.Sigmoid()
         )
         
-        # Final classification
-        self.final_conv = nn.Conv2d(26, 10, kernel_size=1, bias=False)
+        # Final classification (reduced channels)
+        self.final_conv = nn.Conv2d(18, 10, kernel_size=1, bias=False)
         
         # Global Average Pooling
         self.gap = nn.AdaptiveAvgPool2d(1)
@@ -164,19 +164,19 @@ class Model_6(nn.Module):
         
     def forward(self, x):
         # Initial feature extraction
-        x = F.relu(self.initial_bn(self.initial_conv(x)))  # 28x28x10
+        x = F.relu(self.initial_bn(self.initial_conv(x)))  # 28x28x8
         
         # Progressive lightweight layers
-        x = F.relu(self.bn2(self.conv2(x)))  # 28x28x16
-        x = self.pool1(x)                    # 14x14x16
+        x = F.relu(self.bn2(self.conv2(x)))  # 28x28x12
+        x = self.pool1(x)                    # 14x14x12
         x = self.dropout(x)
         
-        x = F.relu(self.bn3(self.conv3(x)))  # 14x14x22
-        x = self.pool2(x)                    # 7x7x22
+        x = F.relu(self.bn3(self.conv3(x)))  # 14x14x16
+        x = self.pool2(x)                    # 7x7x16
         x = self.dropout(x)
         
         # Final processing with attention
-        x = F.relu(self.bn4(self.conv4(x)))  # 7x7x26
+        x = F.relu(self.bn4(self.conv4(x)))  # 7x7x18
         
         # Apply attention
         att = self.attention(x)
