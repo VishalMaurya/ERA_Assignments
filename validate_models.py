@@ -26,7 +26,7 @@ from typing import Dict, Any, Optional
 # Parameter limit constraint
 PARAMETER_LIMIT = 8000
 
-def validate_single_model(model_name: str) -> Dict[str, Any]:
+def validate_single_model(model_name: str, parameter_limit: int = 8000) -> Dict[str, Any]:
     """
     Validate a single model against parameter constraints.
     
@@ -77,8 +77,8 @@ def validate_single_model(model_name: str) -> Dict[str, Any]:
         # Count parameters
         total_params = model.count_parameters()
         result['parameters'] = total_params
-        result['under_limit'] = total_params < PARAMETER_LIMIT
-        result['margin'] = PARAMETER_LIMIT - total_params
+        result['under_limit'] = total_params < parameter_limit
+        result['margin'] = parameter_limit - total_params
         result['success'] = True
         
         # Test forward pass
@@ -96,7 +96,7 @@ def validate_single_model(model_name: str) -> Dict[str, Any]:
     
     return result
 
-def print_model_result(result: Dict[str, Any]) -> None:
+def print_model_result(result: Dict[str, Any], parameter_limit: int = 8000) -> None:
     """Print formatted validation result for a single model."""
     model_name = result['model_name']
     
@@ -113,31 +113,31 @@ def print_model_result(result: Dict[str, Any]) -> None:
     margin = result['margin']
     
     print(f"📊 Parameters: {params:,}")
-    print(f"🎯 Limit Check: {PARAMETER_LIMIT:,}")
+    print(f"🎯 Limit Check: {parameter_limit:,}")
     
     if under_limit:
-        print(f"✅ PASSED: {params:,} < {PARAMETER_LIMIT:,}")
+        print(f"✅ PASSED: {params:,} < {parameter_limit:,}")
         print(f"💡 Margin: {margin:,} parameters under limit")
-        print(f"📈 Efficiency: {(params/PARAMETER_LIMIT)*100:.1f}% of budget used")
+        print(f"📈 Efficiency: {(params/parameter_limit)*100:.1f}% of budget used")
     else:
-        print(f"❌ FAILED: {params:,} >= {PARAMETER_LIMIT:,}")
+        print(f"❌ FAILED: {params:,} >= {parameter_limit:,}")
         print(f"⚠️  Excess: {abs(margin):,} parameters over limit")
     
     print(f"🔧 Forward Pass: ✅ Successful")
 
-def validate_all_models() -> Dict[str, Dict[str, Any]]:
+def validate_all_models(parameter_limit: int = 8000) -> Dict[str, Dict[str, Any]]:
     """Validate all models and return results."""
     models = ['Model_1', 'Model_2', 'Model_3', 'Model_4', 'Model_5', 'Model_6']
     results = {}
     
     print("🎯 SESSION 6 - MODEL PARAMETER VALIDATION")
     print("="*70)
-    print(f"Parameter Limit: {PARAMETER_LIMIT:,}")
+    print(f"Parameter Limit: {parameter_limit:,}")
     print(f"Total Models: {len(models)}")
     
     for model_name in models:
         print(f"\n🔍 Validating {model_name}...")
-        result = validate_single_model(model_name)
+        result = validate_single_model(model_name, parameter_limit)
         results[model_name] = result
         
         # Quick status
@@ -150,7 +150,7 @@ def validate_all_models() -> Dict[str, Dict[str, Any]]:
     
     return results
 
-def print_summary_report(results: Dict[str, Dict[str, Any]]) -> None:
+def print_summary_report(results: Dict[str, Dict[str, Any]], parameter_limit: int = 8000) -> None:
     """Print comprehensive summary report."""
     print(f"\n{'='*70}")
     print("📋 COMPREHENSIVE VALIDATION REPORT")
@@ -177,7 +177,7 @@ def print_summary_report(results: Dict[str, Dict[str, Any]]) -> None:
             params = result['parameters']
             status = "✅ PASSED" if result['under_limit'] else "❌ FAILED"
             margin = f"{result['margin']:+,}"
-            efficiency = f"{(params/PARAMETER_LIMIT)*100:.1f}%"
+            efficiency = f"{(params/parameter_limit)*100:.1f}%"
         else:
             params = "ERROR"
             status = "💥 ERROR"
@@ -223,22 +223,21 @@ Examples:
     parser.add_argument(
         '--limit',
         type=int,
-        default=PARAMETER_LIMIT,
-        help=f'Parameter limit (default: {PARAMETER_LIMIT})'
+        default=8000,
+        help='Parameter limit (default: 8000)'
     )
     
     args = parser.parse_args()
     
-    # Update global parameter limit if specified
-    global PARAMETER_LIMIT
-    PARAMETER_LIMIT = args.limit
+    # Use the parameter limit from arguments
+    parameter_limit = args.limit
     
     try:
         if args.model:
             # Validate single model
             print(f"🎯 VALIDATING SINGLE MODEL: {args.model}")
-            result = validate_single_model(args.model)
-            print_model_result(result)
+            result = validate_single_model(args.model, parameter_limit)
+            print_model_result(result, parameter_limit)
             
             # Exit code based on validation result
             if result['success'] and result['under_limit']:
@@ -250,15 +249,15 @@ Examples:
         
         else:
             # Validate all models
-            results = validate_all_models()
+            results = validate_all_models(parameter_limit)
             
             if args.verbose:
                 # Show detailed results for each model
                 for model_name, result in results.items():
-                    print_model_result(result)
+                    print_model_result(result, parameter_limit)
             
             # Always show summary
-            print_summary_report(results)
+            print_summary_report(results, parameter_limit)
             
             # Exit code based on overall compliance
             compliant_models = sum(1 for r in results.values() if r['success'] and r['under_limit'])
