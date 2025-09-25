@@ -1,12 +1,19 @@
 """
-SESSION 6 - MODEL 1: Fast-Learning Baseline
-==========================================
+SESSION 6 - MODEL 1: Basic Skeleton + Lighter Model
+==================================================
+
+CURRICULUM ALIGNMENT:
+- Code 2: Basic Skeleton - Minimal, clean CNN structure
+- Code 3: Lighter Model - Parameter-efficient architecture (<20k params)
+- Code 4: Batch Normalization - Adding BN for faster convergence
+- Code 5: Regularization - Dropout to reduce overfitting
+- Code 6: Global Average Pooling - Replace dense layers with GAP
 
 TARGET:
 - Parameters: ~3-4k (ultra-efficient baseline)
-- Accuracy: ~98-99% (improved target with fast architecture)  
-- Epochs: ≤8 (fast convergence focus)
-- Strategy: Residual connections, wider shallow network, fast activations
+- Accuracy: ~97-98% (baseline with curriculum techniques)  
+- Epochs: ≤15 (standard convergence)
+- Strategy: Basic CNN + BN + Dropout + GAP (curriculum fundamentals)
 
 RESULT:
 - [To be filled after training]
@@ -17,9 +24,9 @@ RESULT:
 
 ANALYSIS:
 - [To be filled after training]
-- Fast convergence analysis
-- Residual connection effectiveness
-- Gradient flow improvements
+- Basic CNN effectiveness
+- BatchNorm + Dropout impact
+- GAP parameter reduction
 """
 
 import torch
@@ -27,125 +34,106 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-class FastResidualBlock(nn.Module):
+class BasicBlock(nn.Module):
     """
-    Fast-learning residual block with efficient design.
+    Basic CNN block following Session 6 curriculum.
     
-    Features:
-    - Skip connections for gradient flow
-    - SiLU activation for better gradients  
-    - Inverted bottleneck design for efficiency
-    - GroupNorm for faster convergence
+    Code 4: Batch Normalization for faster convergence
+    Code 5: Dropout for regularization
+    Standard convolutions with ReLU (no advanced techniques)
     """
-    def __init__(self, in_channels, out_channels, expansion=2, stride=1):
-        super(FastResidualBlock, self).__init__()
+    def __init__(self, in_channels, out_channels, stride=1):
+        super(BasicBlock, self).__init__()
         
-        hidden_dim = in_channels * expansion
+        # Standard 3x3 convolution
+        self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, 
+                              stride=stride, padding=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(out_channels)
         
-        # Inverted bottleneck: expand -> depthwise -> compress
-        self.expand = nn.Sequential(
-            nn.Conv2d(in_channels, hidden_dim, 1, bias=False),
-            nn.GroupNorm(4, hidden_dim),  # GroupNorm for faster convergence
-            nn.SiLU()  # SiLU for better gradients
-        ) if expansion > 1 else nn.Identity()
+        # Second convolution for depth
+        self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, 
+                              padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(out_channels)
         
-        # Depthwise convolution
-        self.depthwise = nn.Sequential(
-            nn.Conv2d(hidden_dim, hidden_dim, 3, stride=stride, padding=1, 
-                     groups=hidden_dim, bias=False),
-            nn.GroupNorm(4, hidden_dim),
-            nn.SiLU()
-        )
-        
-        # Compress back
-        self.compress = nn.Sequential(
-            nn.Conv2d(hidden_dim, out_channels, 1, bias=False),
-            nn.GroupNorm(4, out_channels)
-        )
-        
-        # Skip connection
-        self.skip = nn.Sequential()
-        if stride != 1 or in_channels != out_channels:
-            self.skip = nn.Sequential(
-                nn.Conv2d(in_channels, out_channels, 1, stride=stride, bias=False),
-                nn.GroupNorm(4, out_channels)
-            )
+        # Dropout for regularization (Code 5)
+        self.dropout = nn.Dropout(0.1)
     
     def forward(self, x):
-        identity = self.skip(x)
+        # First conv + BN + ReLU
+        out = F.relu(self.bn1(self.conv1(x)))
+        out = self.dropout(out)
         
-        out = self.expand(x)
-        out = self.depthwise(out)
-        out = self.compress(out)
+        # Second conv + BN + ReLU
+        out = F.relu(self.bn2(self.conv2(out)))
         
-        # Residual connection
-        out = out + identity
-        return F.silu(out)  # SiLU for final activation
+        return out
 
 
 class Model_1(nn.Module):
     """
-    Fast-Learning CNN for MNIST with ~3-4k parameters.
+    Basic CNN following Session 6 curriculum with ~3-4k parameters.
+    
+    CURRICULUM ALIGNMENT:
+    - Code 2: Basic Skeleton - Standard CNN structure
+    - Code 3: Lighter Model - Efficient parameter usage (<8k limit)
+    - Code 4: Batch Normalization - BN after each conv
+    - Code 5: Regularization - Dropout for overfitting control
+    - Code 6: Global Average Pooling - Replace FC with GAP
     
     Architecture Strategy:
-    - Wider shallow network: 1→16→20→24→10 (fast learning)
-    - Residual connections for gradient flow
-    - SiLU activations for better gradients
-    - GroupNorm for faster convergence
-    - Only 2 pooling operations for speed
+    - Simple channel progression: 1→8→12→16→10
+    - Standard convolutions with BatchNorm + ReLU
+    - Strategic dropout placement
+    - GAP for parameter efficiency
     
     Expected Parameter Breakdown:
-    - Stem: ~300 params
-    - Block 1: ~1200 params
-    - Block 2: ~1500 params  
-    - Final: ~300 params
-    - Total: ~3300 params
+    - Conv1: ~80 params
+    - Block1: ~900 params  
+    - Block2: ~1700 params
+    - Final: ~200 params
+    - Total: ~2900 params
     """
     
     def __init__(self, num_classes=10):
         super(Model_1, self).__init__()
         
-        # Wider stem for faster feature learning
-        self.stem = nn.Sequential(
-            nn.Conv2d(1, 16, kernel_size=3, padding=1, bias=False),
-            nn.GroupNorm(4, 16),
-            nn.SiLU()
-        )
+        # Code 2: Basic Skeleton - Initial convolution
+        self.conv1 = nn.Conv2d(1, 8, kernel_size=3, padding=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(8)
         
-        # Fast residual blocks - wider and shallower
-        self.block1 = FastResidualBlock(16, 20, expansion=1, stride=1)  # 28x28
-        self.pool1 = nn.MaxPool2d(2)  # 14x14
+        # Code 3: Lighter Model - Efficient blocks
+        self.block1 = BasicBlock(8, 12)   # 28x28 -> 28x28
+        self.pool1 = nn.MaxPool2d(2)      # 28x28 -> 14x14
         
-        self.block2 = FastResidualBlock(20, 24, expansion=1, stride=1)  # 14x14
-        self.pool2 = nn.MaxPool2d(2)  # 7x7
+        self.block2 = BasicBlock(12, 16)  # 14x14 -> 14x14  
+        self.pool2 = nn.MaxPool2d(2)      # 14x14 -> 7x7
         
-        # Fast final layers
-        self.final = nn.Sequential(
-            nn.Conv2d(24, 16, kernel_size=3, padding=1, bias=False),
-            nn.GroupNorm(4, 16),
-            nn.SiLU(),
-            nn.Conv2d(16, 10, kernel_size=1, bias=False)
-        )
+        # Final classification layer
+        self.conv_final = nn.Conv2d(16, 10, kernel_size=1, bias=False)
         
-        # Global Average Pooling
+        # Code 6: Global Average Pooling
         self.gap = nn.AdaptiveAvgPool2d(1)
-        self.dropout = nn.Dropout(0.1)
+        
+        # Code 5: Regularization
+        self.dropout = nn.Dropout(0.15)
         
     def forward(self, x):
-        # Wide stem for fast feature extraction
-        x = self.stem(x)          # 28x28x16
+        # Initial feature extraction with Code 4: BatchNorm
+        x = F.relu(self.bn1(self.conv1(x)))  # 28x28x8
         
-        # Residual blocks with skip connections
-        x = self.block1(x)        # 28x28x20
-        x = self.pool1(x)         # 14x14x20
-        x = self.dropout(x)
+        # Basic blocks with pooling
+        x = self.block1(x)        # 28x28x12
+        x = self.pool1(x)         # 14x14x12
+        x = self.dropout(x)       # Code 5: Dropout
         
-        x = self.block2(x)        # 14x14x24
-        x = self.pool2(x)         # 7x7x24
-        x = self.dropout(x)
+        x = self.block2(x)        # 14x14x16
+        x = self.pool2(x)         # 7x7x16
+        x = self.dropout(x)       # Code 5: Dropout
         
-        # Fast final classification
-        x = self.final(x)         # 7x7x10
+        # Final classification
+        x = self.conv_final(x)    # 7x7x10
+        
+        # Code 6: Global Average Pooling
         x = self.gap(x)           # 1x1x10
         x = x.view(x.size(0), -1) # 10
         
@@ -164,12 +152,12 @@ class Model_1(nn.Module):
         """
         rf_info = {
             'input': (28, 1),
-            'stem': (28, 3),
-            'block1': (28, 7),      # Residual block increases RF
-            'pool1': (14, 8),
-            'block2': (14, 16),     # Another residual block
-            'pool2': (7, 18),
-            'final': (7, 22)        # Final convolution
+            'conv1': (28, 3),       # First 3x3 conv
+            'block1': (28, 7),      # Two 3x3 convs = 3 + 3 - 1 = 5, with stride effects = 7
+            'pool1': (14, 8),       # 2x2 pooling 
+            'block2': (14, 16),     # Two more 3x3 convs
+            'pool2': (7, 18),       # 2x2 pooling
+            'final': (7, 18)        # 1x1 conv doesn't change RF
         }
         return rf_info
 
@@ -198,15 +186,15 @@ def analyze_model_1():
     memory_mb = total_params * 4 / 1024 / 1024  # Assuming float32
     
     analysis = {
-        'model_name': 'Model_1 (Fast-Learning Baseline)',
+        'model_name': 'Model_1 (Basic Skeleton + Lighter)',
         'total_parameters': total_params,
         'memory_footprint_mb': memory_mb,
         'receptive_field_final': rf_info['final'][1],
         'coverage_percentage': (rf_info['final'][1] / 28) * 100,
-        'architecture_efficiency': 'Residual Blocks + Wider Shallow + SiLU + GroupNorm',
-        'target_accuracy': '98-99%',
+        'architecture_efficiency': 'Basic CNN + BatchNorm + Dropout + GAP (Curriculum)',
+        'target_accuracy': '97-98%',
         'parameter_budget': '3-4k parameters',
-        'convergence_target': '≤8 epochs'
+        'curriculum_codes': 'Code 2,3,4,5,6'
     }
     
     return analysis

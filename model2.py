@@ -1,12 +1,17 @@
 """
-SESSION 6 - MODEL 2: Ultra-Fast Convergence
-==========================================
+SESSION 6 - MODEL 2: Increased Capacity + Correct Pooling
+========================================================
+
+CURRICULUM ALIGNMENT:
+- Code 2-6: All from Model 1 (Basic Skeleton, Lighter, BN, Dropout, GAP)
+- Code 7: Increasing Capacity - Adding layers after GAP to boost performance
+- Code 8: Correct MaxPooling Location - Optimal pooling based on RF calculations
 
 TARGET:
 - Parameters: ~6-7k (balanced efficiency and performance)
-- Accuracy: ~99.3-99.4% (near target with fast convergence)
-- Epochs: ≤6 (ultra-fast convergence focus)
-- Strategy: Multi-scale attention, fast residuals, advanced activations
+- Accuracy: ~99.2-99.3% (improved with increased capacity)
+- Epochs: ≤15 (standard convergence with better architecture)
+- Strategy: Curriculum techniques + Capacity + Optimized pooling
 
 RESULT:
 - [To be filled after training]
@@ -17,10 +22,9 @@ RESULT:
 
 ANALYSIS:
 - [To be filled after training]
-- Ultra-fast convergence analysis
-- Multi-scale attention effectiveness
-- Advanced activation impact
-- Gradient flow optimization
+- Increased capacity effectiveness
+- Optimized pooling placement impact
+- Code 7 + 8 curriculum benefits
 """
 
 import torch
@@ -28,173 +32,134 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-class UltraFastBlock(nn.Module):
+class EnhancedBlock(nn.Module):
     """
-    Ultra-fast learning block with multi-scale features and advanced attention.
+    Enhanced CNN block for increased capacity (Code 7).
     
-    Features:
-    - Multi-scale convolutions (1x1, 3x3, 5x5) in parallel
-    - Advanced squeeze-excitation attention
-    - SiLU activations for better gradients
-    - Layer normalization for faster convergence
-    - Skip connections with different scales
+    Curriculum alignment:
+    - More layers for increased capacity
+    - Still using BatchNorm + ReLU (no advanced techniques)
+    - Strategic dropout placement
     """
     def __init__(self, in_channels, out_channels, stride=1):
-        super(UltraFastBlock, self).__init__()
+        super(EnhancedBlock, self).__init__()
         
-        mid_channels = out_channels // 2
+        # Triple layer block for increased capacity (Code 7)
+        self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, 
+                              stride=stride, padding=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(out_channels)
         
-        # Multi-scale feature extraction
-        self.branch1 = nn.Sequential(
-            nn.Conv2d(in_channels, mid_channels//2, 1, bias=False),
-            nn.LayerNorm([mid_channels//2, 28, 28]),  # Layer norm for fast convergence
-            nn.SiLU()
-        )
+        self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, 
+                              padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(out_channels)
         
-        self.branch2 = nn.Sequential(
-            nn.Conv2d(in_channels, mid_channels//2, 3, padding=1, stride=stride, bias=False),
-            nn.LayerNorm([mid_channels//2, 28//stride, 28//stride]),
-            nn.SiLU()
-        )
+        # Additional layer for capacity (Code 7)
+        self.conv3 = nn.Conv2d(out_channels, out_channels, kernel_size=3, 
+                              padding=1, bias=False)
+        self.bn3 = nn.BatchNorm2d(out_channels)
         
-        self.branch3 = nn.Sequential(
-            nn.Conv2d(in_channels, mid_channels, 5, padding=2, stride=stride, bias=False),
-            nn.LayerNorm([mid_channels, 28//stride, 28//stride]),
-            nn.SiLU()
-        )
-        
-        # Feature fusion
-        self.fusion = nn.Sequential(
-            nn.Conv2d(mid_channels*2, out_channels, 1, bias=False),
-            nn.LayerNorm([out_channels, 28//stride, 28//stride])
-        )
-        
-        # Advanced attention mechanism
-        self.attention = nn.Sequential(
-            nn.AdaptiveAvgPool2d(1),
-            nn.Conv2d(out_channels, out_channels//4, 1),
-            nn.SiLU(),
-            nn.Conv2d(out_channels//4, out_channels, 1),
-            nn.Sigmoid()
-        )
-        
-        # Skip connection
-        self.skip = nn.Sequential()
-        if stride != 1 or in_channels != out_channels:
-            self.skip = nn.Sequential(
-                nn.Conv2d(in_channels, out_channels, 1, stride=stride, bias=False),
-                nn.LayerNorm([out_channels, 28//stride, 28//stride])
-            )
+        # Dropout for regularization (Code 5)
+        self.dropout = nn.Dropout(0.1)
     
     def forward(self, x):
-        identity = self.skip(x)
+        # Triple convolution for increased capacity
+        out = F.relu(self.bn1(self.conv1(x)))
+        out = self.dropout(out)
         
-        # Multi-scale feature extraction
-        if x.shape[2] != 28:  # Adjust layer norm for different spatial sizes
-            # For 14x14 or 7x7 inputs, use GroupNorm instead
-            b1 = self.branch1[0](x)
-            b1 = F.group_norm(b1, 4)
-            b1 = F.silu(b1)
-            
-            b2 = self.branch2[0](x)
-            b2 = F.group_norm(b2, 4)
-            b2 = F.silu(b2)
-            
-            b3 = self.branch3[0](x)
-            b3 = F.group_norm(b3, 4)
-            b3 = F.silu(b3)
-        else:
-            b1 = self.branch1(x)
-            b2 = self.branch2(x)
-            b3 = self.branch3(x)
+        out = F.relu(self.bn2(self.conv2(out)))
+        out = self.dropout(out)
         
-        # Concatenate multi-scale features
-        features = torch.cat([b1, b2, b3], dim=1)
+        # Code 7: Additional layer for capacity
+        out = F.relu(self.bn3(self.conv3(out)))
         
-        # Feature fusion
-        out = self.fusion[0](features)
-        if x.shape[2] != 28:
-            out = F.group_norm(out, 4)
-        else:
-            out = self.fusion[1](out)
-        
-        # Apply attention
-        att = self.attention(out)
-        out = out * att
-        
-        # Skip connection
-        out = out + identity
-        return F.silu(out)
+        return out
 
 
 class Model_2(nn.Module):
     """
-    Ultra-Fast CNN for MNIST with ~6-7k parameters.
+    Enhanced CNN with increased capacity following Session 6 curriculum.
+    
+    CURRICULUM ALIGNMENT:
+    - Code 2-6: Basic Skeleton + BN + Dropout + GAP (from Model 1)
+    - Code 7: Increasing Capacity - More layers for better performance
+    - Code 8: Correct MaxPooling Location - Optimized based on RF analysis
     
     Architecture Strategy:
-    - Multi-scale feature learning: 1→20→28→32→10
-    - Ultra-fast blocks with parallel convolutions
-    - Advanced attention mechanisms
-    - SiLU activations throughout
-    - Minimal pooling for speed
+    - Enhanced channel progression: 1→10→16→24→10
+    - Triple-layer enhanced blocks for capacity
+    - Optimized pooling placement (Code 8)
+    - Additional layers after GAP (Code 7)
     
     Expected Parameter Breakdown:
-    - Stem: ~400 params
-    - Block 1: ~2200 params
-    - Block 2: ~2800 params
-    - Final: ~800 params
-    - Total: ~6200 params
+    - Conv1: ~100 params
+    - Enhanced Block1: ~2400 params
+    - Enhanced Block2: ~3600 params  
+    - Final layers: ~400 params
+    - Total: ~6500 params
     """
     
     def __init__(self, num_classes=10):
         super(Model_2, self).__init__()
         
-        # Fast stem with wider channels
-        self.stem = nn.Sequential(
-            nn.Conv2d(1, 20, kernel_size=3, padding=1, bias=False),
-            nn.LayerNorm([20, 28, 28]),
-            nn.SiLU()
+        # Initial convolution 
+        self.conv1 = nn.Conv2d(1, 10, kernel_size=3, padding=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(10)
+        
+        # Code 7: Enhanced blocks for increased capacity
+        self.block1 = EnhancedBlock(10, 16)  # 28x28 -> 28x28
+        
+        # Code 8: Correct MaxPooling Location - after sufficient RF buildup
+        self.pool1 = nn.MaxPool2d(2)         # 28x28 -> 14x14
+        
+        self.block2 = EnhancedBlock(16, 24)  # 14x14 -> 14x14
+        self.pool2 = nn.MaxPool2d(2)         # 14x14 -> 7x7
+        
+        # Code 7: Additional layers after GAP for increased capacity
+        self.pre_gap = nn.Sequential(
+            nn.Conv2d(24, 20, kernel_size=3, padding=1, bias=False),
+            nn.BatchNorm2d(20),
+            nn.ReLU(),
+            nn.Conv2d(20, 16, kernel_size=1, bias=False),
+            nn.BatchNorm2d(16),
+            nn.ReLU()
         )
         
-        # Ultra-fast blocks with multi-scale features
-        self.block1 = UltraFastBlock(20, 28, stride=1)  # 28x28
-        self.pool1 = nn.MaxPool2d(2)  # 14x14
-        
-        self.block2 = UltraFastBlock(28, 32, stride=1)  # 14x14
-        self.pool2 = nn.MaxPool2d(2)  # 7x7
-        
-        # Fast final layers with residual connection
-        self.final = nn.Sequential(
-            nn.Conv2d(32, 24, kernel_size=3, padding=1, bias=False),
-            nn.GroupNorm(4, 24),
-            nn.SiLU(),
-            nn.Conv2d(24, 16, kernel_size=1, bias=False),
-            nn.GroupNorm(4, 16),
-            nn.SiLU(),
-            nn.Conv2d(16, 10, kernel_size=1, bias=False)
-        )
-        
-        # Global Average Pooling
+        # Code 6: Global Average Pooling
         self.gap = nn.AdaptiveAvgPool2d(1)
-        self.dropout = nn.Dropout(0.12)
+        
+        # Code 7: FC layer after GAP for capacity
+        self.fc = nn.Sequential(
+            nn.Linear(16, 20),
+            nn.ReLU(),
+            nn.Dropout(0.2),
+            nn.Linear(20, 10)
+        )
+        
+        # Code 5: Regularization
+        self.dropout = nn.Dropout(0.15)
         
     def forward(self, x):
-        # Fast stem
-        x = self.stem(x)          # 28x28x20
+        # Initial feature extraction
+        x = F.relu(self.bn1(self.conv1(x)))  # 28x28x10
         
-        # Ultra-fast blocks with multi-scale features
-        x = self.block1(x)        # 28x28x28
-        x = self.pool1(x)         # 14x14x28
-        x = self.dropout(x)
+        # Code 7: Enhanced blocks for increased capacity
+        x = self.block1(x)        # 28x28x16
+        x = self.pool1(x)         # 14x14x16 (Code 8: Correct pooling)
+        x = self.dropout(x)       # Code 5: Regularization
         
-        x = self.block2(x)        # 14x14x32
-        x = self.pool2(x)         # 7x7x32
-        x = self.dropout(x)
+        x = self.block2(x)        # 14x14x24
+        x = self.pool2(x)         # 7x7x24 (Code 8: Correct pooling)
+        x = self.dropout(x)       # Code 5: Regularization
         
-        # Fast final layers
-        x = self.final(x)         # 7x7x10
-        x = self.gap(x)           # 1x1x10
-        x = x.view(x.size(0), -1) # 10
+        # Code 7: Additional layers before GAP
+        x = self.pre_gap(x)       # 7x7x16
+        
+        # Code 6: Global Average Pooling
+        x = self.gap(x)           # 1x1x16
+        x = x.view(x.size(0), -1) # 16
+        
+        # Code 7: FC layers for increased capacity
+        x = self.fc(x)            # 10
         
         return x
     
@@ -317,14 +282,15 @@ def analyze_model_2(variant='default'):
     memory_mb = total_params * 4 / 1024 / 1024  # Assuming float32
     
     analysis = {
-        'model_name': f'Model_2 ({variant.title()})',
+        'model_name': 'Model_2 (Increased Capacity + Correct Pooling)',
         'total_parameters': total_params,
         'memory_footprint_mb': memory_mb,
         'receptive_field_final': final_rf,
         'coverage_percentage': (final_rf / 28) * 100,
-        'architecture_efficiency': 'Efficient Blocks + Attention + Dilated Conv',
+        'architecture_efficiency': 'Enhanced Blocks + Optimized Pooling + FC Layers (Curriculum)',
         'target_accuracy': '99.2-99.3%',
-        'parameter_budget': '6-7k parameters'
+        'parameter_budget': '6-7k parameters',
+        'curriculum_codes': 'Code 2,3,4,5,6,7,8'
     }
     
     return analysis
