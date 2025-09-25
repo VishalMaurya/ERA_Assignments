@@ -48,23 +48,35 @@ class TrainingManager:
                 print("Using CPU")
         return torch.device(device)
     
-    def get_data_loaders(self, batch_size=128, test_batch_size=1000):
+    def get_data_loaders(self, batch_size=128, test_batch_size=1000, use_augmentation=True):
         """
-        Create optimized MNIST data loaders.
+        Create optimized MNIST data loaders with augmentation.
         
         Args:
             batch_size: Training batch size (increased for efficiency)
             test_batch_size: Testing batch size
+            use_augmentation: Whether to apply data augmentation (Code 9)
             
         Returns:
             tuple: (train_loader, test_loader)
         """
-        # Enhanced data preprocessing
-        transform_train = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize((0.1307,), (0.3081,))
-        ])
+        # Code 9 - Image Augmentation: Adding rotations for better generalization
+        if use_augmentation:
+            transform_train = transforms.Compose([
+                transforms.RandomRotation(degrees=7),  # Small rotations for MNIST
+                transforms.RandomAffine(degrees=0, translate=(0.1, 0.1)),  # Small translations
+                transforms.ToTensor(),
+                transforms.Normalize((0.1307,), (0.3081,))
+            ])
+            print("📈 Using data augmentation: rotations ±7° and translations ±10%")
+        else:
+            transform_train = transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize((0.1307,), (0.3081,))
+            ])
+            print("📊 Using basic transforms (no augmentation)")
         
+        # Test transform (no augmentation)
         transform_test = transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize((0.1307,), (0.3081,))
@@ -158,9 +170,14 @@ class TrainingManager:
         model = model.to(self.device)
         train_loader, test_loader = self.get_data_loaders()
         
-        # Optimizer and scheduler
+        # Code 10 - Playing Naively with Learning Rates: Advanced LR scheduling
         optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=1e-4)
-        scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
+        
+        # Multi-step scheduler for better convergence
+        scheduler = optim.lr_scheduler.MultiStepLR(
+            optimizer, milestones=[6, 10, 13], gamma=0.5
+        )
+        print(f"📊 Using MultiStepLR scheduler: milestones=[6,10,13], gamma=0.5")
         criterion = nn.CrossEntropyLoss()
         
         # Training tracking
