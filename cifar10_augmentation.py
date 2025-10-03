@@ -21,48 +21,71 @@ from PIL import Image, ImageDraw
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 
-class CutOut(object):
+class CoarseDropout(object):
     """
-    CutOut augmentation for CIFAR-10
+    CoarseDropout augmentation matching exact assignment specifications
     
     Assignment Requirements:
-    - Max holes: 1
-    - Max height/width: 16 pixels
+    - max_holes = 1, min_holes = 1
+    - max_height = 16px, min_height = 16px  
+    - max_width = 16px, min_width = 16px
+    - fill_value = (mean of dataset)
+    - mask_fill_value = None
     """
-    def __init__(self, n_holes=1, length=16):
-        self.n_holes = n_holes
-        self.length = length
+    def __init__(self, max_holes=1, max_height=16, max_width=16, 
+                 min_holes=1, min_height=16, min_width=16,
+                 fill_value=(0.4914, 0.4822, 0.4465), mask_fill_value=None):
+        self.max_holes = max_holes
+        self.max_height = max_height
+        self.max_width = max_width
+        self.min_holes = min_holes
+        self.min_height = min_height
+        self.min_width = min_width
+        self.fill_value = fill_value
+        self.mask_fill_value = mask_fill_value
 
     def __call__(self, img):
         """
         Args:
             img (Tensor): Tensor image of size (C, H, W).
         Returns:
-            Tensor: Image with n_holes of dimension length x length cut out of it.
+            Tensor: Image with coarse dropout applied.
         """
-        h = img.size(1)
-        w = img.size(2)
-
-        mask = np.ones((h, w), np.float32)
-
-        for n in range(self.n_holes):
+        h, w = img.size(1), img.size(2)
+        
+        # Number of holes (min_holes = max_holes = 1)
+        n_holes = random.randint(self.min_holes, self.max_holes)
+        
+        for _ in range(n_holes):
+            # Hole dimensions (min = max = 16)
+            hole_height = random.randint(self.min_height, self.max_height)
+            hole_width = random.randint(self.min_width, self.max_width)
+            
             # Random position for the hole
-            y = np.random.randint(h)
-            x = np.random.randint(w)
-
+            y = random.randint(0, h)
+            x = random.randint(0, w)
+            
             # Calculate hole boundaries
-            y1 = np.clip(y - self.length // 2, 0, h)
-            y2 = np.clip(y + self.length // 2, 0, h)
-            x1 = np.clip(x - self.length // 2, 0, w)
-            x2 = np.clip(x + self.length // 2, 0, w)
-
-            mask[y1: y2, x1: x2] = 0.
-
-        mask = torch.from_numpy(mask)
-        mask = mask.expand_as(img)
-        img = img * mask
-
+            y1 = max(0, y - hole_height // 2)
+            y2 = min(h, y + hole_height // 2)
+            x1 = max(0, x - hole_width // 2)
+            x2 = min(w, x + hole_width // 2)
+            
+            # Fill with dataset mean (CIFAR-10 mean after normalization = 0)
+            if self.fill_value is not None:
+                for c in range(img.size(0)):
+                    img[c, y1:y2, x1:x2] = 0.0  # After normalization, mean ≈ 0
+        
         return img
+
+# Keep CutOut for backward compatibility
+class CutOut(CoarseDropout):
+    """CutOut - alias for CoarseDropout with simplified interface"""
+    def __init__(self, n_holes=1, length=16):
+        super().__init__(
+            max_holes=n_holes, max_height=length, max_width=length,
+            min_holes=n_holes, min_height=length, min_width=length
+        )
 
 class CIFAR10Augmentation:
     """

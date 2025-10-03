@@ -29,7 +29,7 @@ from datetime import datetime
 import os
 
 # Import our modules
-from cifar10_advanced_model import AdvancedCIFAR10Model, create_advanced_cifar10_model
+from cifar10_optimized_model import OptimizedCIFAR10Model, create_optimized_cifar10_model
 from cifar10_augmentation import get_cifar10_transforms
 
 class CIFAR10Trainer:
@@ -437,8 +437,8 @@ def main():
         print(f"💾 GPU Memory: {torch.cuda.get_device_properties(0).total_memory / 1e9:.1f} GB")
     
     # Create model
-    print(f"\n🏗️  Creating Advanced CIFAR-10 Model...")
-    model, model_info = create_advanced_cifar10_model()
+    print(f"\n🏗️  Creating Optimized CIFAR-10 Model...")
+    model, model_info = create_optimized_cifar10_model()
     model = model.to(device)
     
     # Verify requirements
