@@ -33,47 +33,107 @@ except ImportError as e:
     TORCH_AVAILABLE = False
     exit(1)
 
-class ModelTrainer:
-    """Trainer class for ultra-efficient models"""
+class FocalLoss(nn.Module):
+    """
+    Focal Loss for addressing class imbalance and hard example mining
     
-    def __init__(self, model, model_name, device='cpu'):
+    Focal Loss = -α(1-pt)^γ * log(pt)
+    
+    Args:
+        alpha (float): Weighting factor for rare class (default: 1.0)
+        gamma (float): Focusing parameter (default: 2.0)
+        reduction (str): Specifies the reduction to apply to the output
+    """
+    def __init__(self, alpha=1.0, gamma=2.0, reduction='mean'):
+        super(FocalLoss, self).__init__()
+        self.alpha = alpha
+        self.gamma = gamma
+        self.reduction = reduction
+
+    def forward(self, inputs, targets):
+        # Compute cross entropy
+        ce_loss = F.cross_entropy(inputs, targets, reduction='none')
+        
+        # Compute p_t
+        pt = torch.exp(-ce_loss)
+        
+        # Compute focal loss
+        focal_loss = self.alpha * (1 - pt) ** self.gamma * ce_loss
+        
+        if self.reduction == 'mean':
+            return focal_loss.mean()
+        elif self.reduction == 'sum':
+            return focal_loss.sum()
+        else:
+            return focal_loss
+
+class ModelTrainer:
+    """Trainer class for ultra-efficient models with Focal Loss"""
+    
+    def __init__(self, model, model_name, device='cpu', use_focal_loss=True, focal_alpha=1.0, focal_gamma=2.0):
         self.model = model.to(device)
         self.model_name = model_name
         self.device = device
         self.best_accuracy = 0.0
         self.training_history = []
         
-    def prepare_data(self, batch_size=64):
-        """Prepare MNIST data loaders"""
-        transform = transforms.Compose([
+        # Setup loss function
+        if use_focal_loss:
+            self.criterion = FocalLoss(alpha=focal_alpha, gamma=focal_gamma)
+            print(f"🎯 Using Focal Loss (α={focal_alpha}, γ={focal_gamma})")
+        else:
+            self.criterion = nn.CrossEntropyLoss()
+            print("📊 Using Cross Entropy Loss")
+        
+    def prepare_data(self, batch_size=64, use_augmentation=True):
+        """Prepare MNIST data loaders with optional data augmentation"""
+        
+        # Training transform with augmentation
+        if use_augmentation:
+            train_transform = transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize((0.1307,), (0.3081,)),  # MNIST mean and std
+                transforms.RandomRotation(degrees=7),  # Light rotation
+                transforms.RandomAffine(degrees=0, translate=(0.1, 0.1)),  # Light translation
+            ])
+            print("🔄 Using data augmentation (rotation + translation)")
+        else:
+            train_transform = transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize((0.1307,), (0.3081,))
+            ])
+            print("📊 No data augmentation")
+        
+        # Test transform (no augmentation)
+        test_transform = transforms.Compose([
             transforms.ToTensor(),
-            transforms.Normalize((0.1307,), (0.3081,))  # MNIST mean and std
+            transforms.Normalize((0.1307,), (0.3081,))
         ])
         
         # Download and load training data
         train_dataset = torchvision.datasets.MNIST(
-            root='./data', train=True, download=True, transform=transform
+            root='./data', train=True, download=True, transform=train_transform
         )
         
         # Download and load test data
         test_dataset = torchvision.datasets.MNIST(
-            root='./data', train=False, download=True, transform=transform
+            root='./data', train=False, download=True, transform=test_transform
         )
         
         self.train_loader = DataLoader(
-            train_dataset, batch_size=batch_size, shuffle=True, num_workers=2
+            train_dataset, batch_size=batch_size, shuffle=True, num_workers=2, pin_memory=True
         )
         
         self.test_loader = DataLoader(
-            test_dataset, batch_size=1000, shuffle=False, num_workers=2
+            test_dataset, batch_size=1000, shuffle=False, num_workers=2, pin_memory=True
         )
         
         print(f"📊 Training samples: {len(train_dataset):,}")
         print(f"📊 Test samples: {len(test_dataset):,}")
         print(f"📊 Batch size: {batch_size}")
         
-    def train_epoch(self, optimizer, epoch):
-        """Train for one epoch"""
+    def train_epoch(self, optimizer, epoch, scheduler=None):
+        """Train for one epoch using Focal Loss"""
         self.model.train()
         running_loss = 0.0
         correct = 0
@@ -84,9 +144,20 @@ class ModelTrainer:
             
             optimizer.zero_grad()
             output = self.model(data)
-            loss = F.cross_entropy(output, target)
+            
+            # Use the configured loss function (Focal Loss or Cross Entropy)
+            loss = self.criterion(output, target)
+            
             loss.backward()
+            
+            # Gradient clipping for stability
+            torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1.0)
+            
             optimizer.step()
+            
+            # Step scheduler per batch for OneCycleLR
+            if scheduler is not None:
+                scheduler.step()
             
             running_loss += loss.item()
             pred = output.argmax(dim=1, keepdim=True)
@@ -95,8 +166,9 @@ class ModelTrainer:
             
             # Print progress every 100 batches
             if batch_idx % 100 == 0:
+                current_lr = optimizer.param_groups[0]['lr']
                 print(f'Epoch {epoch}, Batch {batch_idx:3d}/{len(self.train_loader)}, '
-                      f'Loss: {loss.item():.6f}, Acc: {100.*correct/total:.2f}%')
+                      f'Loss: {loss.item():.6f}, Acc: {100.*correct/total:.2f}%, LR: {current_lr:.6f}')
         
         epoch_loss = running_loss / len(self.train_loader)
         epoch_acc = 100. * correct / total
@@ -122,16 +194,37 @@ class ModelTrainer:
         
         return test_loss, test_acc
     
-    def train(self, epochs=15, lr=0.01, target_accuracy=99.4):
-        """Train the model"""
-        print(f"\n🚀 Training {self.model_name}")
+    def train(self, epochs=15, lr=0.01, target_accuracy=99.4, optimizer_type='AdamW'):
+        """Train the model with Focal Loss and advanced optimizers"""
+        print(f"\n🚀 Training {self.model_name} with Focal Loss")
         print(f"Parameters: {self.model.count_parameters():,}")
         print(f"Target: {target_accuracy}% accuracy in ≤{epochs} epochs")
         print("-" * 60)
         
-        # Setup optimizer and scheduler
-        optimizer = optim.SGD(self.model.parameters(), lr=lr, momentum=0.9, weight_decay=1e-4)
-        scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=6, gamma=0.5)
+        # Setup optimizer based on model complexity
+        if optimizer_type == 'AdamW':
+            # AdamW with model-specific learning rates
+            if self.model_name == "Model_1":
+                optimizer = optim.AdamW(self.model.parameters(), lr=lr*0.8, weight_decay=1e-3)
+            elif self.model_name == "Model_2":
+                optimizer = optim.AdamW(self.model.parameters(), lr=lr*0.6, weight_decay=1e-3)
+            else:  # Model_3
+                optimizer = optim.AdamW(self.model.parameters(), lr=lr*0.4, weight_decay=1e-3)
+            print(f"🔧 Using AdamW optimizer with adaptive LR")
+        else:
+            optimizer = optim.SGD(self.model.parameters(), lr=lr, momentum=0.9, weight_decay=1e-4)
+            print(f"🔧 Using SGD optimizer")
+        
+        # Advanced learning rate scheduler
+        scheduler = optim.lr_scheduler.OneCycleLR(
+            optimizer, 
+            max_lr=lr*2, 
+            steps_per_epoch=len(self.train_loader), 
+            epochs=epochs,
+            pct_start=0.3,
+            anneal_strategy='cos'
+        )
+        print(f"📈 Using OneCycleLR scheduler")
         
         start_time = time.time()
         target_reached = False
@@ -141,13 +234,13 @@ class ModelTrainer:
             print(f"Epoch {epoch:2d}/{epochs} | LR={current_lr:.6f}")
             
             # Train
-            train_loss, train_acc = self.train_epoch(optimizer, epoch)
+            train_loss, train_acc = self.train_epoch(optimizer, epoch, scheduler)
             
             # Test
             test_loss, test_acc = self.test()
             
-            # Update learning rate
-            scheduler.step()
+            # Update learning rate (OneCycleLR steps per batch, not per epoch)
+            # scheduler.step() is called inside train_epoch for OneCycleLR
             
             # Track best accuracy
             if test_acc > self.best_accuracy:
@@ -201,10 +294,11 @@ class ModelTrainer:
             'history': self.training_history
         }
 
-def train_single_model(model_name, epochs=15, lr=0.01, batch_size=64, target_accuracy=99.4):
-    """Train a single model"""
+def train_single_model(model_name, epochs=15, lr=0.01, batch_size=64, target_accuracy=99.4, 
+                      use_focal_loss=True, focal_alpha=1.0, focal_gamma=2.0, use_augmentation=True):
+    """Train a single model with Focal Loss"""
     print(f"\n{'='*60}")
-    print(f"Training {model_name}")
+    print(f"Training {model_name} with Advanced Configuration")
     print(f"{'='*60}")
     
     # Create model
@@ -214,11 +308,11 @@ def train_single_model(model_name, epochs=15, lr=0.01, batch_size=64, target_acc
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f"🖥️  Using device: {device}")
     
-    # Create trainer
-    trainer = ModelTrainer(model, model_name, device)
+    # Create trainer with Focal Loss
+    trainer = ModelTrainer(model, model_name, device, use_focal_loss, focal_alpha, focal_gamma)
     
-    # Prepare data
-    trainer.prepare_data(batch_size)
+    # Prepare data with augmentation
+    trainer.prepare_data(batch_size, use_augmentation)
     
     # Train model
     results = trainer.train(epochs, lr, target_accuracy)
@@ -281,8 +375,8 @@ def train_all_models(epochs=15, lr=0.01, batch_size=64):
     return all_results
 
 def main():
-    """Main training function"""
-    parser = argparse.ArgumentParser(description='Train Ultra-Efficient MNIST Models')
+    """Main training function with Focal Loss support"""
+    parser = argparse.ArgumentParser(description='Train Ultra-Efficient MNIST Models with Focal Loss')
     parser.add_argument('--model', type=str, default='all', 
                        choices=['Model_1', 'Model_2', 'Model_3', 'all'],
                        help='Model to train (default: all)')
@@ -294,6 +388,14 @@ def main():
                        help='Batch size (default: 64)')
     parser.add_argument('--target', type=float, default=99.4,
                        help='Target accuracy (default: 99.4)')
+    parser.add_argument('--focal-alpha', type=float, default=1.0,
+                       help='Focal Loss alpha parameter (default: 1.0)')
+    parser.add_argument('--focal-gamma', type=float, default=2.0,
+                       help='Focal Loss gamma parameter (default: 2.0)')
+    parser.add_argument('--no-focal', action='store_true',
+                       help='Disable Focal Loss (use Cross Entropy instead)')
+    parser.add_argument('--no-augmentation', action='store_true',
+                       help='Disable data augmentation')
     
     args = parser.parse_args()
     
@@ -301,14 +403,20 @@ def main():
         print("❌ PyTorch not available. Please install PyTorch first.")
         return
     
-    print("🎯 Ultra-Efficient MNIST Models Training")
+    use_focal_loss = not args.no_focal
+    use_augmentation = not args.no_augmentation
+    
+    print("🎯 Ultra-Efficient MNIST Models Training with Focal Loss")
     print(f"Configuration: {args.epochs} epochs, LR={args.lr}, batch={args.batch_size}")
     print(f"Target: {args.target}% accuracy with <8000 parameters")
+    print(f"Focal Loss: {'Enabled' if use_focal_loss else 'Disabled'} (α={args.focal_alpha}, γ={args.focal_gamma})")
+    print(f"Data Augmentation: {'Enabled' if use_augmentation else 'Disabled'}")
     
     if args.model == 'all':
         train_all_models(args.epochs, args.lr, args.batch_size)
     else:
-        train_single_model(args.model, args.epochs, args.lr, args.batch_size, args.target)
+        train_single_model(args.model, args.epochs, args.lr, args.batch_size, args.target,
+                          use_focal_loss, args.focal_alpha, args.focal_gamma, use_augmentation)
 
 if __name__ == "__main__":
     main()
