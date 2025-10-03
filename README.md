@@ -406,6 +406,107 @@ python3 validate_ultra_models.py
 - **Weight Decay**: L2 regularization for generalization
 - **Momentum**: SGD with momentum for stable convergence
 
+## 🎯 **Latest Training Results with Focal Loss & Increased Batch Size**
+
+### **Configuration:**
+```
+🎯 Ultra-Efficient MNIST Models Training with Focal Loss
+Configuration: 15 epochs, LR=0.01, batch=128
+Target: 99.4% accuracy with <8000 parameters
+Focal Loss: Enabled (α=1.0, γ=2.0)
+Data Augmentation: Enabled
+```
+
+### **Model Performance Summary:**
+
+| Model | Parameters | Best Accuracy | Training Time | Target Status |
+|-------|------------|---------------|---------------|---------------|
+| **Model_1** | **4,486** | **98.58%** | 825.2s | ❌ (Target: 99.4%) |
+| **Model_2** | **7,874** | **98.87%** | 825.5s | ❌ (Target: 99.4%) |
+| **Model_3** | **4,734** | **98.61%** | 845.9s | ❌ (Target: 99.4%) |
+
+### **Training Highlights:**
+
+#### **Model_1 Training Progress:**
+```
+🚀 Training Model_1 with Focal Loss
+Parameters: 4,486
+🔧 Using AdamW optimizer with adaptive LR
+📈 Using OneCycleLR scheduler
+
+Epoch  1/15: Train=66.31%, Test=86.07% 🎯 New best!
+Epoch  2/15: Train=91.16%, Test=91.31% 🎯 New best!
+Epoch  4/15: Train=93.90%, Test=95.13% 🎯 New best!
+Epoch  7/15: Train=95.97%, Test=96.75% 🎯 New best!
+Epoch  9/15: Train=96.47%, Test=97.13% 🎯 New best!
+Epoch 10/15: Train=96.77%, Test=97.69% 🎯 New best!
+Epoch 12/15: Train=97.25%, Test=98.24% 🎯 New best!
+Epoch 13/15: Train=97.55%, Test=98.25% 🎯 New best!
+Epoch 14/15: Train=97.62%, Test=98.49% 🎯 New best!
+Epoch 15/15: Train=97.76%, Test=98.58% 🎯 New best!
+
+🏆 Final: 98.58% accuracy
+```
+
+#### **Model_2 Training Progress (Best Performer):**
+```
+🚀 Training Model_2 with Focal Loss (Depthwise Separable)
+Parameters: 7,874
+🔧 Using AdamW optimizer with adaptive LR
+
+Epoch  1/15: Train=65.97%, Test=87.60% 🎯 New best!
+Epoch  2/15: Train=91.58%, Test=94.08% 🎯 New best!
+Epoch  4/15: Train=94.77%, Test=97.11% 🎯 New best!
+Epoch  7/15: Train=96.59%, Test=97.62% 🎯 New best!
+Epoch  9/15: Train=97.10%, Test=97.74% 🎯 New best!
+Epoch 10/15: Train=97.36%, Test=97.97% 🎯 New best!
+Epoch 11/15: Train=97.61%, Test=98.84% 🎯 New best!
+Epoch 14/15: Train=98.34%, Test=98.87% 🎯 New best!
+
+🏆 Final: 98.87% accuracy (Best performing model!)
+```
+
+#### **Model_3 Training Progress:**
+```
+🚀 Training Model_3 with Focal Loss (Residual Architecture)
+Parameters: 4,734
+🔧 Using AdamW optimizer with adaptive LR
+
+Epoch  1/15: Train=65.25%, Test=81.39% 🎯 New best!
+Epoch  2/15: Train=90.70%, Test=92.43% 🎯 New best!
+Epoch  3/15: Train=93.24%, Test=94.46% 🎯 New best!
+Epoch  5/15: Train=94.84%, Test=96.73% 🎯 New best!
+Epoch  8/15: Train=96.03%, Test=97.72% 🎯 New best!
+Epoch 10/15: Train=96.72%, Test=98.07% 🎯 New best!
+Epoch 12/15: Train=97.34%, Test=98.40% 🎯 New best!
+Epoch 13/15: Train=97.70%, Test=98.45% 🎯 New best!
+Epoch 14/15: Train=97.86%, Test=98.56% 🎯 New best!
+Epoch 15/15: Train=97.88%, Test=98.61% 🎯 New best!
+
+🏆 Final: 98.61% accuracy
+```
+
+### **Key Observations:**
+
+✅ **Successful Improvements:**
+- **Focal Loss** working effectively for hard example mining
+- **Batch size 128** providing 2x faster training (469 vs 938 batches)
+- **Data augmentation** helping with generalization
+- **OneCycleLR scheduler** providing smooth learning rate cycling
+- **AdamW optimizer** with adaptive LR per model
+
+⚠️ **Areas for Improvement:**
+- All models reached **98.6-98.9%** but fell short of **99.4% target**
+- Need architectural improvements or training optimizations
+- Consider longer training or different hyperparameters
+
+🎯 **Next Steps:**
+1. Increase model capacity while staying under 8K parameters
+2. Experiment with different Focal Loss parameters (α, γ)
+3. Try different learning rate schedules
+4. Add more sophisticated data augmentation
+5. Consider ensemble methods
+
 ## 🚀 Getting Started
 
 ### 1. Quick Demo
@@ -423,9 +524,9 @@ python3 validate_ultra_models.py
 python3 train_ultra_models.py --model Model_3 --epochs 15
 ```
 
-### 4. Train All Models
+### 4. Train All Models with Focal Loss
 ```bash
-python3 train_ultra_models.py --model all --epochs 15
+python3 train_ultra_models.py --model all --epochs 15 --batch-size 128
 ```
 
 ## 📚 References and Learning Resources
