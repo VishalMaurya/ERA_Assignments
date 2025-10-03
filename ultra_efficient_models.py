@@ -56,7 +56,7 @@ class Model_1(nn.Module):
         self.gap = nn.AdaptiveAvgPool2d(1)
         
         # Strategic dropout
-        self.dropout1 = nn.Dropout(0.1)
+        self.dropout1 = nn.Dropout(0.25)
         
     def forward(self, x):
         # Block 1: 1×28×28 → 8×28×28 (RF: 3)
@@ -116,8 +116,8 @@ class Model_2(nn.Module):
         self.gap = nn.AdaptiveAvgPool2d(1)
         
         # Strategic dropout
-        self.dropout1 = nn.Dropout(0.1)
-        self.dropout2 = nn.Dropout(0.15)
+        self.dropout1 = nn.Dropout(0.15)
+        self.dropout2 = nn.Dropout(0.25)
         
     def forward(self, x):
         # Block 1: 1×28×28 → 8×28×28 (RF: 3)
@@ -181,8 +181,8 @@ class Model_3(nn.Module):
         self.gap = nn.AdaptiveAvgPool2d(1)
         
         # Strategic dropout with different rates
-        self.dropout1 = nn.Dropout(0.1)
-        self.dropout2 = nn.Dropout(0.15)
+        self.dropout1 = nn.Dropout(0.15)
+        self.dropout2 = nn.Dropout(0.25)
         
     def forward(self, x):
         # Block 1: 1×28×28 → 8×28×28 (RF: 3)
