@@ -237,6 +237,12 @@ Final Output: 10 Classes
 | **Dilated Strategy** | Progressive in all blocks | Concentrated in blocks 3&5 |
 | **Channel Progression** | 3→24→48→96→128 | 3→32→64→96 |
 | **Training Script** | `train_cifar10_advanced.py` | `model_and_training.py` |
+| **Block Diagram** | `ARCHITECTURE_BLOCK_DIAGRAM.md` | `CIFAR_GAP_NET_BLOCK_DIAGRAM.md` |
+
+### **📋 Detailed Architecture Documentation**
+- **OptimizedCIFAR10Model**: See [`ARCHITECTURE_BLOCK_DIAGRAM.md`](ARCHITECTURE_BLOCK_DIAGRAM.md)
+- **CIFAR_GAP_Net**: See [`CIFAR_GAP_NET_BLOCK_DIAGRAM.md`](CIFAR_GAP_NET_BLOCK_DIAGRAM.md)
+- **Compact Overview**: See [`COMPACT_ARCHITECTURE_DIAGRAM.md`](COMPACT_ARCHITECTURE_DIAGRAM.md)
 
 ## 🎯 **All Requirements Verification**
 
@@ -449,7 +455,8 @@ Session2_Assignment/
 ├── 📋 README.md                             # ⭐ This comprehensive documentation
 ├── 📋 ASSIGNMENT_VERIFICATION_COMPLETE.md    # ⭐ Final verification summary
 ├── 📋 CIFAR10_ADVANCED_NN.md                # ⭐ Detailed project documentation
-├── 🏗️  ARCHITECTURE_BLOCK_DIAGRAM.md         # ⭐ Detailed visual architecture
+├── 🏗️  ARCHITECTURE_BLOCK_DIAGRAM.md         # ⭐ OptimizedCIFAR10Model architecture
+├── 🏗️  CIFAR_GAP_NET_BLOCK_DIAGRAM.md       # ⭐ CIFAR_GAP_Net architecture
 ├── 🏗️  COMPACT_ARCHITECTURE_DIAGRAM.md       # ⭐ Compact diagrams
 ├── 🔍 MODEL_COMPARISON.md                    # ⭐ Two models comparison
 ├── 📊 ENHANCED_MODEL_SUMMARY.md              # ⭐ Enhancement summary
@@ -472,7 +479,10 @@ Session2_Assignment/
 - **README.md**: Complete project documentation with both models
 - **ASSIGNMENT_VERIFICATION_COMPLETE.md**: Requirements verification
 - **MODEL_COMPARISON.md**: Detailed comparison of both implementations
-- **Architecture diagrams**: Visual representations of model structures
+- **ARCHITECTURE_BLOCK_DIAGRAM.md**: OptimizedCIFAR10Model detailed architecture
+- **CIFAR_GAP_NET_BLOCK_DIAGRAM.md**: CIFAR_GAP_Net detailed architecture
+- **COMPACT_ARCHITECTURE_DIAGRAM.md**: Compact visual representations
+- **ENHANCED_MODEL_SUMMARY.md**: Enhancement summary and features
 
 #### **🏗️ Model Implementation Files:**
 - **cifar10_optimized_model.py**: Advanced model with bottleneck dilated blocks
