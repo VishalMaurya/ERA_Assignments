@@ -114,14 +114,16 @@ def get_cifar100_loaders(batch_size=128, num_workers=4, data_dir='./data'):
         transform=get_val_transforms()
     )
     
-    # Create dataloaders
+    # Create dataloaders with GPU optimizations
     train_loader = DataLoader(
         train_dataset,
         batch_size=batch_size,
         shuffle=True,
         num_workers=num_workers,
-        pin_memory=True,
-        persistent_workers=True if num_workers > 0 else False
+        pin_memory=True,  # Faster data transfer to GPU
+        persistent_workers=True if num_workers > 0 else False,  # Keep workers alive
+        prefetch_factor=2 if num_workers > 0 else None,  # Prefetch batches
+        drop_last=True  # Drop incomplete batch for consistent batch size
     )
     
     test_loader = DataLoader(
@@ -129,8 +131,9 @@ def get_cifar100_loaders(batch_size=128, num_workers=4, data_dir='./data'):
         batch_size=batch_size,
         shuffle=False,
         num_workers=num_workers,
-        pin_memory=True,
-        persistent_workers=True if num_workers > 0 else False
+        pin_memory=True,  # Faster data transfer to GPU
+        persistent_workers=True if num_workers > 0 else False,  # Keep workers alive
+        prefetch_factor=2 if num_workers > 0 else None  # Prefetch batches
     )
     
     class_names = trainset.classes
