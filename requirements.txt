@@ -1,13 +1,13 @@
-# S10 Assignment - BPE Tokenizer Requirements
+# S10 Assignment - Hindi BPE Tokenizer Requirements
 
 # Core dependencies
 tqdm>=4.65.0
+
+# Optional: For downloading corpus from OSCAR/HuggingFace
+datasets>=2.14.0
 
 # Optional: For demo and visualization
 gradio>=4.0.0
 
 # Optional: For testing
 pytest>=7.4.0
-
-# Optional: For data handling
-datasets>=2.14.0
