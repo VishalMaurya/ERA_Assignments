@@ -1,0 +1,31 @@
+{
+  "initial_compression": 1.0,
+  "final_compression": 4.183535887274329,
+  "compression_history": [
+    {
+      "iteration": 0,
+      "vocab_size": 60,
+      "compression_ratio": 1.0294796153325207,
+      "best_pair": [
+        "ह",
+        "ै"
+      ],
+      "pair_freq": 217648
+    },
+    {
+      "iteration": 500,
+      "vocab_size": 560,
+      "compression_ratio": 3.5532189419042135,
+      "best_pair": [
+        "ई",
+        "द"
+      ],
+      "pair_freq": 1728
+    }
+  ],
+  "base_vocab_size": 59,
+  "final_vocab_size": 761,
+  "num_merges": 702,
+  "total_words": 308,
+  "corpus_size": 9517447
+}
