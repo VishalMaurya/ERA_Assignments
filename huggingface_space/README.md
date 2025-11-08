@@ -1,6 +1,6 @@
 ---
 title: Hindi BPE Tokenizer
-emoji: 🇮🇳
+emoji: 💬
 colorFrom: orange
 colorTo: red
 sdk: gradio
@@ -9,18 +9,18 @@ app_file: app.py
 pinned: false
 ---
 
-# 🇮🇳 Hindi BPE Tokenizer
+# Hindi BPE Tokenizer
 
 ## Overview
 
 This is a **Byte Pair Encoding (BPE) tokenizer** built from scratch for the **Hindi language** (Devanagari script). 
 
 ### Key Features
-- ✅ Built from scratch (no SentencePiece or HuggingFace Tokenizers)
-- ✅ Handles complex Devanagari script
-- ✅ Achieves **4.18x compression ratio** (exceeds 3.0x target by 39%)
-- ✅ Vocabulary of 761 tokens
-- ✅ Production-quality implementation
+- Built from scratch (no SentencePiece or HuggingFace Tokenizers)
+- Handles complex Devanagari script
+- Achieves **4.18x compression ratio** (exceeds 3.0x target by 39%)
+- Vocabulary of 761 tokens
+- Production-quality implementation
 
 ## Model Details
 
@@ -38,10 +38,10 @@ This is a **Byte Pair Encoding (BPE) tokenizer** built from scratch for the **Hi
 ### S10 Assignment: BPE Tokenizer
 
 **Requirements:**
-- ✅ Indian Language: **Hindi**
-- ✅ Compression Ratio ≥ 3.0: **4.18x** (39% above target!)
-- ⚠️  Vocabulary > 5000: **761** (corpus-limited, see note)
-- ✅ From Scratch: **Yes** (no tokenizer libraries)
+- Indian Language: **Hindi** (PASSED)
+- Compression Ratio >= 3.0: **4.18x** (39% above target!) (PASSED)
+- Vocabulary > 5000: **761** (corpus-limited, see note)
+- From Scratch: **Yes** (no tokenizer libraries) (PASSED)
 
 **Note**: The vocabulary size is limited by corpus diversity, not the algorithm. With a larger, more diverse Hindi corpus (Wikipedia/IndicCorp), the same algorithm easily achieves 6000-8000 tokens while maintaining 3.5-4.5x compression.
 
@@ -60,7 +60,7 @@ BPE is a compression algorithm adapted for tokenization:
 ```
 Original: "हिन्दी भाषा बहुत सुंदर है।" (26 chars)
 Tokens: ['हिन्दी', 'भाषा', 'बहुत', 'सुंदर', 'है।'] (5 tokens)
-Compression: 5.20x ✅
+Compression: 5.20x
 ```
 
 ## Usage
@@ -110,7 +110,7 @@ The BPE tokenizer implements:
 | "भारत एक महान देश है।" | 20 | 5 | 4.00x |
 | "मुंबई भारत का सबसे बड़ा शहर है।" | 31 | 7 | 4.43x |
 
-**Average Compression**: 4.18x ✅
+**Average Compression**: 4.18x
 
 ### Vocabulary Examples
 
@@ -155,5 +155,5 @@ Educational project for ERA V4 S10 Assignment.
 
 ---
 
-**Built with ❤️ for Hindi NLP**
+**Built for Hindi NLP**
 

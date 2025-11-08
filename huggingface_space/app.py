@@ -104,13 +104,13 @@ def tokenize_hindi_text(text: str) -> Tuple[str, str, str, str]:
         token_ids_display += " ..."
     
     stats_text = f"""
-### 📊 Tokenization Statistics
+### Tokenization Statistics
 
 - **Original Characters**: {char_count}
 - **Number of Tokens**: {token_count}
-- **Compression Ratio**: {text_compression:.2f}x {'✅' if text_compression >= 3.0 else ''}
+- **Compression Ratio**: {text_compression:.2f}x {'(PASSED)' if text_compression >= 3.0 else ''}
 - **Average Token Length**: {char_count / token_count:.2f} chars/token
-- **Decode Match**: {'✅ Yes' if decoded.replace(' ', '') == text.replace(' ', '') else '❌ No'}
+- **Decode Match**: {'Yes' if decoded.replace(' ', '') == text.replace(' ', '') else 'No'}
     """
     
     return tokens_display, token_ids_display, decoded, stats_text
@@ -127,7 +127,7 @@ examples = [
 
 # Model info markdown
 model_info = f"""
-# 🇮🇳 Hindi BPE Tokenizer
+# Hindi BPE Tokenizer
 
 ## Model Information
 - **Vocabulary Size**: {vocab_size:,} tokens
@@ -137,9 +137,9 @@ model_info = f"""
 - **Implementation**: From scratch (no tokenizer libraries)
 
 ## Assignment Requirements
-- ✅ Indian Language: **Hindi**
-- ✅ Compression ≥ 3.0: **{compression:.2f}x** ({((compression-3.0)/3.0*100):.1f}% above target!)
-- ✅ From Scratch: **No SentencePiece/HF Tokenizers**
+- Indian Language: **Hindi** (PASSED)
+- Compression >= 3.0: **{compression:.2f}x** ({((compression-3.0)/3.0*100):.1f}% above target!) (PASSED)
+- From Scratch: **No SentencePiece/HF Tokenizers** (PASSED)
 
 ## How to Use
 1. Enter Hindi text in the input box
@@ -160,27 +160,27 @@ with gr.Blocks(title="Hindi BPE Tokenizer", theme=gr.themes.Soft()) as demo:
     with gr.Row():
         with gr.Column():
             input_text = gr.Textbox(
-                label="📝 Input Hindi Text",
+                label="Input Hindi Text",
                 placeholder="Enter Hindi text here... (e.g., नमस्ते)",
                 lines=5
             )
-            submit_btn = gr.Button("🔍 Tokenize", variant="primary", size="lg")
+            submit_btn = gr.Button("Tokenize", variant="primary", size="lg")
         
         with gr.Column():
             tokens_output = gr.Textbox(
-                label="🔤 Tokens",
+                label="Tokens",
                 lines=3,
                 interactive=False
             )
             token_ids_output = gr.Textbox(
-                label="🔢 Token IDs",
+                label="Token IDs",
                 lines=2,
                 interactive=False
             )
     
     with gr.Row():
         decoded_output = gr.Textbox(
-            label="🔄 Decoded Text",
+            label="Decoded Text",
             lines=2,
             interactive=False
         )
@@ -190,7 +190,7 @@ with gr.Blocks(title="Hindi BPE Tokenizer", theme=gr.themes.Soft()) as demo:
     gr.Examples(
         examples=examples,
         inputs=[input_text],
-        label="📚 Example Hindi Texts"
+        label="Example Hindi Texts"
     )
     
     # Footer
