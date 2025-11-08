@@ -1,7 +1,7 @@
 ---
 title: Hindi BPE Tokenizer
 emoji: 💬
-colorFrom: orange
+colorFrom: yellow
 colorTo: red
 sdk: gradio
 sdk_version: 4.0.0
