@@ -40,7 +40,10 @@ files.download('training_logs.json')
 files.download('TRAINING_LOG.md')
 ```
 
-4. **Wait for training** (~30-60 minutes to reach loss < 0.1)
+4. **Wait for training** (~2-4 hours on GPU to reach loss < 0.1)
+   - Progress will be logged every 10 steps
+   - Samples generated every 200 steps
+   - Training stops automatically when target reached
 
 ---
 
@@ -240,11 +243,13 @@ Copy-paste the following in your submission:
 | Task | Time |
 |------|------|
 | Setup Colab | 5 min |
-| Train model (to loss < 0.1) | 30-60 min |
+| Train model (to loss < 0.1) | 2-4 hours ⚠️ |
 | Prepare GitHub repo | 10 min |
 | Deploy to HuggingFace | 10 min |
 | Documentation & screenshots | 10 min |
-| **Total** | **~1.5-2 hours** |
+| **Total** | **~2.5-4.5 hours** |
+
+⚠️ **Important**: Training to loss < 0.1 requires ~50,000-100,000 steps (2-4 hours on GPU). Don't expect it to finish in 30 minutes!
 
 ---
 
@@ -252,14 +257,23 @@ Copy-paste the following in your submission:
 
 ### Training not reaching target loss
 
-**Solution**: Train longer
+**Solution 1**: Train longer (script now defaults to 100,000 max_steps)
 ```python
-train_to_target_loss(
-    target_loss=0.099999,
-    max_steps=20000,  # Increase if needed
-    eval_interval=100
-)
+# The updated script automatically trains up to 100K steps
+!python train_gpt2_assignment.py
 ```
+
+**Solution 2**: Continue from existing checkpoint
+```python
+# If you already have shakespeare_gpt2_final.pt with 10K steps
+# The script can be modified to continue training from that checkpoint
+```
+
+**Expected Progress**:
+- 10K steps: loss ~2-5 (your current progress ✅)
+- 30K steps: loss ~0.5-1.5
+- 50K steps: loss ~0.2-0.5
+- 80K+ steps: loss < 0.1 ✅ TARGET
 
 ### Colab session timeout
 
