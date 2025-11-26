@@ -1,7 +1,7 @@
 ---
 title: Indian Language BPE Tokenizer
-emoji: 🇮🇳
-colorFrom: orange
+emoji: 💬
+colorFrom: yellow
 colorTo: green
 sdk: gradio
 sdk_version: 4.0.0
@@ -29,8 +29,8 @@ This is a **Byte Pair Encoding (BPE) tokenizer** built from scratch for **Indian
 |--------|-------|
 | **Language** | Indian languages (Multi-script) |
 | **Scripts** | Devanagari (देवनागरी) + Bengali (বাংলা) |
-| **Vocabulary Size** | **6,000 tokens** ✅ |
-| **Compression Ratio** | **3.49x** ✅ |
+| **Vocabulary Size** | **6,000 tokens** |
+| **Compression Ratio** | **3.49x** |
 | **Base Characters** | 454 (multi-script) |
 | **Merge Operations** | 5,546 |
 | **Training Corpus** | 55.41 MB (Varta news dataset) |
@@ -40,13 +40,13 @@ This is a **Byte Pair Encoding (BPE) tokenizer** built from scratch for **Indian
 
 ### S10 Assignment: BPE Tokenizer
 
-**Requirements - ALL MET ✅:**
-- Indian Language: **Yes** - Trained on Indian news corpus ✅
-- Vocabulary > 5000: **6,000 tokens** (20% above target!) ✅
-- Compression Ratio >= 3.0: **3.49x** (16% above target!) ✅
-- From Scratch: **Yes** (no tokenizer libraries) ✅
+**Requirements - ALL MET:**
+- Indian Language: **Yes** - Trained on Indian news corpus
+- Vocabulary > 5000: **6,000 tokens** (20% above target!)
+- Compression Ratio >= 3.0: **3.49x** (16% above target!)
+- From Scratch: **Yes** (no tokenizer libraries)
 
-**Status**: **ASSIGNMENT COMPLETE** 🎉
+**Status**: **ASSIGNMENT COMPLETE**
 
 ## How It Works
 
@@ -160,6 +160,6 @@ Educational project for ERA V4 S10 Assignment.
 
 ---
 
-**Built for Indian Language NLP** 🇮🇳
+**Built for Indian Language NLP**  
 **6,000 Tokens | 3.49x Compression | Multi-Script Support**
 
