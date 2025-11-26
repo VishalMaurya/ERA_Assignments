@@ -62,3 +62,11 @@ SUBMISSION.md
 *token*
 *secret*
 HF_TOKEN
+
+# Large model files - DO NOT commit to GitHub
+*.pt
+*.pth
+*.ckpt
+shakespeare_gpt2_*.pt
+LLM_Decoder/*.pt
+hf_space_upload/*.pt
