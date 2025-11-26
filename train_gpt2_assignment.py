@@ -171,7 +171,7 @@ def generate_sample(model, device, prompt="ROMEO:", max_length=150, temperature=
     return enc.decode(tokens[0].tolist())
 
 
-def train_to_target_loss(target_loss=0.099999, max_steps=100000, eval_interval=200):
+def train_to_target_loss(target_loss=0.099999, max_steps=10000000, eval_interval=200):
     """Train until target loss is reached"""
     
     # Setup
