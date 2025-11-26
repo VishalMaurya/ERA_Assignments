@@ -34,14 +34,25 @@ models/
 Thumbs.db
 
 # S10 specific (archived)
-*bpe*.py
-*hindi*.py
-download_*.py
-train_*.py
-test_*.py
-demo_*.py
-setup_*.py
-generate_*.py
+bpe_tokenizer.py
+demo_hindi_bpe.py
+download_hindi_corpus.py
+download_indian_language.py
+download_indic_corpus.py
+download_mc4_hindi.py
+download_oscar_hindi.py
+download_wikipedia_hindi.py
+generate_large_corpus.py
+setup_hf_auth.py
+test_bpe.py
+train_hindi_bpe.py
+hindi_bpe_training.ipynb
 COMPLETION_SUMMARY.md
 ASSIGNMENT_RESULTS.md
 DEPLOYMENT_GUIDE.md
+SUBMISSION.md
+
+# Keep S12 files
+!train_gpt2_assignment.py
+!app_gpt2_shakespeare.py
+!requirements_gpt2.txt
