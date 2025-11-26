@@ -4,51 +4,44 @@ __pycache__/
 *$py.class
 *.so
 .Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# Virtual Environment
 venv/
 ENV/
 env/
+
+# Data
+data/
+*.txt
+*.json
+!requirements.txt
+!huggingface_space/*.json
+
+# Models (except HF Space)
+models/
+!huggingface_space/
+
+# Jupyter
+.ipynb_checkpoints
+*.ipynb
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
-*~
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Project specific
-data/*.txt
-!data/sample_corpus.txt
-models/*.json
-models/*.pkl
-*.log
-*.pth
-
-# Jupyter
-.ipynb_checkpoints/
-*.ipynb
-
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
+# S10 specific (archived)
+*bpe*.py
+*hindi*.py
+download_*.py
+train_*.py
+test_*.py
+demo_*.py
+setup_*.py
+generate_*.py
+COMPLETION_SUMMARY.md
+ASSIGNMENT_RESULTS.md
+DEPLOYMENT_GUIDE.md
