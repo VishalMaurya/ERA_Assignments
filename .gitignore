@@ -56,3 +56,9 @@ SUBMISSION.md
 !train_gpt2_assignment.py
 !app_gpt2_shakespeare.py
 !requirements_gpt2.txt
+
+# Secrets - NEVER commit
+.env
+*token*
+*secret*
+HF_TOKEN
